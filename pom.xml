@@ -8,10 +8,14 @@
         <groupId>xyz.cofe</groupId>
         <artifactId>next-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../next-parent</relativePath>
+        <relativePath>next-parent</relativePath>
     </parent>
 
     <groupId>xyz.cofe</groupId>
-    <artifactId>ecolls</artifactId>
+    <artifactId>next</artifactId>
+    <packaging>pom</packaging>
 
+    <modules>
+        <module>ecolls-j</module>
+    </modules>
 </project>
