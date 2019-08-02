@@ -14,18 +14,42 @@ import java.util.function.Predicate;
  */
 public interface Eterable<A> extends Iterable<A> {
     /**
+     * Создает итератор по единичному значению
+     * @param <A> тип значения
+     * @param a значение
+     * @return итератор
+     */
+    static <A> Eterable<A> single(A a){
+        return new SingleIterable<>(a);
+    }
+
+    /**
+     * Итератор по массиву
+     * @param a массив
+     * @param <A> тип элементов в массиве
+     * @return итератор
+     */
+    static <A> Eterable<A> of(A ... a){
+        return new ArrayIterable<>(a);
+    }
+
+    /**
      * Создает итератор
-     * @param itr исходный итератор
+     * @param a исходный итератор
      * @param <A> тип элементов
      * @return итератор
      */
-    static <A> Eterable<A> of(Iterable<A> itr){
-        return new Eterable<A>() {
-            @Override
-            public Iterator<A> iterator() {
-                return itr.iterator();
-            }
-        };
+    static <A> Eterable<A> of(Iterable<? extends A> a){
+        return new EterableProxy<>(a);
+    }
+
+    /**
+     * "Пустой" Итератор
+     * @param <A> тип элементов
+     * @return итератор
+     */
+    static <A> Eterable<A> empty(){
+        return new EmptyIterable<>();
     }
 
     /**

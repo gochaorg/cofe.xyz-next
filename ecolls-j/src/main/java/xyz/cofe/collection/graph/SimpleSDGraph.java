@@ -23,6 +23,8 @@
  */
 package xyz.cofe.collection.graph;
 
+import xyz.cofe.iter.Eterable;
+
 import java.util.*;
 import java.util.ArrayList;
 
@@ -77,18 +79,18 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
      * @see org.gocha.collection.graph.IGraph#getNodes
      */
     @Override
-    public Iterable<N> getNodes()
+    public Eterable<N> getNodes()
     {
-        return nodes;
+        return Eterable.of(nodes);
     }
 
     /* (non-Javadoc)
      * @see org.gocha.collection.graph.IGraph#getEdges
      */
     @Override
-    public Iterable<Edge<N, E>> getEdges()
+    public Eterable<Edge<N, E>> getEdges()
     {
-        return edges;
+        return Eterable.of(edges);
     }
 
     /* (non-Javadoc)

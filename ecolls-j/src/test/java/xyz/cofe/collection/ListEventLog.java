@@ -139,9 +139,18 @@ public class ListEventLog<C extends EventList<E>, E> {
                     ptrnCls.isAssignableFrom(ce.getClass())
                 );
 
-                Assert.assertTrue("event["+eventIdx+"] class="+ce.getClass().getSimpleName()+" need="+ptrnElement,
-                    Objects.equals(ptrnElement,ce)
-                );
+                if( ce instanceof UpdatedEvent ){
+
+                }else
+                if( ptrnCls.isAssignableFrom(InsertedEvent.class) && ce instanceof InsertedEvent){
+                    Assert.assertTrue("event[" + eventIdx + "] class=" + ce.getClass().getSimpleName() + " need=" + ptrnElement,
+                        Objects.equals(ptrnElement, ((InsertedEvent) ce).getNewItem())
+                    );
+                }else if( ce instanceof DeletedEvent && ptrnCls.isAssignableFrom(DeletedEvent.class) ){
+                    Assert.assertTrue("event[" + eventIdx + "] class=" + ce.getClass().getSimpleName() + " need=" + ptrnElement,
+                        Objects.equals(ptrnElement, ((DeletedEvent) ce).getOldItem())
+                    );
+                }
 
                 if( ce instanceof ItemIndex && ptrnIdx!=null ){
                     Object ceIdx = ((ItemIndex)ce).getIndex();

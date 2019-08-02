@@ -5,7 +5,7 @@ import java.util.Iterator;
 /**
  * Итератор по массиву
  */
-public class ArrayIterable<T> implements Iterable<T> {
+public class ArrayIterable<T> implements Eterable<T> {
     private T[] arr;
 
     public ArrayIterable(T[] srcArray) {

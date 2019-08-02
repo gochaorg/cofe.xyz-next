@@ -7,7 +7,7 @@ import java.util.function.Supplier;
  * Возвращает последовательность с одним элементом
  * @author gocha
  */
-public class SingleIterable<T> implements Iterable<T> {
+public class SingleIterable<T> implements Eterable<T> {
     private T item = null;
     private Supplier<T> lazyValue = null;
 

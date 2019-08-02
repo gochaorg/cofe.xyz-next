@@ -7,19 +7,19 @@ import java.util.Iterator;
  * @param <A> тип элемента
  */
 public class EterableProxy<A> implements Eterable<A> {
-    protected final Iterable<A> target;
+    protected final Iterable<? extends A> target;
 
     /**
      * Конструктор
      * @param target исходный итератор
      */
-    public EterableProxy(Iterable<A> target){
+    public EterableProxy(Iterable<? extends A> target){
         if( target == null )throw new IllegalArgumentException( "target == null" );
         this.target = target;
     }
 
     @Override
     public Iterator<A> iterator() {
-        return target.iterator();
+        return (Iterator<A>)target.iterator();
     }
 }

@@ -17,5 +17,11 @@
 
     <modules>
         <module>ecolls-j</module>
+        <module>types</module>
+        <module>fs</module>
+        <module>fs-types</module>
+        <module>cbuffer</module>
+        <module>iofun</module>
+        <module>types-spi</module>
     </modules>
 </project>

@@ -5,7 +5,7 @@ import java.util.Iterator;
 /**
  * Возвращает пустую последовательность объектов
  */
-public class EmptyIterable<T> implements Iterable<T>, Iterator<T> {
+public class EmptyIterable<T> implements Eterable<T>, Iterator<T> {
     public Iterator<T> iterator() {
         return this;
     }
