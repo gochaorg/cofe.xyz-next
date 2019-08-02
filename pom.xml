@@ -23,5 +23,6 @@
         <module>cbuffer</module>
         <module>iofun</module>
         <module>types-spi</module>
+        <module>text</module>
     </modules>
 </project>
