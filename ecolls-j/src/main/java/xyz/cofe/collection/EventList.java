@@ -2,6 +2,7 @@ package xyz.cofe.collection;
 
 import xyz.cofe.ecolls.ReadWriteLockSupport;
 import xyz.cofe.ecolls.TripleConsumer;
+import xyz.cofe.iter.Eterable;
 import xyz.cofe.scn.LongScn;
 
 import java.util.*;
@@ -16,7 +17,8 @@ public interface EventList<E>
     extends List<E>,
             CollectionEventPublisher<EventList<E>, E>,
             ReadWriteLockSupport,
-            LongScn<EventList<E>,CollectionEvent<EventList<E>,E>>
+            LongScn<EventList<E>,CollectionEvent<EventList<E>,E>>,
+            Eterable<E>
 {
     /**
      * Возвращает целевой список, над которым происходят преобразования
@@ -72,7 +74,7 @@ public interface EventList<E>
      * @param e элемент
      */
     default void fireInserted(int index, E e) {
-        InsertedEvent<EventList<E>,Integer,E> ev = InsertedEvent.<EventList<E>,Integer,E>create(this,index,e);
+        InsertedEvent<EventList<E>,Integer,E> ev = InsertedEvent.create(this,index,e);
         fireCollectionEvent(ev);
     }
 
@@ -85,7 +87,7 @@ public interface EventList<E>
      * @param current текущее значение
      */
     default void fireUpdated(int index, E old, E current){
-        UpdatedEvent<EventList<E>,Integer,E> ev = UpdatedEvent.<EventList<E>,Integer,E>create(this,index,current,old);
+        UpdatedEvent<EventList<E>,Integer,E> ev = UpdatedEvent.create(this,index,current,old);
         fireCollectionEvent(ev);
     }
 

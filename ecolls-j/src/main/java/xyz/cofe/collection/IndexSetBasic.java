@@ -33,6 +33,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
+
 import xyz.cofe.ecolls.Pair;
 import xyz.cofe.collection.SortInsert;
 import xyz.cofe.collection.SortInsertProfiling;
@@ -43,6 +45,7 @@ import xyz.cofe.ecolls.QuadConsumer;
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
  * @param <A>  Тип элементов в множестве
  */
+@SuppressWarnings("WeakerAccess")
 public class IndexSetBasic<A extends Comparable<A>>
         implements
         IndexSet<A>
@@ -52,34 +55,22 @@ public class IndexSetBasic<A extends Comparable<A>>
     private static final Level logLevel = logger.getLevel();
 
     private static final boolean isLogSevere =
-            logLevel==null
-                    ? true
-                    : logLevel.intValue() <= Level.SEVERE.intValue();
+        logLevel==null || logLevel.intValue()<=Level.SEVERE.intValue();
 
     private static final boolean isLogWarning =
-            logLevel==null
-                    ? true
-                    : logLevel.intValue() <= Level.WARNING.intValue();
+        logLevel==null || logLevel.intValue()<=Level.WARNING.intValue();
 
     private static final boolean isLogInfo =
-            logLevel==null
-                    ? true
-                    : logLevel.intValue() <= Level.INFO.intValue();
+        logLevel==null || logLevel.intValue()<=Level.INFO.intValue();
 
     private static final boolean isLogFine =
-            logLevel==null
-                    ? true
-                    : logLevel.intValue() <= Level.FINE.intValue();
+        logLevel==null || logLevel.intValue()<=Level.FINE.intValue();
 
     private static final boolean isLogFiner =
-            logLevel==null
-                    ? true
-                    : logLevel.intValue() <= Level.FINER.intValue();
+        logLevel==null || logLevel.intValue()<=Level.FINER.intValue();
 
     private static final boolean isLogFinest =
-            logLevel==null
-                    ? true
-                    : logLevel.intValue() <= Level.FINEST.intValue();
+        logLevel==null || logLevel.intValue()<=Level.FINEST.intValue();
 
     private static void logFine(String message,Object ... args){
         logger.log(Level.FINE, message, args);
@@ -296,6 +287,18 @@ public class IndexSetBasic<A extends Comparable<A>>
             for( A a : list ){
                 iter.accept(a);
             }
+        }
+    }
+
+    public Stream<Pair<A,Integer>> stream(){
+        synchronized( sync ){
+            if( size()<1 )return Stream.empty();
+            if( size()==1 )return Stream.of( Pair.of(get(0),0));
+            return Stream.iterate(
+                Pair.of(get(0),0),
+                x -> x!=null && x.b()!=null && x.b() <= (size()-1),
+                x -> x!=null && x.b()!=null && x.b() <  (size()-1) ? Pair.of( get(x.b()+1), x.b()+1 ) : null
+            );
         }
     }
 

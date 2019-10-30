@@ -1,5 +1,6 @@
 package xyz.cofe.iter;
 
+import xyz.cofe.collection.NodesExtracter;
 import xyz.cofe.ecolls.*;
 
 import java.util.*;
@@ -228,5 +229,30 @@ public interface Eterable<A> extends Iterable<A> {
         ArrayList<A> lst = new ArrayList<>();
         this.forEach( lst::add );
         return lst;
+    }
+
+    /**
+     * Создание итератора по дереву
+     * @param root корень
+     * @param follow следование
+     * @param <A> тип узла дерева
+     * @return создание итератора
+     */
+    public static <A> TreeIterBuilder<A> tree( A root, Function<A,Iterable<A>> follow ){
+        if( root==null ) throw new IllegalArgumentException("root==null");
+        if( follow==null ) throw new IllegalArgumentException("follow==null");
+        return new TreeIterBuilderDefault<>(root,follow);
+    }
+
+    /**
+     * Посчет кол-ва элементов
+     * @return кол-во элементов
+     */
+    default long count(){
+        long tot = 0;
+        for( A a : this ){
+            tot++;
+        }
+        return tot;
     }
 }

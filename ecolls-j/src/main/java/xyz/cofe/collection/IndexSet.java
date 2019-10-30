@@ -28,25 +28,26 @@ import xyz.cofe.ecolls.QuadConsumer;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Список содежащий уникальные элементы, отсортированные в порядке возрастания
  * @param <A> Тип элементов в множестве
  */
-public interface IndexSet<A extends Comparable<A>>
+interface IndexSet<A extends Comparable<A>>
 {
     /**
      * Кол-во элементов
      * @return Кол-во элементов
      */
-    public int size();
+    int size();
 
     /**
      * Получение элемента по его индексу
      * @param idx индекс
      * @return Элемент
      */
-    public A get(int idx);
+    A get(int idx);
 
     /**
      * Обновление элемента
@@ -59,21 +60,21 @@ public interface IndexSet<A extends Comparable<A>>
      * false - если b существует, то не обновлять и вернуть null
      * @return Смена индекса или null если элемент a не существует
      */
-    //public Pair<Integer,Integer> update(A a, A b, boolean allowMerge, boolean generateError);
+    //Pair<Integer,Integer> update(A a, A b, boolean allowMerge, boolean generateError);
 
     /**
      * Проверка наличия элемента в списке
      * @param a элемент
      * @return true - существует
      */
-    public boolean exists(A a);
+    boolean exists(A a);
 
     /**
      * Получение идекса элемента
      * @param a элемент
      * @return индекс (0 и более) или -1 отсуствие
      */
-    public int indexOf( A a );
+    int indexOf( A a );
 
     // Поиск хвоста, где значения >= a
     /**
@@ -86,7 +87,7 @@ public interface IndexSet<A extends Comparable<A>>
      * @param endEx коненый индекс, по который исключительно производить поиск
      * @return начало хвоста или null
      */
-    public Pair<Integer,A> tailEntry(A a, boolean strong, int begin, int endEx );
+    Pair<Integer,A> tailEntry(A a, boolean strong, int begin, int endEx );
 
     // Поиск головы, где значения <= a
     /**
@@ -99,13 +100,19 @@ public interface IndexSet<A extends Comparable<A>>
      * @param endEx коненый индекс, по который исключительно производить поиск
      * @return конец головы или null
      */
-    public Pair<Integer,A> headEntry( A a, boolean strong, int begin, int endEx );
+    Pair<Integer,A> headEntry( A a, boolean strong, int begin, int endEx );
 
     /**
      * Обход элементов в списке
      * @param iter итератор
      */
-    public void each( Consumer<A> iter );
+    void each( Consumer<A> iter );
+
+    /**
+     * Получение потока/stream-а значений
+     * @return поток значение/индекс
+     */
+    Stream<Pair<A,Integer>> stream();
 
     /**
      * Обход элементов в списке
@@ -113,7 +120,7 @@ public interface IndexSet<A extends Comparable<A>>
      * @param endEx По какой исключительно закнчить
      * @param consumer Функция fn(index,item):any принимающая значения
      */
-    public void eachByIndex( int begin, int endEx, BiConsumer<Integer,A> consumer );
+    void eachByIndex( int begin, int endEx, BiConsumer<Integer,A> consumer );
 
     /**
      * Обход элементов в списке
@@ -128,7 +135,7 @@ public interface IndexSet<A extends Comparable<A>>
      * visitIndex - индекс в выборке <br>
      * visitSize - Объем вборки
      */
-    public void eachByValue(
+    void eachByValue(
             A begin, boolean incBegin,
             A end, boolean incEnd,
             QuadConsumer<Integer,A,Integer,Integer> consumer );
@@ -144,7 +151,7 @@ public interface IndexSet<A extends Comparable<A>>
      * index - индекс элемента в списке <br>
      * item - элемент в списке
      */
-    public void eachByValue(
+    void eachByValue(
             A begin, boolean incBegin,
             A end, boolean incEnd,
             BiConsumer<Integer,A> consumer );
@@ -154,77 +161,77 @@ public interface IndexSet<A extends Comparable<A>>
      * @param a элемент
      * @return индекс элемента
      */
-    public int add( A a );
+    int add( A a );
 
     /**
      * Добавление элемента в список
      * @param a элементы
      * @return self ссылка
      */
-    public IndexSet<A> append( A ... a );
+    IndexSet<A> append( A ... a );
 
     /**
      * Добавление элементов в список
      * @param adds элементы
      * @param added добавленные элементы
      */
-    public void add( Iterable<A> adds, BiConsumer<Integer,A> added );
+    void add( Iterable<A> adds, BiConsumer<Integer,A> added );
 
     /**
      * Добавление элементов в список
      * @param adds элементы
      * @param added добавленные элементы
      */
-    public void add( IndexSet<A> adds, BiConsumer<Integer,A> added );
+    void add( IndexSet<A> adds, BiConsumer<Integer,A> added );
 
     /**
      * Удаление элемента
      * @param a элемент
      * @return индекс удаленного элемента
      */
-    public int remove( A a );
+    int remove( A a );
 
     /**
      * Удаление элементов из списока
      * @param removes элементы
      * @param removed удаленные элементы
      */
-    public void remove( Iterable<A> removes, BiConsumer<Integer,A> removed );
+    void remove( Iterable<A> removes, BiConsumer<Integer,A> removed );
 
     /**
      * Удаление элементов из списока
      * @param removes элементы
      * @param removed удаленные элементы
      */
-    public void remove( IndexSet<A> removes, BiConsumer<Integer,A> removed );
+    void remove( IndexSet<A> removes, BiConsumer<Integer,A> removed );
 
     /**
      * Удаляет элемент по его индексу
      * @param idx индекс
      * @return Удаленный элемент
      */
-    public A removeByIndex( int idx );
+    A removeByIndex( int idx );
 
     /**
      * Удаление
      */
-    public void clear();
+    void clear();
 
     /**
      * Возвращает диапазон (мин/макс) значений
      * @return диапазон или null, если список пуст
      */
-    public Pair<A,A> minMax();
+    Pair<A,A> minMax();
 
     /**
      * Возвращат минимальное значение
      * @return минимальное значение
      */
-    public A min();
+    A min();
 
     /**
      * Возвращат максимальное значение
      * @return максимальное значение
      */
-    public A max();
+    A max();
 }

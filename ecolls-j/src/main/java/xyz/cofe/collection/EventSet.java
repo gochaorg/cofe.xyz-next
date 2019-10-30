@@ -1,6 +1,7 @@
 package xyz.cofe.collection;
 
 import xyz.cofe.ecolls.ReadWriteLockSupport;
+import xyz.cofe.iter.Eterable;
 import xyz.cofe.scn.LongScn;
 
 import java.util.Collection;
@@ -20,7 +21,8 @@ public interface EventSet<E>
     Set<E>,
     CollectionEventPublisher<EventSet<E>, E>,
     ReadWriteLockSupport,
-    LongScn<EventSet<E>, CollectionEvent<EventSet<E>,E>>
+    LongScn<EventSet<E>, CollectionEvent<EventSet<E>,E>>,
+    Eterable<E>
 {
     /**
      * Возвращает целевое множество (Set), над которым происходят преобразования
@@ -107,7 +109,7 @@ public interface EventSet<E>
         });
     }
 
-    static class EIterator<E> implements Iterator<E> {
+    class EIterator<E> implements Iterator<E> {
         protected Iterator<E> itr;
 
         public EIterator(Iterator<E> itr){
