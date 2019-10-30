@@ -24,5 +24,7 @@
         <module>iofun</module>
         <module>types-spi</module>
         <module>text</module>
+        <module>xparse</module>
+        <module>gui-swing</module>
     </modules>
 </project>
