@@ -193,38 +193,6 @@ public class WrapperContentBuffer<T extends ContentBuffer>
         }
     }
 
-//    private boolean wrapClonned = false;
-//
-//    public boolean isWrapClonned() {
-//        try{
-//            lock.lock();
-//            return wrapClonned;
-//        }finally{
-//            lock.unlock();
-//        }
-//    }
-//
-//    public void setWrapClonned(boolean wrapClonned) {
-//        try{
-//            lock.lock();
-//            this.wrapClonned = wrapClonned;
-//        }finally{
-//            lock.unlock();
-//        }
-//    }
-
-    /* @Override
-    public ContentBuffer clone() {
-        try {
-            lock.lock();
-            ContentBuffer cbuf = buffer.clone();
-            return cbuf;
-        }
-        finally {
-            lock.unlock();
-        }
-    } */
-
     @Override
     public void flush() {
         try {
