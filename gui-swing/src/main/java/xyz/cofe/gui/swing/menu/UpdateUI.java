@@ -1,7 +1,7 @@
-/* 
+/*
  * The MIT License
  *
- * Copyright 2014 Kamnev Georgiy (nt.gocha@gmail.com).
+ * Copyright 2015 Kamnev Georgiy (nt.gocha@gmail.com).
  *
  * Данная лицензия разрешает, безвозмездно, лицам, получившим копию данного программного 
  * обеспечения и сопутствующей документации (в дальнейшем именуемыми "Программное Обеспечение"), 
@@ -21,26 +21,16 @@
  * ПРИЧИНОЙ ИЛИ СВЯЗАННЫМ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ ИЛИ ИСПОЛЬЗОВАНИЕМ ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ 
  * ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
  */
-package xyz.cofe.gui.swing;
 
-import xyz.cofe.collection.NodesExtracter;
+package xyz.cofe.gui.swing.menu;
 
 /**
- * Извлекает элменты из конетейнера меню MenuContainer -&gt; MenuItem
- * @author gocha
- * @see MenuItem
- * @see MenuContainer
+ * Вызывается при раскрытии пользователм меню
+ * @author Kamnev Georgiy (nt.gocha@gmail.com)
  */
-public class MenuItemNodesExtracter implements NodesExtracter<MenuItem, MenuItem>
-{
-    /* (non-Javadoc)
-     * @see NodesExtracter
+public interface UpdateUI {
+    /**
+     * Вызывается при раскрытии пользователм меню, служит для обновления состояния пункта меню
      */
-    @Override
-    public Iterable<MenuItem> extract(MenuItem from)
-    {
-        if( from==null )return null;
-        if( from instanceof MenuContainer )return ((MenuContainer)from).getChildren();
-        return null;
-    }
+    public void updateUI();
 }

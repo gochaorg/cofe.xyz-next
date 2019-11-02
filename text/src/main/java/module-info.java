@@ -3,4 +3,5 @@ open module xyz.cofe.text {
     requires transitive java.logging;
     requires transitive xyz.cofe.ecolls;
     exports xyz.cofe.text;
+    exports xyz.cofe.text.table;
 }

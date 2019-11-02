@@ -25,6 +25,7 @@
 package xyz.cofe.gui.swing;
 
 import xyz.cofe.ecolls.Pair;
+import xyz.cofe.gui.swing.menu.MenuItem;
 
 import java.awt.AWTEvent;
 import java.awt.Component;

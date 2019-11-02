@@ -1,7 +1,7 @@
 /* 
  * The MIT License
  *
- * Copyright 2014 Kamnev Georgiy (nt.gocha@gmail.com).
+ * Copyright 2015 Kamnev Georgiy (nt.gocha@gmail.com).
  *
  * Данная лицензия разрешает, безвозмездно, лицам, получившим копию данного программного 
  * обеспечения и сопутствующей документации (в дальнейшем именуемыми "Программное Обеспечение"), 
@@ -21,101 +21,31 @@
  * ПРИЧИНОЙ ИЛИ СВЯЗАННЫМ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ ИЛИ ИСПОЛЬЗОВАНИЕМ ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ 
  * ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
  */
-package xyz.cofe.gui.swing;
-
-import javax.swing.Action;
+package xyz.cofe.xml.stream.path;
 
 /**
- * Пункт меню - действие
+ * Посетитель узлов XML дерева / потока XML
  * @author gocha
  */
-public class MenuActionItem extends MenuItem
+public interface XVisitor
 {
     /**
-     * Конструктор по умолчанию
+     * Вызывается при вхождении в XML узел (тэг)
+     * @param path узел
      */
-    public MenuActionItem(){
-    }
-
+    public void enter(XEventPath path);
+    
     /**
-     * Конструктор
-     * @param action действие
+     * Вызывается при выходе из XML узела (тэг)
+     * @param path узел
      */
-    public MenuActionItem(Action action){
-        this(null,action);
-    }
-
+    public void exit(XEventPath path);
+    
     /**
-     * Конструктор
-     * @param parent "Родительский" контейнер для пункта меню
-     * @param action Действие
+     * Вызывается при посещении текстового узла
+     * @param path текстовый узел
+     * @param text содержание узла
      */
-    public MenuActionItem(MenuContainer parent,Action action){
-        setAction(action);
-        if( parent!=null )parent.getChildren().add( this );
-    }
-
-    protected Action action = null;
-
-    /**
-     * Указывает действие связанное с меню
-     * @return Действие
-     */
-    public Action getAction()
-    {
-        return action;
-    }
-
-    /**
-     * Указывает действие связанное с меню
-     * @param action Действие
-     */
-    public void setAction(Action action)
-    {
-        Object old = this.action;
-        this.action = action;
-        firePropertyChanged("action", old, action);
-        fireMenuEvent(new PropertyChangedEvent(this,"action",old,this.action));
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="Тип представления">
-    /**
-     * Указывает тип представления action
-     */
-    public static enum Type
-    {
-
-        /**
-         * Использовать по умолчанию
-         */
-        Default,
-        /**
-         * Исползовать checkbox
-         */
-        Checked
-    }
-    private Type type = Type.Default;
-
-    /**
-     * Указывает тип представления
-     * @return тип представления
-     */
-    public Type getType() {
-        if (type == null) {
-            type = Type.Default;
-        }
-        return type;
-    }
-
-    /**
-     * Указывает тип представления
-     * @param type тип представления
-     */
-    public void setType(Type type) {
-        Object old = this.type;
-        this.type = type;
-        firePropertyChanged("type", old, getType());
-        fireMenuEvent(new PropertyChangedEvent(this, "type", old, getType()));
-    }
-    // </editor-fold>
+    public void characters(XEventPath path, String text);
+//    public void attribute(XEventPath path, String attribute, String value);
 }

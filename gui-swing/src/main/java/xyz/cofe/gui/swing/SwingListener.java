@@ -24,7 +24,6 @@
 
 package xyz.cofe.gui.swing;
 
-import xyz.cofe.gui.swing.text.DocumentAdapter;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;

@@ -1,7 +1,7 @@
 /* 
  * The MIT License
  *
- * Copyright 2014 Kamnev Georgiy (nt.gocha@gmail.com).
+ * Copyright 2015 Kamnev Georgiy (nt.gocha@gmail.com).
  *
  * Данная лицензия разрешает, безвозмездно, лицам, получившим копию данного программного 
  * обеспечения и сопутствующей документации (в дальнейшем именуемыми "Программное Обеспечение"), 
@@ -21,21 +21,14 @@
  * ПРИЧИНОЙ ИЛИ СВЯЗАННЫМ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ ИЛИ ИСПОЛЬЗОВАНИЕМ ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ 
  * ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
  */
-package xyz.cofe.gui.swing;
+package xyz.cofe.xml.stream.path;
 
-import java.util.EventObject;
+import java.util.function.Predicate;
 
 /**
- * Событие узла меню
+ * Интерфейс проверки пути
  * @author gocha
  */
-public class MenuEvent extends EventObject
+public interface PathExpression extends Predicate<XEventPath>
 {
-    /**
-     * Событие пункта меню
-     * @param source исходный объект - источник события
-     */
-    public MenuEvent(Object source){
-        super(source);
-    }
 }

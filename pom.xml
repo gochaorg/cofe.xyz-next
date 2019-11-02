@@ -26,5 +26,9 @@
         <module>text</module>
         <module>xparse</module>
         <module>gui-swing</module>
+        <module>xml-utl</module>
+        <module>basic-template</module>
+        <module>text-lex</module>
+        <module>text-lex</module>
     </modules>
 </project>

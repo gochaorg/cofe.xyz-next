@@ -1,7 +1,7 @@
 /* 
  * The MIT License
  *
- * Copyright 2014 Kamnev Georgiy (nt.gocha@gmail.com).
+ * Copyright 2015 Kamnev Georgiy (nt.gocha@gmail.com).
  *
  * Данная лицензия разрешает, безвозмездно, лицам, получившим копию данного программного 
  * обеспечения и сопутствующей документации (в дальнейшем именуемыми "Программное Обеспечение"), 
@@ -21,17 +21,49 @@
  * ПРИЧИНОЙ ИЛИ СВЯЗАННЫМ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ ИЛИ ИСПОЛЬЗОВАНИЕМ ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ 
  * ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
  */
-package xyz.cofe.gui.swing;
+package xyz.cofe.xml;
+
+import javax.xml.stream.XMLStreamException;
 
 /**
- * Подпищик на события меню
- * @author gocha
+ * Исключение сообщащее о нарушении вложенности тегов
+ * @author GoCha
  */
-public interface MenuListener
+public class XMLStreamDeepException extends XMLStreamException
 {
     /**
-     * Событие меню
-     * @param event событиеs
+     * Конструктор
      */
-    void menuEvent(MenuEvent event);
+    public XMLStreamDeepException()
+    {
+        super();
+    }
+    
+    /**
+     * Конструктор
+     * @param message Сообщение об ощибке
+     */
+    public XMLStreamDeepException(String message)
+    {
+        super(message);
+    }
+    
+    /**
+     * Конструктор
+     * @param inner Вложенное исключение
+     */
+    public XMLStreamDeepException(Throwable inner)
+    {
+        super(inner);
+    }
+    
+    /**
+     * Конструктор
+     * @param message Сообщение об ощибке
+     * @param inner Вложенное исключение
+     */
+    public XMLStreamDeepException(String message,Throwable inner)
+    {
+        super(message, inner);
+    }
 }

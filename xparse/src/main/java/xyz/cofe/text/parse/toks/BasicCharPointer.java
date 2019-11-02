@@ -1,5 +1,7 @@
 package xyz.cofe.text.parse.toks;
 
+import xyz.cofe.text.parse.Pointer;
+
 import java.util.Objects;
 
 /**
@@ -55,13 +57,6 @@ public class BasicCharPointer implements CharPointer {
     }
 
     @Override
-    public int compareTo( CharPointer trgt ){
-        if( trgt == null ) return 0;
-        if( trgt.getClass() != getClass() ) return 0;
-        return pointer() - trgt.pointer();
-    }
-
-    @Override
     public boolean equals( Object o ){
         if( this == o ) return true;
         if( o == null || getClass() != o.getClass() ) return false;
@@ -78,5 +73,14 @@ public class BasicCharPointer implements CharPointer {
     @Override
     public String toString(){
         return "<Ptr pointer="+pointer+'>';
+    }
+
+    @Override
+    public int compareTo( Pointer o ){
+        if( o==null )return 0;
+        if( o.getClass()!=BasicCharPointer.class )return 0;
+        BasicCharPointer p = (BasicCharPointer)o;
+        if( p.source!=this.source )return 0;
+        return this.pointer < p.pointer ? -1 : (this.pointer==p.pointer ? 0 : 1);
     }
 }

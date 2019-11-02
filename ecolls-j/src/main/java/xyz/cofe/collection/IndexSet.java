@@ -34,7 +34,7 @@ import java.util.stream.Stream;
  * Список содежащий уникальные элементы, отсортированные в порядке возрастания
  * @param <A> Тип элементов в множестве
  */
-interface IndexSet<A extends Comparable<A>>
+public interface IndexSet<A extends Comparable<A>>
 {
     /**
      * Кол-во элементов
