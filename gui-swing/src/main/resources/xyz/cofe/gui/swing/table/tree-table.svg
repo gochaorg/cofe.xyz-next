@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="tree-table.svg">
+  <defs
+     id="defs4">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient3803">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop3805" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop3807" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient3790">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop3792" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop3794" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3790"
+       id="linearGradient3796"
+       x1="60"
+       y1="962.89789"
+       x2="73.39286"
+       y2="980.93359"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-3.75,-3.9285715)" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3803"
+       id="radialGradient3809"
+       cx="63.59486"
+       cy="1016.8668"
+       fx="63.59486"
+       fy="1016.8668"
+       r="18.640625"
+       gradientTransform="matrix(0.62443217,0.84844636,-1.7073416,1.2565545,1759.4365,-318.73905)"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3803"
+       id="radialGradient3821"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.62443217,0.84844636,-1.7073416,1.2565545,1809.4365,-318.73905)"
+       cx="63.59486"
+       cy="1016.8668"
+       fx="63.59486"
+       fy="1016.8668"
+       r="18.640625" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3803"
+       id="radialGradient3827"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.62443217,0.84844636,-1.7073416,1.2565545,1809.4365,-468.73905)"
+       cx="63.59486"
+       cy="1016.8668"
+       fx="63.59486"
+       fy="1016.8668"
+       r="18.640625" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3803"
+       id="radialGradient4183"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.62443217,0.84844636,-1.7073416,1.2565545,1809.4365,-468.73905)"
+       cx="63.59486"
+       cy="1016.8668"
+       fx="63.59486"
+       fy="1016.8668"
+       r="18.640625" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3803"
+       id="radialGradient883"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.62443217,0.84844636,-1.7073416,1.2565545,1809.4365,-518.23652)"
+       cx="63.59486"
+       cy="1016.8668"
+       fx="63.59486"
+       fy="1016.8668"
+       r="18.640625" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.959798"
+     inkscape:cx="107.13357"
+     inkscape:cy="178.71677"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:snap-nodes="false"
+     inkscape:snap-global="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1023"
+     inkscape:window-x="0"
+     inkscape:window-y="28"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2985"
+       empspacing="5"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true"
+       spacingx="10"
+       spacingy="10"
+       originx="0"
+       originy="0" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#aaccee;fill-opacity:1;stroke:#67a4e1;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect2987"
+       width="40"
+       height="40"
+       x="54.914341"
+       y="957.55383" />
+    <g
+       id="g3775">
+      <path
+         inkscape:connector-curvature="0"
+         id="rect3757"
+         d="m 70,912.36218 0,10 -10,0 0,10 10,0 0,10 10,0 0,-10 10,0 0,-10 -10,0 0,-10 -10,0 z"
+         style="fill:#000000;fill-opacity:1;stroke:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="rect3761"
+         d="m 122,912.36218 0,12 -12,0 0,6 12,0 0,12 6,0 0,-12 12,0 0,-6 -12,0 0,-12 -6,0 z"
+         style="fill:#000000;fill-opacity:1;stroke:none" />
+    </g>
+    <path
+       inkscape:connector-curvature="0"
+       id="path3767"
+       d="m 60,872.36218 0,10 30,0 0,-10 z"
+       style="fill:#000000;fill-opacity:1;stroke:none"
+       sodipodi:nodetypes="ccccc" />
+    <g
+       id="g3853"
+       inkscape:export-filename="/home/user/code/dev/proj/cofe.xyz/gui.swing/gui-swing-bean/src/main/resources/xyz/cofe/gui/swing/table/node-minus-v1-12x12.png"
+       inkscape:export-xdpi="26.700001"
+       inkscape:export-ydpi="26.700001">
+      <rect
+         ry="20"
+         style="fill:#aaccee;fill-opacity:1;stroke:#73abe3;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+         id="rect3823"
+         width="40"
+         height="40"
+         x="104.91434"
+         y="857.30377" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         style="fill:#000000;fill-opacity:1;stroke:none"
+         d="m 110,874.36218 0,6 30,0 0,-6 z"
+         id="path3769"
+         inkscape:connector-curvature="0" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3825"
+         d="m 125.1672,857.7947 c -11.08001,0 -20.00001,8.92 -20.00001,20 0,7.1234 3.70384,13.3335 9.28125,16.875 -1.71464,-2.9523 -2.71875,-6.3577 -2.71875,-10.0313 0,-11.0799 8.92,-20 20.00001,-20 3.95661,0 7.62083,1.158 10.71875,3.125 -3.45705,-5.9523 -9.87477,-9.9687 -17.28125,-9.9687 z"
+         style="fill:url(#radialGradient3827);fill-opacity:1;stroke:none" />
+    </g>
+    <rect
+       y="1007.3038"
+       x="54.914341"
+       height="40"
+       width="40"
+       id="rect3779"
+       style="fill:#aaccee;fill-opacity:1;stroke:#73abe3;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       ry="20" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path3783"
+       d="m 70,962.71932 0,10 -10,0 0,10 10,0 0,10 10,0 0,-10 10,0 0,-10 -10,0 0,-10 -10,0 z"
+       style="fill:#000000;fill-opacity:1;stroke:none" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path3785"
+       d="m 122,962.71932 0,12 -12,0 0,6 12,0 0,12 6,0 0,-12 12,0 0,-6 -12,0 0,-12 -6,0 z"
+       style="fill:#000000;fill-opacity:1;stroke:none" />
+    <path
+       style="fill:url(#linearGradient3796);fill-opacity:1;stroke:none"
+       d="m 54.557198,957.37526 40,0 c -21.111464,3.713 -36.911965,13.99483 -40,39.99997 z"
+       id="rect3787"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:none"
+       d="m 70,1011.838 0,10 -10,0 0,10 10,0 0,10 10,0 0,-10 10,0 0,-10 -10,0 0,-10 -10,0 z"
+       id="path3813"
+       inkscape:connector-curvature="0" />
+    <g
+       id="g3860"
+       inkscape:export-filename="/home/user/code/dev/proj/cofe.xyz/gui.swing/gui-swing-bean/src/main/resources/xyz/cofe/gui/swing/table/node-plus-v1-12x12.png"
+       inkscape:export-xdpi="26.700001"
+       inkscape:export-ydpi="26.700001">
+      <rect
+         y="1007.3038"
+         x="104.91434"
+         height="40"
+         width="40"
+         id="rect3817"
+         style="fill:#aaccee;fill-opacity:1;stroke:#73abe3;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+         ry="20" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3815"
+         d="m 122,1011.838 0,12 -12,0 0,6 12,0 0,12 6,0 0,-12 12,0 0,-6 -12,0 0,-12 -6,0 z"
+         style="fill:#000000;fill-opacity:1;stroke:none" />
+      <path
+         style="fill:url(#radialGradient3821);fill-opacity:1;stroke:none"
+         d="m 125.1672,1007.7947 c -11.08001,0 -20.00001,8.92 -20.00001,20 0,7.1234 3.70384,13.3335 9.28125,16.875 -1.71464,-2.9523 -2.71875,-6.3577 -2.71875,-10.0313 0,-11.0799 8.92,-20 20.00001,-20 3.95661,0 7.62083,1.158 10.71875,3.125 -3.45705,-5.9523 -9.87477,-9.9687 -17.28125,-9.9687 z"
+         id="path3819"
+         inkscape:connector-curvature="0" />
+    </g>
+    <path
+       style="fill:url(#radialGradient3809);fill-opacity:1;stroke:none"
+       d="m 75.167195,1007.7947 c -11.08,0 -20,8.92 -20,20 0,7.1234 3.703833,13.3335 9.28125,16.875 -1.714649,-2.9523 -2.71875,-6.3577 -2.71875,-10.0313 0,-11.0799 8.92,-20 20,-20 3.956612,0 7.620831,1.158 10.71875,3.125 -3.457042,-5.9523 -9.87477,-9.9687 -17.28125,-9.9687 z"
+       id="rect3798"
+       inkscape:connector-curvature="0" />
+    <g
+       id="g3877"
+       inkscape:export-filename="/home/user/code/dev/proj/cofe.xyz/gui.swing/gui-swing-bean/src/main/resources/xyz/cofe/gui/swing/table/node-plus-v2-12x12.png"
+       inkscape:export-xdpi="26.700001"
+       inkscape:export-ydpi="26.700001">
+      <rect
+         ry="20"
+         rx="20"
+         style="fill:#ffffff;fill-opacity:1;stroke:#888888;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+         id="rect3829"
+         width="40"
+         height="40"
+         x="154.91434"
+         y="957.55383" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3833"
+         d="m 172,962.71932 0,12 -12,0 0,6 12,0 0,12 6,0 0,-12 12,0 0,-6 -12,0 0,-12 -6,0 z"
+         style="fill:#000000;fill-opacity:1;stroke:none" />
+    </g>
+    <g
+       id="g3873"
+       inkscape:export-filename="/home/user/code/dev/proj/cofe.xyz/gui.swing/gui-swing-bean/src/main/resources/xyz/cofe/gui/swing/table/node-plus-v3-12x12.png"
+       inkscape:export-xdpi="26.700001"
+       inkscape:export-ydpi="26.700001">
+      <rect
+         y="957.55383"
+         x="206.87862"
+         height="40"
+         width="40"
+         id="rect3835"
+         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+         rx="20"
+         ry="20" />
+      <path
+         style="fill:#ffffff;fill-opacity:1;stroke:none"
+         d="m 223.96429,962.71932 0,12 -12,0 0,6 12,0 0,12 6,0 0,-12 12,0 0,-6 -12,0 0,-12 -6,0 z"
+         id="path3837"
+         inkscape:connector-curvature="0" />
+    </g>
+    <g
+       id="g3865"
+       inkscape:export-filename="/home/user/code/dev/proj/cofe.xyz/gui.swing/gui-swing-bean/src/main/resources/xyz/cofe/gui/swing/table/node-minus-v2-12x12.png"
+       inkscape:export-xdpi="26.700001"
+       inkscape:export-ydpi="26.700001">
+      <rect
+         y="1007.5538"
+         x="154.91434"
+         height="40"
+         width="40"
+         id="rect3839"
+         style="fill:#ffffff;fill-opacity:1;stroke:#888888;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+         rx="20"
+         ry="20" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         style="fill:#000000;fill-opacity:1;stroke:none"
+         d="m 160,1024.7193 0,6 30,0 0,-6 z"
+         id="path3841"
+         inkscape:connector-curvature="0" />
+    </g>
+    <g
+       id="g3869"
+       inkscape:export-filename="/home/user/code/dev/proj/cofe.xyz/gui.swing/gui-swing-bean/src/main/resources/xyz/cofe/gui/swing/table/node-minus-v3-12x12.png"
+       inkscape:export-xdpi="26.700001"
+       inkscape:export-ydpi="26.700001">
+      <rect
+         ry="20"
+         rx="20"
+         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+         id="rect3843"
+         width="40"
+         height="40"
+         x="206.87862"
+         y="1007.5538" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="path3845"
+         d="m 211.96429,1024.7193 0,6 30,0 0,-6 z"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+    </g>
+    <g
+       inkscape:export-ydpi="26.700001"
+       inkscape:export-xdpi="26.700001"
+       inkscape:export-filename="/home/user/code/dev/proj/cofe.xyz/gui.swing/gui-swing-bean/src/main/resources/xyz/cofe/gui/swing/table/node-minus-v1-12x12.png"
+       id="g4175"
+       transform="translate(50.065685,0)">
+      <rect
+         y="857.30377"
+         x="104.91434"
+         height="40"
+         width="40"
+         id="rect4177"
+         style="fill:#aaccee;fill-opacity:1;stroke:#73abe3;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         ry="20" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path4179"
+         d="m 115.6261,865.69652 0,23.83639 23.54604,-12.06686 z"
+         style="fill:#000000;fill-opacity:1;stroke:none"
+         sodipodi:nodetypes="cccc" />
+      <path
+         style="fill:url(#radialGradient4183);fill-opacity:1;stroke:none"
+         d="m 125.1672,857.7947 c -11.08001,0 -20.00001,8.92 -20.00001,20 0,7.1234 3.70384,13.3335 9.28125,16.875 -1.71464,-2.9523 -2.71875,-6.3577 -2.71875,-10.0313 0,-11.0799 8.92,-20 20.00001,-20 3.95661,0 7.62083,1.158 10.71875,3.125 -3.45705,-5.9523 -9.87477,-9.9687 -17.28125,-9.9687 z"
+         id="path4181"
+         inkscape:connector-curvature="0" />
+    </g>
+    <g
+       id="g890"
+       inkscape:export-xdpi="13.714286"
+       inkscape:export-ydpi="13.714286">
+      <rect
+         y="807.80627"
+         x="104.91434"
+         height="40"
+         width="40"
+         id="rect875"
+         style="fill:#aaccee;fill-opacity:1;stroke:#73abe3;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         ry="20" />
+      <path
+         style="fill:url(#radialGradient883);fill-opacity:1;stroke:none"
+         d="m 125.1672,808.29723 c -11.08001,0 -20.00001,8.92 -20.00001,20 0,7.1234 3.70384,13.3335 9.28125,16.875 -1.71464,-2.9523 -2.71875,-6.3577 -2.71875,-10.0313 0,-11.0799 8.92,-20 20.00001,-20 3.95661,0 7.62083,1.158 10.71875,3.125 -3.45705,-5.9523 -9.87477,-9.9687 -17.28125,-9.9687 z"
+         id="path879"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+</svg>
