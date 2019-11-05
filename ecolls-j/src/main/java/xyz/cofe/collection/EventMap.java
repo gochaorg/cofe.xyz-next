@@ -116,6 +116,27 @@ public interface EventMap<K,V>
             }
         });
     }
+
+    /**
+     * Добавляет подписчика га событие изменения/добавления/удаления данных
+     * @param ls подписчик - fn( key:K, oldValue:V, newValue:V )
+     * @return отписка от уведомлений
+     */
+    default AutoCloseable onChanged(TripleConsumer<K,V,V> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return addCollectionListener( e -> {
+            if( e instanceof UpdatedEvent ){
+                UpdatedEvent<EventMap<K,V>,K,V> ev = (UpdatedEvent)e;
+                ls.accept(ev.getIndex(),ev.getOldItem(),ev.getNewItem());
+            } else if( e instanceof DeletedEvent ){
+                DeletedEvent<EventMap<K,V>,K,V> ev = (DeletedEvent)e;
+                ls.accept(ev.getIndex(),ev.getOldItem(),null);
+            }else if( e instanceof InsertedEvent ){
+                InsertedEvent<EventMap<K,V>,K,V> ev = (InsertedEvent)e;
+                ls.accept(ev.getIndex(),null,ev.getNewItem());
+            }
+        } );
+    }
     //endregion
     //region reads
     @Override

@@ -27,6 +27,11 @@ public interface EventList<E>
     List<E> target();
 
     //<editor-fold desc="notify methods">
+    /**
+     * Добавляет подписчика на событие добавления данных
+     * @param ls подписчик - fn( key:Integer, oldValue:E=null, newValue:E )
+     * @return отписка от уведомлений
+     */
     @SuppressWarnings({"UnusedReturnValue", "unchecked"})
     default AutoCloseable onInserted(TripleConsumer<Integer,E,E> ls){
         if( ls == null )throw new IllegalArgumentException( "ls == null" );
@@ -38,6 +43,11 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Добавляет подписчика на событие изменения данных
+     * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E )
+     * @return отписка от уведомлений
+     */
     @SuppressWarnings({"UnusedReturnValue", "unchecked"})
     default AutoCloseable onUpdated(TripleConsumer<Integer,E,E> ls){
         if( ls == null )throw new IllegalArgumentException( "ls == null" );
@@ -49,6 +59,11 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Добавляет подписчика на событие удаления данных
+     * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E=null )
+     * @return отписка от уведомлений
+     */
     @SuppressWarnings({"UnusedReturnValue", "unchecked"})
     default AutoCloseable onDeleted(TripleConsumer<Integer,E,E> ls){
         if( ls == null )throw new IllegalArgumentException( "ls == null" );
@@ -60,6 +75,11 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Добавляет подписчика на событие изменения/добавления/удаления данных
+     * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E )
+     * @return отписка от уведомлений
+     */
     default AutoCloseable onChanged(TripleConsumer<Integer,E,E> ls){
         if( ls == null )throw new IllegalArgumentException( "ls == null" );
         return addCollectionListener( e -> {
