@@ -16,6 +16,16 @@ public class Closeables implements AutoCloseable {
     private final HashSet<Object> links = new LinkedHashSet<>();
     private final WeakHashMap<Object,Object> weaklinks = new WeakHashMap<>();
 
+    public static Closeables of( AutoCloseable ... clArr ){
+        var cl = new Closeables();
+        if( clArr!=null ){
+            for( AutoCloseable c : clArr ){
+                if( c!=null )cl.add(c);
+            }
+        }
+        return cl;
+    }
+
     //<editor-fold defaultstate="collapsed" desc="getCloseables()">
     /**
      * Получение массива объектов для закрытия

@@ -30,5 +30,6 @@
         <module>basic-template</module>
         <module>text-lex</module>
         <module>text-lex</module>
+        <module>text-out</module>
     </modules>
 </project>

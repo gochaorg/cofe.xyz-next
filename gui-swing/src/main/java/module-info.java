@@ -6,5 +6,8 @@ open module xyz.cofe.gui.swing {
     requires transitive java.desktop;
     requires transitive java.scripting;
     requires transitive xyz.cofe.xml.utl;
+    requires transitive xyz.cofe.text.out;
     exports xyz.cofe.gui.swing;
+    exports xyz.cofe.gui.swing.text.str;
+    exports xyz.cofe.gui.swing.menu;
 }

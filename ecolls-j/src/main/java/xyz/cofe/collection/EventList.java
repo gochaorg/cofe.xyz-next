@@ -60,6 +60,22 @@ public interface EventList<E>
         });
     }
 
+    default AutoCloseable onChanged(TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return addCollectionListener( e -> {
+            if( e instanceof UpdatedEvent ){
+                UpdatedEvent<EventList<E>,Integer,E> ev = (UpdatedEvent)e;
+                ls.accept(ev.getIndex(),ev.getOldItem(),ev.getNewItem());
+            } else if( e instanceof DeletedEvent ){
+                DeletedEvent<EventList<E>,Integer,E> ev = (DeletedEvent)e;
+                ls.accept(ev.getIndex(),ev.getOldItem(),null);
+            }else if( e instanceof InsertedEvent ){
+                InsertedEvent<EventList<E>,Integer,E> ev = (InsertedEvent)e;
+                ls.accept(ev.getIndex(),null,ev.getNewItem());
+            }
+        } );
+    }
+
     @Override
     default void fireCollectionEvent(CollectionEvent<EventList<E>, E> event) {
         nextscn(event);
