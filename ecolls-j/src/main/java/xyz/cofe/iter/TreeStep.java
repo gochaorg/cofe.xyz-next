@@ -34,6 +34,10 @@ public class TreeStep<A> {
         return new TreeStep<>(a,this);
     }
 
+    /**
+     * Возвращает уровень вложенности для узла
+     * @return 0 - корень
+     */
     public int getLevel(){
         TreeStep<A> ts = this;
         int level = 0;

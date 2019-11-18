@@ -87,6 +87,21 @@ public interface Eterable<A> extends Iterable<A> {
     }
 
     /**
+     * Присоединение данных к исходным
+     * @param iter присоединяемые данные
+     * @return итератор
+     */
+    default Eterable<A> union(Iterable<Iterable<A>> iter){
+        if( iter == null )throw new IllegalArgumentException( "iter == null" );
+
+        List<Iterable<A>> lst = new ArrayList<>();
+        iter.forEach( it -> lst.add(it) );
+
+        Iterable<A>[] niter = lst.toArray(new Iterable[0]);
+        return new JoinIterable<>(niter);
+    }
+
+    /**
      * Отображения одного набора данных на другой
      * @param map фунция отображения
      * @param <B> целевой тип данных

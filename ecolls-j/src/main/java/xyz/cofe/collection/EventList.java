@@ -44,6 +44,23 @@ public interface EventList<E>
     }
 
     /**
+     * Добавляет подписчика на событие добавления данных
+     * @param weak true - добавить подписчика как weak ссылку
+     * @param ls подписчик - fn( key:Integer, oldValue:E=null, newValue:E )
+     * @return отписка от уведомлений
+     */
+    @SuppressWarnings({"UnusedReturnValue", "unchecked"})
+    default AutoCloseable onInserted(boolean weak, TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return addCollectionListener(weak, (e) -> {
+            if( e instanceof InsertedEvent ){
+                InsertedEvent<EventList<E>,Integer,E> ev = (InsertedEvent)e;
+                ls.accept(ev.getIndex(),null,ev.getNewItem());
+            }
+        });
+    }
+
+    /**
      * Добавляет подписчика на событие изменения данных
      * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E )
      * @return отписка от уведомлений
@@ -52,6 +69,23 @@ public interface EventList<E>
     default AutoCloseable onUpdated(TripleConsumer<Integer,E,E> ls){
         if( ls == null )throw new IllegalArgumentException( "ls == null" );
         return addCollectionListener((e) -> {
+            if( e instanceof UpdatedEvent ){
+                UpdatedEvent<EventList<E>,Integer,E> ev = (UpdatedEvent)e;
+                ls.accept(ev.getIndex(),ev.getOldItem(),ev.getNewItem());
+            }
+        });
+    }
+
+    /**
+     * Добавляет подписчика на событие изменения данных
+     * @param weak true - добавить подписчика как weak ссылку
+     * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E )
+     * @return отписка от уведомлений
+     */
+    @SuppressWarnings({"UnusedReturnValue", "unchecked"})
+    default AutoCloseable onUpdated(boolean weak, TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return addCollectionListener(weak, (e) -> {
             if( e instanceof UpdatedEvent ){
                 UpdatedEvent<EventList<E>,Integer,E> ev = (UpdatedEvent)e;
                 ls.accept(ev.getIndex(),ev.getOldItem(),ev.getNewItem());
@@ -76,6 +110,23 @@ public interface EventList<E>
     }
 
     /**
+     * Добавляет подписчика на событие удаления данных
+     * @param weak true - добавить подписчика как weak ссылку
+     * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E=null )
+     * @return отписка от уведомлений
+     */
+    @SuppressWarnings({"UnusedReturnValue", "unchecked"})
+    default AutoCloseable onDeleted(boolean weak, TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return addCollectionListener(weak, (e) -> {
+            if( e instanceof DeletedEvent ){
+                DeletedEvent<EventList<E>,Integer,E> ev = (DeletedEvent)e;
+                ls.accept(ev.getIndex(),ev.getOldItem(),null);
+            }
+        });
+    }
+
+    /**
      * Добавляет подписчика на событие изменения/добавления/удаления данных
      * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E )
      * @return отписка от уведомлений
@@ -83,6 +134,28 @@ public interface EventList<E>
     default AutoCloseable onChanged(TripleConsumer<Integer,E,E> ls){
         if( ls == null )throw new IllegalArgumentException( "ls == null" );
         return addCollectionListener( e -> {
+            if( e instanceof UpdatedEvent ){
+                UpdatedEvent<EventList<E>,Integer,E> ev = (UpdatedEvent)e;
+                ls.accept(ev.getIndex(),ev.getOldItem(),ev.getNewItem());
+            } else if( e instanceof DeletedEvent ){
+                DeletedEvent<EventList<E>,Integer,E> ev = (DeletedEvent)e;
+                ls.accept(ev.getIndex(),ev.getOldItem(),null);
+            }else if( e instanceof InsertedEvent ){
+                InsertedEvent<EventList<E>,Integer,E> ev = (InsertedEvent)e;
+                ls.accept(ev.getIndex(),null,ev.getNewItem());
+            }
+        } );
+    }
+
+    /**
+     * Добавляет подписчика на событие изменения/добавления/удаления данных
+     * @param weak true - добавить подписчика как weak ссылку
+     * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E )
+     * @return отписка от уведомлений
+     */
+    default AutoCloseable onChanged(boolean weak, TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return addCollectionListener( weak, e -> {
             if( e instanceof UpdatedEvent ){
                 UpdatedEvent<EventList<E>,Integer,E> ev = (UpdatedEvent)e;
                 ls.accept(ev.getIndex(),ev.getOldItem(),ev.getNewItem());

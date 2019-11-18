@@ -4,6 +4,7 @@ import xyz.cofe.ecolls.ListenersHelper;
 
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Подписка на события изменения структуры дерева
@@ -31,6 +32,25 @@ public interface TreeNotify<A extends Tree<A>> {
      */
     default AutoCloseable addTreeListener(TreeEvent.Listener<A> ls){
         return listeners().addListener(ls);
+    }
+
+    /**
+     * Добавляет подписчика на событие определенного типа
+     * @param eventClass тип события
+     * @param listener подписчик
+     * @param <EV> тип события
+     * @return отписка от уведомлений
+     */
+    default <EV extends TreeEvent> AutoCloseable listen( Class<EV> eventClass, Consumer<EV> listener ){
+        if( eventClass!=null ) throw new IllegalArgumentException("eventClass!=null");
+        if( listener!=null ) throw new IllegalArgumentException("listener!=null");
+        return listeners().addListener( ev -> {
+            if( ev==null )return;
+            Class c = ev.getClass();
+            if( eventClass.isAssignableFrom(c) ){
+                listener.accept((EV)ev);
+            }
+        });
     }
 
     /**
