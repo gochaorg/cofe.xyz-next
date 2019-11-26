@@ -22,7 +22,7 @@
  * ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
  */
 
-package xyz.cofe.gui.swing;
+package xyz.cofe.gui.swing.tabs;
 
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.EventList;

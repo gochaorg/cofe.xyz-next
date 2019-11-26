@@ -27,7 +27,7 @@
  * И модифицировано
  */
 
-package xyz.cofe.gui.swing;
+package xyz.cofe.gui.swing.tabs;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -59,15 +59,7 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.dnd.InvalidDnDOperationException;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.Collection;
 import java.util.EventObject;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JPanel;
@@ -76,6 +68,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import xyz.cofe.ecolls.ListenersHelper;
+import xyz.cofe.gui.swing.CloseableTabHeader;
 import xyz.cofe.iter.Eterable;
 
 

@@ -43,6 +43,33 @@
             <artifactId>balloontip</artifactId>
             <version>1.2.4.1</version>
         </dependency>
+
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Поддержка Service Provider Interfaces -->
+            <plugin>
+                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+                <artifactId>serviceloader-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <services>
+                        <param>xyz.cofe.gui.swing.properties.PropertyDBService</param>
+                    </services>
+                    <excludes>
+                        <exclude>*module-info*</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

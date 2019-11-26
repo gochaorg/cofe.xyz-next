@@ -6,7 +6,7 @@ import xyz.cofe.collection.TreeEvent;
  * Событие начала (синхронного) извлечения дочерних узлов
  * @author Kamnev Georgiy nt.gocha@gmail.com
  */
-public class TreeNodeFollowing extends TreeEvent {
+public class TreeNodeFollowing extends TreeEvent implements NodeGetSource {
     /**
      * Конструктор
      * @param source родительский узел

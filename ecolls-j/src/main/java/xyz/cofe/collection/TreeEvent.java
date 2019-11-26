@@ -95,7 +95,8 @@ public class TreeEvent<A extends Tree<A>> {
      * Событие замены дочернего элемента
      * @param <A>
      */
-    public static class Updated<A extends Tree<A>> extends TreeEvent<A> implements UpdatedEvent<A,Integer,A> {
+    public static class Updated<A extends Tree<A>> extends TreeEvent<A> implements UpdatedEvent<A,Integer,A>
+    {
         public Updated(Tree<A> parent, Integer idx, A oldChild, A newChild){
         }
 

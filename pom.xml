@@ -31,5 +31,6 @@
         <module>text-lex</module>
         <module>text-lex</module>
         <module>text-out</module>
+        <module>gui-swing-test</module>
     </modules>
 </project>

@@ -184,17 +184,14 @@ public class PropertyTableEvent {
         //</editor-fold>
     }
 
-    public static Closeable onElementCacheCreated( PropertyTable pt, final Consumer<ElementCacheCreated> consumer ){
+    public static AutoCloseable onElementCacheCreated( PropertyTable pt, final Consumer<ElementCacheCreated> consumer ){
         if( pt==null )throw new IllegalArgumentException("pt == null");
         if( consumer==null )throw new IllegalArgumentException("consumer == null");
 
-        return pt.addPropertyTableListener(new PropertyTableListener() {
-            @Override
-            public void propertyTableEvent(PropertyTableEvent event) {
+        return pt.addPropertyTableListener( event -> {
                 if( event instanceof ElementCacheCreated ){
                     consumer.accept((ElementCacheCreated)event);
                 }
-            }
         });
     }
     //</editor-fold>
@@ -333,16 +330,13 @@ public class PropertyTableEvent {
         //</editor-fold>
     }
 
-    public static Closeable onPropertyWrited( PropertyTable pt, final Consumer<PropertyWrited> consumer ){
+    public static AutoCloseable onPropertyWrited( PropertyTable pt, final Consumer<PropertyWrited> consumer ){
         if( pt==null )throw new IllegalArgumentException("pt == null");
         if( consumer==null )throw new IllegalArgumentException("consumer == null");
 
-        return pt.addPropertyTableListener(new PropertyTableListener() {
-            @Override
-            public void propertyTableEvent(PropertyTableEvent event) {
-                if( event instanceof PropertyWrited ){
-                    consumer.accept((PropertyWrited)event);
-                }
+        return pt.addPropertyTableListener( event -> {
+            if( event instanceof PropertyWrited ){
+                consumer.accept((PropertyWrited)event);
             }
         });
     }

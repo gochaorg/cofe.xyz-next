@@ -31,8 +31,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTabbedPane;
-import xyz.cofe.gui.swing.BasicAction;
-import xyz.cofe.gui.swing.Icon;
+
+import xyz.cofe.gui.swing.tabs.TabHeader;
+import xyz.cofe.gui.swing.tabs.TabPane;
 
 /**
  * Заголовок вкладки с кнопкой закрыть

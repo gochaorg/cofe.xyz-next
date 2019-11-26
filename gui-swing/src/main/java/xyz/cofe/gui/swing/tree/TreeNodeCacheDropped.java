@@ -5,7 +5,7 @@ import xyz.cofe.collection.TreeEvent;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class TreeNodeCacheDropped extends TreeEvent {
+public class TreeNodeCacheDropped extends TreeEvent implements NodeGetSource {
     /**
      * Конструктор
      * @param source родительский узел
@@ -21,6 +21,7 @@ public class TreeNodeCacheDropped extends TreeEvent {
      * Источник события - узел дерева который сгенерировал событие
      * @return зел дерева
      */
+    @Override
     public TreeTableNode getSource(){
         return source;
     }

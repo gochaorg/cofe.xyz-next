@@ -26,6 +26,7 @@ package xyz.cofe.gui.swing.tree;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Predicate;
@@ -367,30 +368,44 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
         if( source==null )return;
 
         TreeSet<Integer> removedRows = new TreeSet<>();
+        TreeSet<Integer> forRemoveFrontRows = new TreeSet<>();
 
         for( var twnode : ev.getSource().walk().tree()){
             TreeStep ts = (((TreeStep)twnode));
             TreeTableNode node = (TreeTableNode) ts.getNode();
 
-            int si = ((TreeTableModelInterface)getTableModel()).getRowOf(node);
-            if( si<0 )continue;
+            int backIndex = ((TreeTableModelInterface)getTableModel()).getRowOf(node);
+            if( backIndex<0 )continue;
 
-            Integer di = source.indexOf(si);
-            if( di==null )continue;
-            if( di<0 )continue;
+            Integer frontIndex = source.indexOf(backIndex);
+            if( frontIndex==null )continue;
+            if( frontIndex<0 )continue;
 
+//            System.out.println("ts level="+ts.getLevel()+" path="+
+//                ts.nodes().map( x -> ((TreeTableNode)x).getData() ).toList()
+//            );
             int lvl = Math.abs(ts.getLevel());
             if( lvl>0 ){
                 // точно не видим
-                source.removeByIndex(di);
-                removedRows.add(di);
+//                System.out.println("mark 1 removeByIndex="+frontIndex);
+                //source.removeByIndex(frontIndex);
+                forRemoveFrontRows.add(frontIndex);
+                //removedRows.add(frontIndex);
                 continue;
             }
 
             if( !isVisible(node) ){
-                source.removeByIndex(di);
+//                System.out.println("mark 2 removeByIndex="+frontIndex);
+                //source.removeByIndex(frontIndex);
+                forRemoveFrontRows.add(frontIndex);
             }
         }
+
+        forRemoveFrontRows.descendingSet().forEach( frontRowIdx -> {
+//            System.out.println("remove front="+frontRowIdx);
+            source.removeByIndex(frontRowIdx);
+            removedRows.add(frontRowIdx);
+        });
 
         if( removedRows.isEmpty() )return;
         if( removedRows.size()==1 ){
@@ -414,8 +429,8 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
                 if( d>1 ){
                     rangeEnd = diPrev;
                     ranges.add(new int[]{ rangeStart, rangeEnd });
+                    rangeStart = di;
                 }
-                rangeStart = di;
             }
             diPrev = di;
         }

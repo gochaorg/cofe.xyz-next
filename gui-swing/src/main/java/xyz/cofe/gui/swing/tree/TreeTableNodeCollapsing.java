@@ -2,7 +2,7 @@ package xyz.cofe.gui.swing.tree;
 
 import xyz.cofe.collection.TreeEvent;
 
-public class TreeTableNodeCollapsing extends TreeEvent {
+public class TreeTableNodeCollapsing extends TreeEvent implements NodeGetSource {
     /**
      * Конструктор
      * @param source узел дерева

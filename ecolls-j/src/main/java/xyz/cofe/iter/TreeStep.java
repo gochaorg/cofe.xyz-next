@@ -1,7 +1,9 @@
 package xyz.cofe.iter;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -60,6 +62,21 @@ public class TreeStep<A> {
             if(ts==null)break;
         }
         return arr;
+    }
+
+    public List<A> nodeList(){
+        ArrayList<A> lst = new ArrayList<>();
+        TreeStep<A> ts = this;
+        while( true ){
+            lst.add( 0, ts.node );
+            ts = ts.parent;
+            if(ts==null)break;
+        }
+        return lst;
+    }
+
+    public Eterable<A> nodes(){
+        return Eterable.of(nodeList());
     }
 
     public void each(Consumer<A> visitor){

@@ -355,18 +355,6 @@ public class TreeTableNodeBasic
     //<editor-fold desc="collapse()">
     @Override
     public void collapse(){
-        if( followFinished!=null ){
-            Long lifet = getPreferredCacheLifeTime();
-            if( lifet!=null && lifet>0 ){
-                long tdiff = Math.abs(followFinished.getTime() - System.currentTimeMillis() );
-                if( tdiff > lifet ){
-                    dropCache();
-                    followFinished = null;
-                    followStarted = null;
-                }
-            }
-        }
-
         TreeTableNodeCollapsing ev1 = null;
 
         Boolean old1 = isExpanded();
@@ -383,6 +371,19 @@ public class TreeTableNodeBasic
         if(!Objects.equals(old2, (Boolean)exp)){
             TreeTableNodeCollapsed ev2 =new TreeTableNodeCollapsed(this,ev1);
             treeNotify( ev2 );
+        }
+
+        // cache drop
+        if( followFinished!=null ){
+            Long lifet = getPreferredCacheLifeTime();
+            if( lifet!=null && lifet>0 ){
+                long tdiff = Math.abs(followFinished.getTime() - System.currentTimeMillis() );
+                if( tdiff > lifet ){
+                    dropCache();
+                    followFinished = null;
+                    followStarted = null;
+                }
+            }
         }
     }
     //</editor-fold>
