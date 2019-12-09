@@ -1220,7 +1220,7 @@ public class PropertyDB {
      * @param bean бин
      * @return дочерние узлы или null
      */
-    public Iterable readBeadNodes( Object bean ){
+    public Eterable readBeadNodes( Object bean ){
         if( bean==null )return null;
         synchronized( sync ){
             final Eterable[] res = new Eterable[1];

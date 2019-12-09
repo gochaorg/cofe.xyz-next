@@ -232,22 +232,22 @@ public class TreeTableNodeValueEditor
 
         static {
             URL u = TreeTableNodeValueEditor.class.getResource(
-                "/xyz/cofe/gui/swing/properties/editors/gtk-edit_16.png");
+                "/xyz/cofe/gui/swing/properties/editor/gtk-edit_16.png");
 
             if( u!=null ){ editIcon = new ImageIcon(u); }
 
             u = TreeTableNodeValueEditor.class.getResource(
-                "/xyz/cofe/gui/swing/properties/editors/null.png");
+                "/xyz/cofe/gui/swing/properties/editor/null.png");
 
             if( u!=null ){ nullIcon = new ImageIcon(u); }
 
             u = TreeTableNodeValueEditor.class.getResource(
-                "/xyz/cofe/gui/swing/properties/editors/null-a-001.png");
+                "/xyz/cofe/gui/swing/properties/editor/null-a-001.png");
 
             if( u!=null ){ nullSelectedIcon = new ImageIcon(u); }
 
             u = TreeTableNodeValueEditor.class.getResource(
-                "/xyz/cofe/gui/swing/properties/editors/null-b-002.png");
+                "/xyz/cofe/gui/swing/properties/editor/null-b-002.png");
 
             if( u!=null ){ nullUnSelectedIcon = new ImageIcon(u); }
         }

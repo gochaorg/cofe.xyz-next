@@ -918,7 +918,7 @@ public class TreeTableNodeRender
         foregroundFocusedAlternative = new ColorModificator().brighter(+0.1f).apply(foregroundFocused);
         backgroundFocusedAlternative = new ColorModificator().brighter(+0.1f).apply(backgroundFocused);
 
-        URL uNullIcon = TreeTableNodeRender.class.getResource("/xyz/cofe/gui/swing/properties/editors/null.png");
+        URL uNullIcon = TreeTableNodeRender.class.getResource("/xyz/cofe/gui/swing/properties/editor/null.png");
         nullIcon = uNullIcon==null ? null : new ImageIcon(uNullIcon);
 
         URL uExpandedIcon = TreeTableNodeRender.class.getResource("/xyz/cofe/gui/swing/table/node-minus-v1-12x12.png");

@@ -148,14 +148,14 @@ public class BooleanEditor extends CustomEditor implements PropertyDBService
 
     private void prepareIcons(){
         URL checkIconUrl = BooleanEditor.class.getResource(
-            "/xyz/cofe/gui/swing/properties/editors/checked-2.png");
+            "/xyz/cofe/gui/swing/properties/editor/checked-2.png");
 
         if( checkIconUrl!=null ){
             checkedIcon = new ImageIcon(checkIconUrl);
         }
 
         URL uncheckIconUrl = BooleanEditor.class.getResource(
-            "/xyz/cofe/gui/swing/properties/editors/unchecked-2.png");
+            "/xyz/cofe/gui/swing/properties/editor/unchecked-2.png");
 
         if( uncheckIconUrl!=null ){
             unCheckedIcon = new ImageIcon(uncheckIconUrl);

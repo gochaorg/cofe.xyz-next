@@ -47,6 +47,7 @@ import xyz.cofe.gui.swing.SwingListener;
 import xyz.cofe.gui.swing.bean.UiBean;
 import xyz.cofe.gui.swing.properties.PropertyDB;
 import xyz.cofe.gui.swing.properties.PropertyDBService;
+import xyz.cofe.gui.swing.properties.SetPropertyEditorOpts;
 import xyz.cofe.text.lex.LexerUtil;
 import xyz.cofe.text.lex.ListLexer;
 import xyz.cofe.text.lex.Token;
@@ -81,7 +82,7 @@ public class FileEditor
     extends CustomEditor
     implements
     PropertyDBService
-    //, SetPropertyEditorOpts
+    , SetPropertyEditorOpts
 {
     //<editor-fold defaultstate="collapsed" desc="log Функции">
     private static final Logger logger = Logger.getLogger(FileEditor.class.getName());
@@ -480,6 +481,11 @@ public class FileEditor
         }
 
         return hm;
+    }
+
+    @Override
+    public void setPropertyEditorOpts( String opts ){
+        parseEditOptions(opts);
     }
 
     //@Override
