@@ -2,12 +2,9 @@ package xyz.cofe.text.parse;
 
 import xyz.cofe.ecolls.Fn2;
 import xyz.cofe.ecolls.Fn3;
-import xyz.cofe.text.parse.toks.CharPointer;
-import xyz.cofe.text.parse.toks.Token;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**

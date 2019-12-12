@@ -1,6 +1,4 @@
-package xyz.cofe.text.parse.toks;
-
-import xyz.cofe.text.parse.Tok;
+package xyz.cofe.text.parse;
 
 /**
  * Лексема
@@ -58,7 +56,7 @@ public class Token implements Tok<CharPointer> {
      * @return текст лексемы
      */
     public String getText(){
-        return begin.lookup(Math.abs(end.pointer() - begin.pointer()));
+        return begin.text(Math.abs(end.pointer() - begin.pointer()));
     }
 
     @Override

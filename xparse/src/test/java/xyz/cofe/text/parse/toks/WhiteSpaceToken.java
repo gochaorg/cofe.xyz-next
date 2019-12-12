@@ -1,5 +1,8 @@
 package xyz.cofe.text.parse.toks;
 
+import xyz.cofe.text.parse.CharPointer;
+import xyz.cofe.text.parse.Token;
+
 import java.util.function.Function;
 
 public class WhiteSpaceToken extends Token {

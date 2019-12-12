@@ -1,8 +1,5 @@
-open module xyz.cofe.typeconv {
+open module xyz.cofe.xparse {
     requires java.base;
     requires transitive java.logging;
-    requires transitive xyz.cofe.typeconv.spi;
-    requires xyz.cofe.ecolls;
-    exports xyz.cofe.typeconv;
-    uses xyz.cofe.typeconv.spi.GetTypeConvertor;
+    requires transitive xyz.cofe.ecolls;
 }

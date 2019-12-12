@@ -1,4 +1,4 @@
-package xyz.cofe.text.parse.toks;
+package xyz.cofe.text.parse;
 
 import java.util.Iterator;
 import java.util.function.Function;

@@ -1,4 +1,7 @@
 package xyz.cofe.text.parse;
 
-public class TokenPointer {
+/**
+ * Указатель на лексемы
+ */
+public interface TokenPointer extends CommonPointer<TokenPointer,Token,Integer> {
 }

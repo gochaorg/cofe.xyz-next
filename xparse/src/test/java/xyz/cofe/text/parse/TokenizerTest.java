@@ -9,8 +9,8 @@ import xyz.cofe.text.parse.toks.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static xyz.cofe.text.parse.toks.TokBuilder.*;
-import static xyz.cofe.text.parse.toks.CharType.*;
+import static xyz.cofe.text.parse.TokBuilder.*;
+import static xyz.cofe.text.parse.CharType.*;
 
 public class TokenizerTest {
     @Test
@@ -70,90 +70,6 @@ public class TokenizerTest {
         System.out.println(str);
     }
 
-    public static class NumberStart extends Token {
-        public NumberStart( CharPointer begin, CharPointer end ){
-            super(begin, end);
-        }
-
-        public NumberStart( Token sample ){
-            super(sample);
-        }
-
-        private long value;
-
-        public long getValue(){
-            return value;
-        }
-
-        public void setValue( long value ){
-            this.value = value;
-        }
-
-        public NumberStart value( long value ){
-            this.value = value;
-            return this;
-        }
-
-        @Override
-        public String toString(){
-            return "<"+NumberStart.class.getSimpleName()+" text='"+getText()+"' value="+getValue()+">";
-        }
-    }
-    public static class NumberPart extends Token {
-        public NumberPart( CharPointer begin, CharPointer end ){
-            super(begin, end);
-        }
-
-        public NumberPart( Token sample ){
-            super(sample);
-        }
-
-        private double value;
-
-        public double getValue(){
-            return value;
-        }
-
-        public void setValue( double value ){
-            this.value = value;
-        }
-
-        public NumberPart value( double value ){
-            this.value = value;
-            return this;
-        }
-
-        @Override
-        public String toString(){
-            return "<"+NumberPart.class.getSimpleName()+" text='"+getText()+"' value="+getValue()+">";
-        }
-    }
-    public static class FloatNumberToken extends Token {
-        public FloatNumberToken( CharPointer begin, CharPointer end ){
-            super(begin, end);
-        }
-        public FloatNumberToken( Token sample ){
-            super(sample);
-        }
-
-        private double value;
-        public double getValue(){
-            return value;
-        }
-        public void setValue( double value ){
-            this.value = value;
-        }
-        public FloatNumberToken value( double value ){
-            this.value = value;
-            return this;
-        }
-
-        @Override
-        public String toString(){
-            return "<"+FloatNumberToken.class.getSimpleName()+" text='"+getText()+"' value="+getValue()+">";
-        }
-    }
-
     @Test
     public void test06(){
         String txt = "aa1 123.45";
@@ -182,9 +98,6 @@ public class TokenizerTest {
                     )
                 )
             ).build( (a,b,toks)->{
-//                System.out.println("float point parsed:");
-//                toks.each( System.out::println );
-
                 var fnum = toks.pattern()
                     .like(0, NumberStart.class)
                     .like(2, NumberPart.class).match( (start,part)->

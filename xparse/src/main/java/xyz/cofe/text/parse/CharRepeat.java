@@ -1,7 +1,6 @@
-package xyz.cofe.text.parse.toks;
+package xyz.cofe.text.parse;
 
 import xyz.cofe.ecolls.Fn3;
-import xyz.cofe.text.parse.Arr;
 
 import java.util.ArrayList;
 import java.util.function.BiFunction;

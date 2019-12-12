@@ -3,11 +3,11 @@ package xyz.cofe.text.parse.mtest;
 import xyz.cofe.text.parse.CharPointer;
 import xyz.cofe.text.parse.Token;
 
-public class BrOpenTok extends Token {
-    public BrOpenTok( CharPointer begin, CharPointer end ){
+public class BrCloseTok extends Token {
+    public BrCloseTok( CharPointer begin, CharPointer end ){
         super(begin, end);
     }
-    public BrOpenTok( Token sample ){
+    public BrCloseTok( Token sample ){
         super(sample);
     }
 }

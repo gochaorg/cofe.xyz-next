@@ -1,4 +1,4 @@
-package xyz.cofe.text.parse.toks;
+package xyz.cofe.text.parse;
 
 import xyz.cofe.ecolls.Fn3;
 

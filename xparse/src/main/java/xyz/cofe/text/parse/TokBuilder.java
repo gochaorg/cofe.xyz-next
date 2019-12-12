@@ -1,7 +1,4 @@
-package xyz.cofe.text.parse.toks;
-
-import xyz.cofe.text.parse.Repeat;
-import xyz.cofe.text.parse.Sequence;
+package xyz.cofe.text.parse;
 
 import java.util.function.Function;
 

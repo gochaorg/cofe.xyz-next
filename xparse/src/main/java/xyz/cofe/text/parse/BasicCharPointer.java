@@ -1,6 +1,4 @@
-package xyz.cofe.text.parse.toks;
-
-import xyz.cofe.text.parse.Pointer;
+package xyz.cofe.text.parse;
 
 import java.util.Objects;
 
@@ -26,7 +24,7 @@ public class BasicCharPointer implements CharPointer {
 
 
     @Override
-    public int pointer(){
+    public Integer pointer(){
         return pointer;
     }
 
@@ -36,7 +34,7 @@ public class BasicCharPointer implements CharPointer {
     }
 
     @Override
-    public String lookup( int length ){
+    public String text( int length ){
         if( eof() ) return "";
         if( length<=0 )return "";
         int t = pointer + length;
@@ -46,7 +44,7 @@ public class BasicCharPointer implements CharPointer {
     }
 
     @Override
-    public char lookup(){
+    public Character lookup(){
         if( eof() ) return 0;
         return source.charAt(pointer);
     }

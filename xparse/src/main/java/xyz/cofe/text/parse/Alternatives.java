@@ -1,7 +1,6 @@
 package xyz.cofe.text.parse;
 
 import xyz.cofe.ecolls.Fn3;
-import xyz.cofe.text.parse.toks.Token;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
