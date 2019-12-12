@@ -19,8 +19,8 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      * @param follow функция перехода к дочерним узлам
      */
     public TreeIterator(
-        Iterable<A> init,
-        Function<A, Iterable<A>> follow
+        Iterable<? extends A> init,
+        Function<A, Iterable<? extends A>> follow
     ) {
         this(init, follow, pollFirst(), pushLast(), checkCycles());
     }
@@ -32,7 +32,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      * @param <A> тип узлов
      * @return итератор
      */
-    public static <A> Eterable<TreeStep<A>> of(Iterable<A> init,Function<A, Iterable<A>> follow){
+    public static <A> Eterable<TreeStep<A>> of(Iterable<? extends A> init,Function<A, Iterable<? extends A>> follow){
         if( init == null )throw new IllegalArgumentException( "init == null" );
         if( follow == null )throw new IllegalArgumentException( "follow == null" );
         return () ->  new TreeIterator<A>(init,follow);
@@ -46,8 +46,8 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      * @param push функция помещения очередного узла в рабочий набор
      */
     public TreeIterator(
-        Iterable<A> init,
-        Function<A, Iterable<A>> follow,
+        Iterable<? extends A> init,
+        Function<A, Iterable<? extends A>> follow,
         Function<List<TreeStep<A>>, TreeStep<A>> poll,
         Consumer<PushStep<A>> push
                        ) {
@@ -63,7 +63,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      * @param <A> тип узлов
      * @return итератор
      */
-    public static <A> Eterable<TreeStep<A>> of(Iterable<A> init, Function<A, Iterable<A>> follow,
+    public static <A> Eterable<TreeStep<A>> of(Iterable<? extends A> init, Function<A, Iterable<? extends A>> follow,
                                                Function<List<TreeStep<A>>, TreeStep<A>> poll,
                                                Consumer<PushStep<A>> push) {
         if( init == null ) throw new IllegalArgumentException("init == null");
@@ -80,8 +80,8 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      * @param allow функция проверки допустимости перехода к указанному узлу
      */
     public TreeIterator(
-        Iterable<A> init,
-        Function<A, Iterable<A>> follow,
+        Iterable<? extends A> init,
+        Function<A, Iterable<? extends A>> follow,
         Function<List<TreeStep<A>>, TreeStep<A>> poll,
         Consumer<PushStep<A>> push,
         Predicate<TreeStep<A>> allow
@@ -118,7 +118,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      */
     public TreeIterator(
         A init,
-        Function<A, Iterable<A>> follow
+        Function<A, Iterable<? extends A>> follow
     ) {
         this(init,follow,pollFirst(),pushOrdered(),checkCycles());
     }
@@ -130,7 +130,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      * @param <A> тип узлов
      * @return итератор
      */
-    public static <A> Eterable<TreeStep<A>> of(A init, Function<A, Iterable<A>> follow) {
+    public static <A> Eterable<TreeStep<A>> of(A init, Function<A, Iterable<? extends A>> follow) {
         if( init == null ) throw new IllegalArgumentException("init == null");
         if( follow == null ) throw new IllegalArgumentException("follow == null");
         return ()->new TreeIterator<A>(init, follow);
@@ -145,7 +145,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      */
     public TreeIterator(
         A init,
-        Function<A, Iterable<A>> follow,
+        Function<A, Iterable<? extends A>> follow,
         Function<List<TreeStep<A>>, TreeStep<A>> poll,
         Consumer<PushStep<A>> push
     ) {
@@ -161,7 +161,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      * @param <A> тип узлов
      * @return итератор
      */
-    public static <A> Eterable<TreeStep<A>> of(A init, Function<A, Iterable<A>> follow,
+    public static <A> Eterable<TreeStep<A>> of(A init, Function<A, Iterable<? extends A>> follow,
                                                Function<List<TreeStep<A>>, TreeStep<A>> poll,
                                                Consumer<PushStep<A>> push) {
         if( init == null ) throw new IllegalArgumentException("init == null");
@@ -179,7 +179,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      */
     public TreeIterator(
         A init,
-        Function<A, Iterable<A>> follow,
+        Function<A, Iterable<? extends A>> follow,
         Function<List<TreeStep<A>>, TreeStep<A>> poll,
         Consumer<PushStep<A>> push,
         Predicate<TreeStep<A>> allow
@@ -198,7 +198,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      */
     public TreeIterator(
         A init,
-        Function<A, Iterable<A>> follow,
+        Function<A, Iterable<? extends A>> follow,
         Function<List<TreeStep<A>>, TreeStep<A>> poll,
         Consumer<PushStep<A>> push,
         Predicate<TreeStep<A>> allow,
@@ -219,7 +219,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
      */
     public TreeIterator(
         A init,
-        Function<A, Iterable<A>> follow,
+        Function<A, Iterable<? extends A>> follow,
         Function<List<TreeStep<A>>, TreeStep<A>> poll,
         Consumer<PushStep<A>> push,
         Predicate<TreeStep<A>> allow,
@@ -303,7 +303,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
         code.run();
     }
 
-    protected final Function<A, Iterable<A>> follow;
+    protected final Function<A, Iterable<? extends A>> follow;
 
     protected final Function<List<TreeStep<A>>, TreeStep<A>> poll;
 
@@ -448,7 +448,7 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
             if( getWorkset().isEmpty() ) return null;
             TreeStep<A> ts = poll.apply(getWorkset());
 
-            Iterable<A> nextset = follow.apply(ts.getNode());
+            Iterable<? extends A> nextset = follow.apply(ts.getNode());
             if( nextset!=null ){
                 PushStep<A> push = new PushStep<>();
                 push.setWorkset(getWorkset());

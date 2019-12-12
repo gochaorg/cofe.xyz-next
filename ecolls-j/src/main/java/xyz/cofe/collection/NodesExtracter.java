@@ -33,7 +33,7 @@ import java.util.function.Function;
  */
 //TODO Function<A, Iterable<A>>
 @Deprecated
-public interface NodesExtracter<From,To> extends Function<From,Iterable<To>>
+public interface NodesExtracter<From,To> extends Function<From,Iterable<? extends To>>
 {
     /**
      * Извлекает Объекты типа To из объекта типа From
@@ -43,7 +43,7 @@ public interface NodesExtracter<From,To> extends Function<From,Iterable<To>>
     Iterable<To> extract(From from);
 
     @Override
-    default Iterable<To> apply(From from) {
+    default Iterable<? extends To> apply(From from) {
         return extract(from);
     }
 }

@@ -58,7 +58,7 @@ public class Token implements Tok<CharPointer> {
      * @return текст лексемы
      */
     public String getText(){
-        return begin.lookup(end.compareTo(begin));
+        return begin.lookup(Math.abs(end.pointer() - begin.pointer()));
     }
 
     @Override

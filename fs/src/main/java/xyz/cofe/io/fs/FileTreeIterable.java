@@ -25,6 +25,7 @@
 package xyz.cofe.io.fs;
 
 import java.util.Iterator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -195,7 +196,7 @@ public class FileTreeIterable implements Iterable<TreeStep<File>>
     @Override
     public synchronized FileTreeIterator iterator() {
         DirFollow df = getDirFollow();
-        FileTreeIterator fti = new FileTreeIterator(start, df);
+        FileTreeIterator fti = new FileTreeIterator(start, (Function) df);
         return fti;
     }
 }

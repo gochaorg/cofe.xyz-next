@@ -1,11 +1,13 @@
 package xyz.cofe.text.parse.toks;
 
+import xyz.cofe.iter.Eterable;
+
 import java.util.function.Function;
 
 /**
  * Лексический анализатор
  */
-public class Tokenizer implements Iterable<Token> {
+public class Tokenizer implements Eterable<Token> {
     @SafeVarargs
     public Tokenizer(String source, int offset, Function<CharPointer,? extends Token>... parsers){
         if( source==null ) throw new IllegalArgumentException("source==null");
@@ -15,6 +17,17 @@ public class Tokenizer implements Iterable<Token> {
         pointer = new BasicCharPointer(source,0);
         this.parsers = parsers;
     }
+
+    @SuppressWarnings("unchecked")
+    public Tokenizer( String source, int offset, Iterable<Function<CharPointer,? extends Token>> parsers){
+        if( source==null ) throw new IllegalArgumentException("source==null");
+        if( offset<0 ) throw new IllegalArgumentException("offset<0");
+        if( parsers==null ) throw new IllegalArgumentException("parsers==null");
+
+        pointer = new BasicCharPointer(source,0);
+        this.parsers = Eterable.of(parsers).toList().toArray(new Function[]{});
+    }
+
 
     private CharPointer pointer;
     public CharPointer getPointer(){

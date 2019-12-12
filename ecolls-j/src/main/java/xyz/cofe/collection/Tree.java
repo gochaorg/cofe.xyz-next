@@ -9,7 +9,7 @@ import java.util.Iterator;
  * @param <A> тип элемента дерева
  */
 @SuppressWarnings("unchecked")
-public interface Tree<A extends Tree<A>> {
+public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
     /**
      * Возвращает кол-во дочерних элементов
      * @return кол-во элементов
@@ -171,51 +171,51 @@ public interface Tree<A extends Tree<A>> {
     }
     //endregion
 
-    //region walk
-    /**
-     * Обход дочерних элементов
-     * @param <A> тип дочерних элементов
-     */
-    public static class Walk<A extends Tree<A>> implements Eterable<A> {
-        protected final Tree<A> from;
-
-        /**
-         * Конструктор
-         * @param from начальный узел
-         */
-        public Walk(Tree<A> from){
-            if( from == null )throw new IllegalArgumentException( "from == null" );
-            this.from = from;
-        }
-
-        /**
-         * Итератор по узлам дерева
-         * @return итератор
-         */
-        public Eterable<TreeStep<A>> tree(){
-            return TreeIterator.of( (A)from, Tree::nodes );
-        }
-
-        /**
-         * Итератор по узлам дерева
-         * @return итератор
-         */
-        public Eterable<A> go(){
-            return new MapIterable<TreeStep<A>,A>(tree(), TreeStep::getNode);
-        }
-
-        @Override
-        public Iterator<A> iterator() {
-            return go().iterator();
-        }
-    }
-
-    /**
-     * Обход дочерних элементов
-     * @return итератор по дочерним узлам
-     */
-    default Walk<A> walk(){
-        return new Walk<A>(this);
-    }
-    //endregion
+//    //region walk
+//    /**
+//     * Обход дочерних элементов
+//     * @param <A> тип дочерних элементов
+//     */
+//    public static class Walk<A extends Tree<A>> implements Eterable<A> {
+//        protected final Tree<A> from;
+//
+//        /**
+//         * Конструктор
+//         * @param from начальный узел
+//         */
+//        public Walk(Tree<A> from){
+//            if( from == null )throw new IllegalArgumentException( "from == null" );
+//            this.from = from;
+//        }
+//
+//        /**
+//         * Итератор по узлам дерева
+//         * @return итератор
+//         */
+//        public Eterable<TreeStep<A>> tree(){
+//            return TreeIterator.of( (A)from, Tree::nodes );
+//        }
+//
+//        /**
+//         * Итератор по узлам дерева
+//         * @return итератор
+//         */
+//        public Eterable<A> go(){
+//            return new MapIterable<TreeStep<A>,A>(tree(), TreeStep::getNode);
+//        }
+//
+//        @Override
+//        public Iterator<A> iterator() {
+//            return go().iterator();
+//        }
+//    }
+//
+//    /**
+//     * Обход дочерних элементов
+//     * @return итератор по дочерним узлам
+//     */
+//    default Walk<A> walk(){
+//        return new Walk<A>(this);
+//    }
+//    //endregion
 }

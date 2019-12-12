@@ -115,7 +115,7 @@ public class FileTreeIterator extends TreeIterator<File>
 
     public FileTreeIterator(
         File startNode,
-        Function<File, Iterable<File>> follow
+        Function<File, Iterable<? extends File>> follow
     ) {
         super(startNode, follow);
     }

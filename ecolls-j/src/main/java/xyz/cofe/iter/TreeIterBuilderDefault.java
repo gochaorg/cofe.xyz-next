@@ -14,12 +14,12 @@ import java.util.function.Supplier;
 public class TreeIterBuilderDefault<A> implements TreeIterBuilder<A>
 {
     protected A root;
-    protected Function<A,Iterable<A>> follow;
+    protected Function<A,Iterable<? extends A>> follow;
     protected Function<List<TreeStep<A>>, TreeStep<A>> poll;
     protected Consumer<TreeIterator.PushStep<A>> push;
     protected Predicate<TreeStep<A>> allow;
 
-    public TreeIterBuilderDefault( A root, Function<A,Iterable<A>> follow ){
+    public TreeIterBuilderDefault( A root, Function<A,Iterable<? extends A>> follow ){
         if( root==null ) throw new IllegalArgumentException("root==null");
         if( follow==null ) throw new IllegalArgumentException("follow==null");
         this.root = root;

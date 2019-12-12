@@ -199,7 +199,7 @@ public class GraphTools {
 
         NodesExtracter<N,N> walker = nodeExtracter(g, direct);
         Iterable<TreeStep<N>> twIter
-                = TreeIterator.of(start, walker);
+                = TreeIterator.of(start, (NodesExtracter)walker);
 
         LinkedHashSet<N> visitedNodes = new LinkedHashSet<N>();
 //        visitedNodes.add(start);

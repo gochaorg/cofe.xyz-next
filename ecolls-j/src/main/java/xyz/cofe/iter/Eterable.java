@@ -253,10 +253,11 @@ public interface Eterable<A> extends Iterable<A> {
      * @param <A> тип узла дерева
      * @return создание итератора
      */
-    public static <A> TreeIterBuilder<A> tree( A root, Function<A,Iterable<A>> follow ){
+    public static <A> TreeIterBuilder<A> tree( A root, Function<A,Iterable<? extends A>> follow ){
         if( root==null ) throw new IllegalArgumentException("root==null");
         if( follow==null ) throw new IllegalArgumentException("follow==null");
-        return new TreeIterBuilderDefault<>(root,follow);
+
+        return new TreeIterBuilderDefault<A>(root,follow);
     }
 
     /**

@@ -54,7 +54,7 @@ public class BasicVisitor<T> implements Visitor<T>
      * @param start Начальный узел
      * @param extracter Дочерние узлы
      */
-    public static <T> void visit(Visitor<T> visitor, T start,NodesExtracter<T,T> extracter){
+    public static <T> void visit(Visitor<T> visitor, T start,NodesExtracter<T,? extends T> extracter){
         if (visitor == null) {
             throw new IllegalArgumentException("visitor == null");
         }
@@ -64,7 +64,7 @@ public class BasicVisitor<T> implements Visitor<T>
 
         boolean res = visitor.enter(start);
         if( res ){
-            Iterable<T> children =  extracter.extract(start);
+            Iterable<? extends T> children =  extracter.extract(start);
             if( children!=null ){
                 for( T n : children ){
                     visit(visitor, n, extracter);

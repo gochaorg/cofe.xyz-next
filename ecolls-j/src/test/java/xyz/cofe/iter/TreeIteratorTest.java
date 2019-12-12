@@ -28,7 +28,7 @@ public class TreeIteratorTest {
         tree.add("a/c", "a/c/a", "a/c/b");
         return tree;
     }
-    public static <A> Function<A,Iterable<A>> follow(Tree<A> tree){
+    public static <A> Function<A,Iterable<? extends A>> follow(Tree<A> tree){
         return (a) ->{
             ParentChildren<A> pc = tree.get(a);
             List<A> lst = pc != null ? pc.children : null;

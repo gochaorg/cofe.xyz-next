@@ -131,21 +131,17 @@ public class GuiUtil
     /**
      * Возвращает дочерние объекты указаного компонента
      */
-    public static NodesExtracter<Component,Component> childComponentExtracter = new NodesExtracter<Component, Component>() 
+    public static NodesExtracter<Component,Component> childComponentExtracter = (Component from) ->
     {
-        @Override
-        public Iterable<Component> extract(Component from) 
+        if( from==null )return emptyComponents;
+        if( from instanceof Container )
         {
-            if( from==null )return emptyComponents;
-            if( from instanceof Container )
-            {
-                Container cont = (Container)from;
-                Component[] childrenArray = cont.getComponents();
-                Eterable<Component> childrenIters = Eterable.of(childrenArray);
-                return childrenIters;
-            }
-            return emptyComponents;
+            Container cont = (Container)from;
+            Component[] childrenArray = cont.getComponents();
+            var childrenIters = Eterable.of(childrenArray);
+            return childrenIters;
         }
+        return emptyComponents;
     };
 
     /**

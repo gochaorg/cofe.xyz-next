@@ -1000,7 +1000,8 @@ public class XmlUtil
         if (node== null) {
             throw new IllegalArgumentException("node==null");
         }
-        return Eterable.tree(node, followers()).go();
+        var e = Eterable.tree(node, (NodesExtracter)followers());
+        return e.go();
     }
     //</editor-fold>
     
@@ -1014,7 +1015,7 @@ public class XmlUtil
         if (node== null) {
             throw new IllegalArgumentException("node==null");
         }
-        return Eterable.tree(node, followers()).walk();
+        return Eterable.tree(node, (NodesExtracter)followers()).walk();
     }
     //</editor-fold>
     

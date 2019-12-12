@@ -36,6 +36,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.swing.Action;
 
+import xyz.cofe.collection.NodesExtracter;
 import xyz.cofe.gui.swing.BasicAction;
 import xyz.cofe.iter.Eterable;
 
@@ -285,7 +286,7 @@ public abstract class MenuItem
         if (root== null) {
             throw new IllegalArgumentException("root==null");
         }
-        return Eterable.<MenuItem>tree( root, new MenuItemNodesExtracter() ).walk();
+        return Eterable.<MenuItem>tree( root, (NodesExtracter)(new MenuItemNodesExtracter()) ).walk();
     }
 
     /**
