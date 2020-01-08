@@ -2,6 +2,10 @@ package xyz.cofe.text.parse.toks;
 
 import xyz.cofe.text.parse.CharPointer;
 import xyz.cofe.text.parse.Token;
+import xyz.cofe.text.parse.TokenPointer;
+import xyz.cofe.text.parse.mtest.BrOpenTok;
+import xyz.cofe.text.parse.mtest.Expr;
+import xyz.cofe.text.parse.mtest.TokRef;
 
 import java.util.function.Function;
 
@@ -33,7 +37,7 @@ public class FloatNumberToken extends Token {
         return "<"+FloatNumberToken.class.getSimpleName()+" text='"+getText()+"' value="+getValue()+">";
     }
 
-    public final static Function<CharPointer,Token> parser = alt(
+    public final static Function<CharPointer,Token> parser =
         sequence(
             repeat(Digit).min(1).build(
                 (b,e,lst)->new NumberStart(b,e).value(
@@ -58,7 +62,5 @@ public class FloatNumberToken extends Token {
                 );
 
             return fnum.isPresent() ? fnum.get() : new Token(a,b);
-        }),
-        repeat(Digit).min(1)
-    );
+        });
 }

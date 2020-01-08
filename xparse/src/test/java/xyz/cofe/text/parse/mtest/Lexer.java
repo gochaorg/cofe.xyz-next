@@ -4,6 +4,7 @@ import xyz.cofe.iter.Eterable;
 import xyz.cofe.text.parse.Token;
 import xyz.cofe.text.parse.Tokenizer;
 import xyz.cofe.text.parse.toks.FloatNumberToken;
+import xyz.cofe.text.parse.toks.IntegerNumberToken;
 import xyz.cofe.text.parse.toks.WhiteSpaceToken;
 
 import static xyz.cofe.text.parse.CharType.Whitespace;
@@ -12,7 +13,7 @@ import static xyz.cofe.text.parse.TokBuilder.repeat;
 
 public class Lexer {
     public static Tokenizer tokenizer(String source){
-        var numParser = FloatNumberToken.parser;
+        var numParser = alt( FloatNumberToken.parser, IntegerNumberToken.parser );
         var sumParser = alt( c -> (c.lookup()=='+' || c.lookup()=='-') ? new SumTok(c,c.move(1)) : null );
         var mulParser = alt( c -> (c.lookup()=='*' || c.lookup()=='/') ? new MulTok(c,c.move(1)) : null );
         var br1Parser =  alt( c -> (c.lookup()=='(' ) ? new BrOpenTok(c,c.move(1)) : null );

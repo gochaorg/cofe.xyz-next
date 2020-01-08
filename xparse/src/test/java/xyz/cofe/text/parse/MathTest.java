@@ -1,12 +1,8 @@
 package xyz.cofe.text.parse;
 
 import org.junit.Test;
-import xyz.cofe.collection.ImTree;
-import xyz.cofe.collection.ImTreeWalk;
 import xyz.cofe.ecolls.Fn3;
-import xyz.cofe.iter.Eterable;
 import xyz.cofe.text.parse.mtest.Atom;
-import xyz.cofe.text.parse.mtest.BaseExpr;
 import xyz.cofe.text.parse.mtest.BinaryExpr;
 import xyz.cofe.text.parse.mtest.BrCloseTok;
 import xyz.cofe.text.parse.mtest.BrOpenTok;
@@ -15,17 +11,16 @@ import xyz.cofe.text.parse.mtest.Lexer;
 import xyz.cofe.text.parse.mtest.MulTok;
 import xyz.cofe.text.parse.mtest.ProxyFn;
 import xyz.cofe.text.parse.mtest.SumTok;
+import xyz.cofe.text.parse.mtest.UnaryExpr;
 import xyz.cofe.text.parse.toks.FloatNumberToken;
-import xyz.cofe.text.parse.toks.WhiteSpaceToken;
+import xyz.cofe.text.parse.toks.IntegerNumberToken;
+import static xyz.cofe.text.parse.Builder.*;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static xyz.cofe.text.parse.TokBuilder.*;
-import static xyz.cofe.text.parse.CharType.*;
-
 public class MathTest {
+    //region Binary op
     public <Result extends Expr> Result binaryOp(
         TokenPointer ptr,
         Predicate<Token> operator,
@@ -78,45 +73,36 @@ public class MathTest {
     ){
         return t -> binaryOp( t, operator, leftArg, rightArg, builder );
     }
+    //endregion
 
     @Test
     public void test01(){
-        String source = "5.0 + 1.0 * 2.0 - 3.4 * ( 6.7 - 3.2 )";
+        String source = "5.0 + 1 * 2.0 - 3.4 * ( 6.7 - 3.2 )";
         var toks = Lexer.tokens(source);
 
         toks.forEach( tok ->
             System.out.println(tok)
         );
 
-        Function<TokenPointer,Expr> atom1 = t ->
-            t.lookup() instanceof FloatNumberToken ?
-                new Atom(t) : null;
+        /////////////////////////////
+
+        var atom1 = alt( Atom::parseFloat, Atom::parseInteger );
 
         ProxyFn<TokenPointer,Expr> exp = new ProxyFn<>(null);
-        Function<TokenPointer,Expr> atom2 = (t) -> {
-            if( t.lookup() instanceof BrOpenTok ){
-                var e = exp.apply(t.move(1));
-                if( e!=null ){
-                    if( e.getEnd().lookup() instanceof BrCloseTok ){
-                        if( e instanceof BaseExpr ){
-                            return ((BaseExpr)e).begin(t).end(((BaseExpr) e).getEnd().move(1));
-                        }
-                        return new Atom( t, e.getEnd().move(1), e );
-                    }else{
-                        return null;
-                    }
-                }else {
-                    return null;
-                }
-            }else{
-                return null;
-            }
-        };
 
-        Alternatives<TokenPointer,Expr> atom = new Alternatives<>(
-            new Function[]{
-                atom1, atom2
-            }
+        var atom2b = seq(
+            BrOpenTok::ref,
+            exp,
+            BrCloseTok::ref
+        ).build( (begin,end,seq)->new Atom(begin, end, seq.get(1)) );
+
+        var atom3 = seq(
+            SumTok::unaryMinus,
+            exp
+        ).build( (begin,end,seq)->new UnaryExpr( begin.lookup(), seq.get(1), begin, end) );
+
+        var atom = alt(
+            atom1, atom2b, atom3
         );
 
         var binMul = binary(
@@ -137,11 +123,16 @@ public class MathTest {
 
         var ptr = new BasicTokenPointer(toks.toList(),0);
 
-        var binOp = binSum.apply(ptr);
+        var binOp = exp.apply(ptr);
 
-        System.out.println(".........................................");
-        binOp.walk().tree().forEach( node -> System.out.println(
-            "..".repeat(node.getLevel())+" "+node.getNode()
-        ) );
+        if( binOp!=null ){
+            System.out.println("-".repeat(40));
+            binOp.walk().tree().forEach(node->System.out.println(
+                "..".repeat(node.getLevel())+" "+node.getNode()
+            ));
+
+            System.out.println("-".repeat(40));
+            System.out.println("eval="+binOp.eval());
+        }
     }
 }

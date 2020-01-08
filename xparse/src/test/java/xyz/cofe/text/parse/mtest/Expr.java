@@ -8,4 +8,5 @@ import xyz.cofe.text.parse.TokenPointer;
 
 public interface Expr extends Tok<TokenPointer>, ImTree<Expr>, ImTreeWalk<Expr> {
     TokenPointer getBegin();
+    Number eval();
 }

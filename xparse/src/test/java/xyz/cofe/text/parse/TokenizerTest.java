@@ -50,8 +50,8 @@ public class TokenizerTest {
         System.out.println(t3);
         assertTrue(t3==null);
 
-        BiFunction bf = null;
-        bf.andThen( a -> null );
+//        BiFunction bf = null;
+//        bf.andThen( a -> null );
     }
 
     @Test

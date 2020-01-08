@@ -4,7 +4,7 @@ import xyz.cofe.iter.Eterable;
 import xyz.cofe.text.parse.MathTest;
 import xyz.cofe.text.parse.TokenPointer;
 
-public class BaseExpr implements Expr {
+public abstract class BaseExpr implements Expr {
     protected BaseExpr(){
     }
 
@@ -15,7 +15,7 @@ public class BaseExpr implements Expr {
         }
     }
 
-    public BaseExpr( TokenPointer begin, TokenPointer end){
+    public BaseExpr( TokenPointer begin, TokenPointer end ){
         this.begin = begin;
         this.end = end;
     }
@@ -40,9 +40,11 @@ public class BaseExpr implements Expr {
         return e;
     }
 
-    public BaseExpr clone(){
-        return new BaseExpr(this);
-    }
+    //public BaseExpr clone(){
+//        return new BaseExpr(this);
+//    }
+
+    public abstract BaseExpr clone();
 
     @Override
     public Eterable<Expr> nodes(){

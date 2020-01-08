@@ -1,7 +1,12 @@
 package xyz.cofe.text.parse.mtest;
 
 import xyz.cofe.iter.Eterable;
+import xyz.cofe.num.BaseNumbers;
+import xyz.cofe.num.BitCount;
+import xyz.cofe.num.CommonBase;
 import xyz.cofe.text.parse.Token;
+
+import java.math.BigDecimal;
 
 public class BinaryExpr extends BaseExpr {
     public BinaryExpr( Token op, Expr left, Expr right ){
@@ -66,5 +71,34 @@ public class BinaryExpr extends BaseExpr {
         return "BinaryExpr{"+
             "op="+op+
             '}';
+    }
+
+    @Override
+    public Number eval(){
+        var lExp = getLeft();
+        if( lExp==null )throw new IllegalStateException("can't evaluate left operand - not defined");
+
+        var lVal = lExp.eval();
+        if( lVal==null )throw new IllegalStateException("can't evaluate left operand - return null");
+
+        var rExp = getRight();
+        if( rExp==null )throw new IllegalStateException("can't evaluate right operand - not defined");
+
+        var rVal = rExp.eval();
+        if( rVal==null )throw new IllegalStateException("can't evaluate right operand - return null");
+
+        var cbase = BaseNumbers.commonBase(lVal,rVal, BitCount.max(lVal,rVal));
+
+        var tOp = getOp();
+        if( tOp==null )throw new IllegalStateException("can't evaluate operator not defined");
+
+        switch( tOp.getText() ){
+            case "+": return cbase.add();
+            case "-": return cbase.sub();
+            case "*": return cbase.mul();
+            case "/": return cbase.div();
+        }
+
+        return null;
     }
 }

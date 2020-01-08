@@ -110,7 +110,13 @@ public class BaseNumbers implements Numbers<Number> {
         logger.exiting(BaseNumbers.class.getName(), method, result);
     }
     //</editor-fold>
-    
+
+    /**
+     * Проверяет что указанное число является целым / натуральным
+     * (byte,short,int,long,BigInteger,AtomicInteger,AtomicLong)
+     * @param n чило
+     * @return true - является целым числом
+     */
     public static boolean integerNumber( Number n ){
         if( n==null )return false;
         if( n instanceof Byte )return true;
@@ -122,7 +128,13 @@ public class BaseNumbers implements Numbers<Number> {
         if( n instanceof BigInteger )return true;
         return false;
     }
-    
+
+    /**
+     * Проверяет что указанное число является дробным / рациональным
+     * (float,double,BigDecimal)
+     * @param n число
+     * @return true - является дробным
+     */
     public static boolean ratioNumber( Number n ){
         if( n==null )return false;
         if( n instanceof Float )return true;
@@ -130,7 +142,12 @@ public class BaseNumbers implements Numbers<Number> {
         if( n instanceof BigDecimal )return true;
         return false;
     }
-    
+
+    /**
+     * Возвращает кол-во бит испольуемых для представления числа
+     * @param n Число
+     * @return Кол-во бит, 0 - для null, -1 для неизвестного типа
+     */
     public static int bitCount( Number n ){
         if( n==null )return 0;
         if( n instanceof Byte )return 8;
@@ -141,25 +158,36 @@ public class BaseNumbers implements Numbers<Number> {
         if( n instanceof AtomicLong )return 8*8;
         if( n instanceof BigInteger ){
             BigInteger bi = (BigInteger)n;
-            return bi.bitCount();
+            return bi.bitLength();
         }
         if( n instanceof Float )return 8*4;
         if( n instanceof Double )return 8*8;
         if( n instanceof BigDecimal ){
             BigDecimal bd = (BigDecimal)n;
-            return bd.unscaledValue().bitCount() + Long.SIZE;
+            return bd.unscaledValue().bitLength() + Long.SIZE;
         }
         return -1;
     }
-    
+
+    /**
+     * Проверяет что указанное число относиться к большим числам (BigInteger, BigDecimal)
+     * @param n Число
+     * @return true - является большим
+     */
     public static boolean unlimited( Number n ){
         if( n==null )return false;
         if( n instanceof BigInteger )return true;
         if( n instanceof BigDecimal )return true;
         return false;
     }
-    
-    public static Number cast( Number num, Class base ){
+
+    /**
+     * Преобразует число к указанному типу
+     * @param num Число
+     * @param base Тип
+     * @return Число указанного типа
+     */
+    public static Number cast( Number num, Class<? extends Number> base ){
         if( num==null )throw new IllegalArgumentException("num == null");
         if( base==null )throw new IllegalArgumentException("base == null");
         if( base.equals(Byte.class) ){
@@ -192,9 +220,16 @@ public class BaseNumbers implements Numbers<Number> {
             throw new IllegalArgumentException("unsupported base "+base);
         }
     }
-    
-    public static SingleBase singleBase( Number n0, int intBitCntMin ){
-        if( n0 == null )return null;
+
+    /**
+     * Возвращает интерфейс для операции над числами
+     * @param n0 Число
+     * @param minBitsCount минимальное кол-во бит
+     * @return Интерфейс для мат операций
+     */
+    public static SingleBase singleBase( Number n0, BitCount minBitsCount ){
+        if( n0==null )throw new IllegalArgumentException("n0 == null");
+        if( minBitsCount==null )throw new IllegalArgumentException("minBitsCount == null");
         if( unlimited(n0) ){
             if( ratioNumber(n0) ){
                 return new SingleBase(new BigDecimalNumbers(), cast(n0, BigDecimal.class));
@@ -204,17 +239,71 @@ public class BaseNumbers implements Numbers<Number> {
             if( n0 instanceof Float )return new SingleBase(new FloatNumbers(), cast(n0, Float.class));
             return new SingleBase(new DoubleNumbers(), cast(n0, Double.class));
         }else{
-            int bc = Math.max(bitCount(n0), intBitCntMin);
+            int bc = Math.max(bitCount(n0), minBitsCount.bits);
             if( bc==8 )return new SingleBase(new ByteNumbers(), cast(n0, Byte.class));
             if( bc==8*2 )return new SingleBase(new ShortNumbers(), cast(n0, Short.class));
             if( bc==8*4 )return new SingleBase(new IntegerNumbers(), cast(n0, Integer.class));
+            if( bc>=BitCount.BIG.bits )return new SingleBase(new BigDecimalNumbers(), cast(n0, BigDecimal.class));
             return new SingleBase(new LongNumbers(), cast(n0, Long.class));
         }
     }
-    
-    public static CommonBase commonBase( Number n0, Number n1, int intBitCntMin ){
-        if( n0 == null )return null;
-        if( n1 == null )return null;
+
+    /**
+     * Возвращает интерфейс для работы с общим основанием чисел.
+     * Основание (тип чисел) береться такое чтоб не потерять точность вычислений.
+     *
+     * <br> см {@link #commonBase(Number, Number, BitCount)}
+     *
+     * @param n0 Число А
+     * @param n1 Число Б
+     * @return Возвращает интерфейс с минимальной потерей точности
+     */
+    public static CommonBase commonBase( Number n0, Number n1 ){
+        return commonBase(n0, n1, BitCount.max(n0,n1));
+    }
+
+    /**
+     * Возвращает интерфейс для работы с общим основанием чисел.
+     * Основание (тип чисел) береться такое чтоб не потерять точность вычислений.
+     *
+     * <p>
+     * Алгоритм выбора:
+     * <ul>
+     *     <li>Числа (любое) не ограничено по точности ? {@link #unlimited(Number)}</li>
+     *     <ul>
+     *         <li>ДА - Числа (любое) дробное ? {@link #ratioNumber(Number)}
+     *         <ul>
+     *             <li>ДА - Основание - {@link BigDecimalNumbers}
+     *             <li>НЕТ - Основание - {@link BigIntegerNumbers}
+     *         </ul>
+     *         <li>НЕТ (число ограничено по кол-ву бит)
+     *         <br> Числа атомарные и их тип совпадает ?
+     *         <ul>
+     *             <li>ДА - используется соответ атомарные реализации ({@link AtomicIntegerNumbers}, {@link AtomicLongNumbers})
+     *             <li>НЕТ (числа не атомарные)
+     *             <br> Числа дробные ?
+     *             <ul>
+     *                 <li>ДА - Испольуется та реализация что даст большую точность: {@link DoubleNumbers}, {@link FloatNumbers}
+     *                 <li>НЕТ - Испольуется та реализация что даст большую точность:
+     *                  {@link ByteNumbers},
+     *                  {@link ShortNumbers},
+     *                  {@link IntegerNumbers},
+     *                  {@link LongNumbers}
+     *             </ul>
+     *         </ul>
+     *     </ul>
+     * </ul>
+     * @param n0 Число А
+     * @param n1 Число Б
+     * @param minBitsCount (может быть null, тогда см {@link BitCount#max(Number, Number)}
+     * @return Возвращает интерфейс с минимальной потерей точности
+     */
+    public static CommonBase commonBase( Number n0, Number n1, BitCount minBitsCount ){
+        //if( n0 == null )return null;
+        //if( n1 == null )return null;
+        if( n0==null )throw new IllegalArgumentException("n0 == null");
+        if( n1==null )throw new IllegalArgumentException("n1 == null");
+        if( minBitsCount==null )minBitsCount = BitCount.max(n0,n1);
 
         if( unlimited(n0) ){
             if( ratioNumber(n0) ){
@@ -277,20 +366,20 @@ public class BaseNumbers implements Numbers<Number> {
             }else if( n0 instanceof AtomicInteger && n1 instanceof AtomicLong ){
                 return new CommonBase(
                     new AtomicLongNumbers(), 
-                    cast(n0, AtomicLongNumbers.class), 
-                    cast(n1, AtomicLongNumbers.class)
+                    cast(n0, AtomicLong.class),
+                    cast(n1, AtomicLong.class)
                 );
             }else if( n0 instanceof AtomicLong && n1 instanceof AtomicInteger ){
                 return new CommonBase(
                     new AtomicLongNumbers(), 
-                    cast(n0, AtomicLongNumbers.class), 
-                    cast(n1, AtomicLongNumbers.class)
+                    cast(n0, AtomicLong.class),
+                    cast(n1, AtomicLong.class)
                 );
             }else if( n0 instanceof AtomicLong && n1 instanceof AtomicLong ){
                 return new CommonBase(
                     new AtomicLongNumbers(), 
-                    cast(n0, AtomicLongNumbers.class), 
-                    cast(n1, AtomicLongNumbers.class)
+                    cast(n0, AtomicLong.class),
+                    cast(n1, AtomicLong.class)
                 );
             }
             
@@ -315,7 +404,7 @@ public class BaseNumbers implements Numbers<Number> {
                 int bitCnt = 
                     Math.max(
                         Math.max(bitCount(n0), bitCount(n1)),
-                        intBitCntMin
+                        minBitsCount.bits
                     );
                 
                 if( bitCnt==8 ){
@@ -346,32 +435,83 @@ public class BaseNumbers implements Numbers<Number> {
             }
         }
     }
-    
-    protected final int intBitCntMin;
+
+    /**
+     * Минимальное кол-во бит на значение числа
+     */
+    protected final BitCount minBitsCount;
+
+    /**
+     * Число обозначающее ноль
+     */
     protected final Number zero;
+
+    /**
+     * Число обозначающее единицу
+     */
     protected final Number one;
-    
+
+    /**
+     * Конструктор по умолчанию:
+     *
+     * <br> minBitsCount = BitCount.INT
+     * <br> zero = 0
+     * <br> one = 1
+     */
     public BaseNumbers(){
-        intBitCntMin = 8*4;
+        minBitsCount = BitCount.INT;
         zero = 0;
         one = 1;
     }
-    
-    public BaseNumbers(int intBitCntMin, Number zero, Number one){
+
+    /**
+     * Конструктор
+     * @param minBitsCount минимальное кол-во бит
+     * @param zero число ноль
+     * @param one число единица
+     */
+    public BaseNumbers(BitCount minBitsCount, Number zero, Number one){
         if( zero==null )throw new IllegalArgumentException("zero == null");
         if( one==null )throw new IllegalArgumentException("one == null");
-        this.intBitCntMin = intBitCntMin;
+        if( minBitsCount==null )throw new IllegalArgumentException("minBitsCount == null");
+        this.minBitsCount = minBitsCount;
         this.zero = zero;
         this.one = one;
     }
-    
+
+    /**
+     * Выбор общего основаия
+     */
     public static class BaseNumbersBuilder {
-        public BaseNumbers bytes(){ return new BaseNumbers(8, (byte)0 , (byte)1); }
-        public BaseNumbers shorts(){ return new BaseNumbers(8*2, (short)0 , (short)1); }
-        public BaseNumbers ints(){ return new BaseNumbers(8*4, (int)0 , (int)1); }
-        public BaseNumbers longs(){ return new BaseNumbers(8*8, (long)0 , (long)1); }
+        /**
+         * Общее основание - 1 Байт
+         * @return основание - 1 Байт
+         */
+        public BaseNumbers bytes(){ return new BaseNumbers(BitCount.BYTE, (byte)0 , (byte)1); }
+
+        /**
+         * Общее основание - 2 Байта
+         * @return основание - 2 Байта
+         */
+        public BaseNumbers shorts(){ return new BaseNumbers(BitCount.SHORT, (short)0 , (short)1); }
+
+        /**
+         * Общее основание - 4 Байта
+         * @return основание - 4 Байта
+         */
+        public BaseNumbers ints(){ return new BaseNumbers(BitCount.INT, (int)0 , (int)1); }
+
+        /**
+         * Общее основание - 8 Байта
+         * @return основание - 8 Байтов
+         */
+        public BaseNumbers longs(){ return new BaseNumbers(BitCount.LONG, (long)0 , (long)1); }
     }
-    
+
+    /**
+     * Выбор общего основания
+     * @return общее основание
+     */
     public static BaseNumbersBuilder base(){
         return new BaseNumbersBuilder();
     }
@@ -441,63 +581,63 @@ public class BaseNumbers implements Numbers<Number> {
     @Override
     public Number add(Number a, Number b) {
         if( a==null || b==null )return null;
-        return commonBase(a, b, intBitCntMin).add();
+        return commonBase(a, b, minBitsCount).add();
     }
 
     @Override
     public Number sub(Number a, Number b) {
         if( a==null || b==null )return null;
-        return commonBase(a, b, intBitCntMin).sub();
+        return commonBase(a, b, minBitsCount).sub();
     }
 
     @Override
     public Number mul(Number a, Number b) {
         if( a==null || b==null )return null;
-        return commonBase(a, b, intBitCntMin).mul();
+        return commonBase(a, b, minBitsCount).mul();
     }
 
     @Override
     public Number div(Number a, Number b) {
         if( a==null || b==null )return null;
-        return commonBase(a, b, intBitCntMin).div();
+        return commonBase(a, b, minBitsCount).div();
     }
 
     @Override
     public Number remainder(Number a, Number b) {
         if( a==null || b==null )return null;
-        return commonBase(a, b, intBitCntMin).remainder();
+        return commonBase(a, b, minBitsCount).remainder();
     }
 
     @Override
     public boolean equals(Number a, Number b) {
         if( a==null && b==null )return true;
         if( a==null || b==null )return false;
-        return commonBase(a, b, intBitCntMin).equals();
+        return commonBase(a, b, minBitsCount).equals();
     }
 
     @Override
     public boolean more(Number a, Number b) {
         if( a==null && b==null )return false;
         if( a==null )return false;
-        return commonBase(a, b, intBitCntMin).more();
+        return commonBase(a, b, minBitsCount).more();
     }
 
     @Override
     public boolean less(Number a, Number b) {
         if( a==null && b==null )return false;
         if( a==null )return true;
-        return commonBase(a, b, intBitCntMin).less();
+        return commonBase(a, b, minBitsCount).less();
     }
 
     @Override
     public Number next(Number n) {
         if( n==null )return null;
-        return singleBase(n, intBitCntMin).next(n);
+        return singleBase(n, minBitsCount).next(n);
     }
 
     @Override
     public Number prev(Number n) {
         if( n==null )return null;
-        return singleBase(n, intBitCntMin).prev(n);
+        return singleBase(n, minBitsCount).prev(n);
     }
 }

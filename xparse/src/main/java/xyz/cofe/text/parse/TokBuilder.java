@@ -6,18 +6,6 @@ import java.util.function.Function;
  * Построение лексических анализаторов
  */
 public class TokBuilder {
-//    /**
-//     * Последовательность
-//     * @param exprs выражения последовательности
-//     * @param <T> тип лексемы
-//     * @return парсер
-//     */
-//    @SafeVarargs
-//    public static <T extends Token> CharSequence<T> sequence( Function<CharPointer, Token>... exprs ){
-//        if( exprs==null ) throw new IllegalArgumentException("exprs==null");
-//        return new CharSequence<>(exprs);
-//    }
-
     /**
      * Последовательность
      * @param exprs выражения последовательности
