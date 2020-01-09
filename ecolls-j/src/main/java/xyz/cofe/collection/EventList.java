@@ -386,50 +386,52 @@ public interface EventList<E>
         }));
     }
 
-    @SuppressWarnings({"ConstantConditions", "UnnecessaryUnboxing"})
-    private boolean removeByPredicate(Predicate<? super E> filter) {
-        List<E> tgt = target();
-        if( tgt == null ) throw new TargetNotAvailable();
-
-        int changeCount = 0;
-        TreeSet<Integer> removeSet = new TreeSet<>();
-        for( int i = size()-1; i >= 0; i-- ){
-            E e = tgt.get(i);
-            if( filter.test(e) ){
-                //fireDeleting(i, e);
-                removeSet.add(i);
-            }
-        }
-
-        Iterator<Integer> iter = removeSet.descendingIterator();
-        if( iter != null ){
-            while( iter.hasNext() ) {
-                int idx = iter.next().intValue();
-                E e = tgt.remove(idx);
-                fireDeleted(idx, e);
-                changeCount++;
-            }
-        }
-
-        return changeCount>0;
-    }
+//    @SuppressWarnings({"ConstantConditions", "UnnecessaryUnboxing"})
+//    default boolean removeByPredicate(Predicate<? super E> filter) {
+//        if( filter==null ) throw new IllegalArgumentException("filter==null");
+//
+//        List<E> tgt = target();
+//        if( tgt == null ) throw new TargetNotAvailable();
+//
+//        int changeCount = 0;
+//        TreeSet<Integer> removeSet = new TreeSet<>();
+//        for( int i = size()-1; i >= 0; i-- ){
+//            E e = tgt.get(i);
+//            if( filter.test(e) ){
+//                //fireDeleting(i, e);
+//                removeSet.add(i);
+//            }
+//        }
+//
+//        Iterator<Integer> iter = removeSet.descendingIterator();
+//        if( iter != null ){
+//            while( iter.hasNext() ) {
+//                int idx = iter.next().intValue();
+//                E e = tgt.remove(idx);
+//                fireDeleted(idx, e);
+//                changeCount++;
+//            }
+//        }
+//
+//        return changeCount>0;
+//    }
 
     @Override
     default boolean removeAll(Collection<?> coll) {
         if( coll == null ) throw new IllegalArgumentException("coll == null");
-        return withCollectionEventQueue(()->writeLock(()->removeByPredicate(coll::contains)));
+        return withCollectionEventQueue(()->writeLock(()->EventListImpl.removeByPredicate(this, coll::contains)));
     }
 
     @Override
     default boolean retainAll(Collection<?> coll) {
         if( coll == null ) throw new IllegalArgumentException("coll == null");
-        return withCollectionEventQueue(()->writeLock(()->removeByPredicate(x->!coll.contains(x))));
+        return withCollectionEventQueue(()->writeLock(()->EventListImpl.removeByPredicate(this, x->!coll.contains(x))));
     }
 
     @Override
     default void clear() {
         //scn(()->{
-            withCollectionEventQueue(()->writeLock(()->removeByPredicate((e)->true)));
+            withCollectionEventQueue(()->writeLock(()->EventListImpl.removeByPredicate(this, (e)->true)));
         //});
     }
 
@@ -495,7 +497,7 @@ public interface EventList<E>
     @Override
     default boolean removeIf(Predicate<? super E> filter) {
         if( filter == null )throw new IllegalArgumentException( "filter == null" );
-        return withCollectionEventQueue(()->writeLock(()->removeByPredicate(filter)));
+        return withCollectionEventQueue(()->writeLock(()->EventListImpl.removeByPredicate(this, filter)));
     }
     //</editor-fold>
 }

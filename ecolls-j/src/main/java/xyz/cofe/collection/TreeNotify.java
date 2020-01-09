@@ -11,11 +11,12 @@ import java.util.function.Consumer;
  * @param <A> тип узла дерева
  */
 public interface TreeNotify<A extends Tree<A>> {
-    private ListenersHelper<TreeEvent.Listener<A>,TreeEvent<A>> listeners(){
-        //return ListenersHelper.<TreeEvent.Listener<A>,TreeEvent<A>>get(TreeNotify.class, this, notifier());
-        ListenersHelper lh = TreeNotifyImpl.listeners(this);
-        return lh;
-    }
+//    Закоментированно для обратной совместимости с java 8
+//    private ListenersHelper<TreeEvent.Listener<A>,TreeEvent<A>> listeners(){
+//        //return ListenersHelper.<TreeEvent.Listener<A>,TreeEvent<A>>get(TreeNotify.class, this, notifier());
+//        ListenersHelper lh = TreeNotifyImpl.listeners(this);
+//        return lh;
+//    }
 
     /**
      * Уведомляет о изменении дерева
@@ -31,7 +32,7 @@ public interface TreeNotify<A extends Tree<A>> {
      * @return отписка от уведомлений
      */
     default AutoCloseable addTreeListener(TreeEvent.Listener<A> ls){
-        return listeners().addListener(ls);
+        return TreeNotifyImpl.listeners(this).addListener(ls);
     }
 
     /**
@@ -44,7 +45,7 @@ public interface TreeNotify<A extends Tree<A>> {
     default <EV extends TreeEvent> AutoCloseable listen( Class<EV> eventClass, Consumer<EV> listener ){
         if( eventClass==null ) throw new IllegalArgumentException("eventClass==null");
         if( listener==null ) throw new IllegalArgumentException("listener==null");
-        return listeners().addListener( ev -> {
+        return TreeNotifyImpl.listeners(this).addListener( ev -> {
             if( ev==null )return;
             Class c = ev.getClass();
             if( eventClass.isAssignableFrom(c) ){
@@ -60,7 +61,7 @@ public interface TreeNotify<A extends Tree<A>> {
      * @return отписка от уведомлений
      */
     default AutoCloseable addTreeListener(boolean weak,TreeEvent.Listener<A> ls){
-        return listeners().addListener(ls,weak);
+        return TreeNotifyImpl.listeners(this).addListener(ls,weak);
     }
 
     /**
@@ -68,7 +69,7 @@ public interface TreeNotify<A extends Tree<A>> {
      * @param ls подписчик
      */
     default void removeTreeListener(TreeEvent.Listener<A> ls){
-        listeners().removeListener(ls);
+        TreeNotifyImpl.listeners(this).removeListener(ls);
     }
 
     /**
@@ -76,13 +77,13 @@ public interface TreeNotify<A extends Tree<A>> {
      * @return подписчики
      */
     default Set<TreeEvent.Listener<A>> getTreeListeners(){
-        return listeners().getListeners();
+        return (Set)TreeNotifyImpl.listeners(this).getListeners();
     }
 
     /**
      * Удалеяет всех подписчиков
      */
     default void removeAllTreeListeners(){
-        listeners().removeAllListeners();
+        TreeNotifyImpl.listeners(this).removeAllListeners();
     }
 }

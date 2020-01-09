@@ -21,20 +21,20 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
 
     @Override
     default void append(A node) {
-        var added = TreeImpl.append(this,node);
-        postInsert(node, added);
+        List<Triple<Integer,A,A>> added = TreeImpl.append(this,node);
+        UpTreeImpl.postInsert(this,node, added);
     }
 
-    private void postInsert(A node, List<Triple<Integer, A, A>> added) {
-        if( node!=null ){
-            node.setParent(this);
-        }
-        if( added!=null && added.size()==1 ){
-            treeNotify(new TreeEvent.Inserted<A>(this, node, added.get(0).a()));
-        }else {
-            treeNotify(new TreeEvent.Added<A>(this, node));
-        }
-    }
+//    private void postInsert(A node, List<Triple<Integer, A, A>> added) {
+//        if( node!=null ){
+//            node.setParent(this);
+//        }
+//        if( added!=null && added.size()==1 ){
+//            treeNotify(new TreeEvent.Inserted<A>(this, node, added.get(0).a()));
+//        }else {
+//            treeNotify(new TreeEvent.Added<A>(this, node));
+//        }
+//    }
 
     @Override
     default void appends(A... nodes) {
@@ -54,8 +54,8 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
 
     @Override
     default void insert(int idx, A node) {
-        var added = TreeImpl.insert(this,idx, node);
-        postInsert(node, added);
+        List<Triple<Integer,A,A>> added = TreeImpl.insert(this,idx, node);
+        UpTreeImpl.postInsert(this, node, added);
     }
 
     @Override
@@ -76,7 +76,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
 
     @Override
     default void set(int idx, A node) {
-        var updates = TreeImpl.set(this,idx, node);
+        List<Triple<Integer,A,A>> updates = TreeImpl.set(this,idx, node);
         if( node!=null )node.setParent(this);
         if( updates!=null ){
             updates.forEach( e -> treeNotify(new TreeEvent.Updated<A>(this, e.a(), e.b(), e.c())) );

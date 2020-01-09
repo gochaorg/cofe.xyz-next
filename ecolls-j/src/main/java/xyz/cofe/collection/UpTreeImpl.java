@@ -1,5 +1,7 @@
 package xyz.cofe.collection;
 
+import xyz.cofe.ecolls.Triple;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.WeakHashMap;
@@ -56,5 +58,17 @@ public class UpTreeImpl {
         if(tidx<0)return null;
         if(tidx>=lst.size())return null;
         return (A)lst.get(tidx);
+    }
+
+    public static <A extends UpTree<A>> void postInsert(UpTree<A> ut, A node, List<Triple<Integer, A, A>> added) {
+        if( ut==null ) throw new IllegalArgumentException("ut==null");
+        if( node!=null ){
+            node.setParent(ut);
+        }
+        if( added!=null && added.size()==1 ){
+            ut.treeNotify(new TreeEvent.Inserted<A>(ut, node, added.get(0).a()));
+        }else {
+            ut.treeNotify(new TreeEvent.Added<A>(ut, node));
+        }
     }
 }
