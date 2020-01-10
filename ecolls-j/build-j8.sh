@@ -2,7 +2,7 @@
 BASEDIR=$(readlink -f $(dirname $0))
 echo "BASEDIR $BASEDIR"
 
-function findJDK12 {
+function findJDK {
     if [ -e "/home/user/apps/jdk-12" ] ; then
         export JAVA_HOME=/home/user/apps/jdk-12
         JAVAC=$JAVA_HOME/bin/javac
@@ -12,10 +12,20 @@ function findJDK12 {
     fi
 }
 
-findJDK12
+findJDK
 
 # build filelist
 find $BASEDIR/src -name '*.java' | grep -v '/src/test/' | grep -v 'module-info.java' > filelist.txt
 
-mkdir -p $BASEDIR/target/classes-8/
-$JAVAC --release 8 -d $BASEDIR/target/classes-8/ @filelist.txt
+function compile {
+    local DEST
+    DEST=$BASEDIR/target/classes-$1/
+
+    mkdir -p $DEST
+
+    echo "compile for java $1 to $DEST"
+    $JAVAC --release $1 -d $DEST @filelist.txt
+}
+
+compile 8
+#compile 7
