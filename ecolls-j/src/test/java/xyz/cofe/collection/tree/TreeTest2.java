@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import xyz.cofe.collection.*;
 import xyz.cofe.iter.TreeStep;
+import xyz.cofe.txt.Str;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -26,11 +27,11 @@ public class TreeTest2 {
     private void printTree(TStr root){
         System.out.println("tree:");
         for( TreeStep<TStr> ts : root.walk().tree() ){
-            if( ts.getLevel()>0 ) System.out.print("..".repeat(ts.getLevel()));
+            if( ts.getLevel()>0 ) System.out.print(Str.repeat("..",ts.getLevel()));
             System.out.print(ts.getNode().getValue());
 
             int ldiff = 5 - ts.getLevel();
-            if( ldiff>0 ) System.out.print("  ".repeat(ldiff));
+            if( ldiff>0 ) System.out.print(Str.repeat("  ",ldiff));
             System.out.println(
                 " path: "+ts.getNode().path().stream().map(m->m.getValue()).reduce((a,b) -> a+"/"+b).orElse("null"));
         }

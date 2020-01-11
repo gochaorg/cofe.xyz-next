@@ -38,9 +38,132 @@
                 <additionalparam>-Xdoclint:none</additionalparam>
             </properties>
         </profile>
+
+        <profile>
+            <id>jdk11</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>jdk11</id>
+                                    <goals>
+                                        <goal>compile</goal>
+                                    </goals>
+                                    <configuration>
+                                        <release>11</release>
+                                        <compileSourceRoots>
+                                            <compileSourceRoot>${project.basedir}/src/main/java-mr/11</compileSourceRoot>
+                                            <compileSourceRoot>${project.basedir}/src/main/java</compileSourceRoot>
+                                        </compileSourceRoots>
+                                        <outputDirectory>${project.build.outputDirectory}/META-INF/versions/11</outputDirectory>
+                                        <compilerArgs>
+                                            <!--                                            <arg>&#45;&#45;patch-module</arg>-->
+                                            <!--                                            <arg>example.mrjar=${project.build.outputDirectory}</arg>-->
+                                            <arg>-g</arg>
+                                        </compilerArgs>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-jar-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>default-jar</id>
+                                    <configuration>
+                                        <archive>
+                                            <manifestEntries>
+                                                <Multi-Release>true</Multi-Release>
+                                            </manifestEntries>
+                                        </archive>
+<!--                                        <includes>-->
+<!--                                            <include>/xyz/**</include>-->
+<!--                                            <include>/META-INF/maven/**</include>-->
+<!--                                            <include>/META-INF/versions/11/module-info.class</include>-->
+<!--                                            <include>/META-INF/services/**</include>-->
+<!--                                        </includes>-->
+                                        <excludes>
+                                            <exclude>**/versions/11/xyz/**</exclude>
+                                        </excludes>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
+<!--        <profile>-->
+<!--            <id>jdk11</id>-->
+<!--            <activation>-->
+<!--                <jdk>[11,)</jdk>-->
+<!--            </activation>-->
+<!--            <build>-->
+<!--                <pluginManagement>-->
+<!--                    <plugins>-->
+<!--                        <plugin>-->
+<!--                            <groupId>org.apache.maven.plugins</groupId>-->
+<!--                            <artifactId>maven-compiler-plugin</artifactId>-->
+<!--                            <executions>-->
+<!--                                <execution>-->
+<!--                                    <id>jdk11</id>-->
+<!--                                    <goals>-->
+<!--                                        <goal>compile</goal>-->
+<!--                                    </goals>-->
+<!--                                    <configuration>-->
+<!--                                        <release>11</release>-->
+<!--&lt;!&ndash;                                        <compileSourceRoots>&ndash;&gt;-->
+<!--&lt;!&ndash;                                            <compileSourceRoot>${project.basedir}/src/main/java11</compileSourceRoot>&ndash;&gt;-->
+<!--&lt;!&ndash;                                        </compileSourceRoots>&ndash;&gt;-->
+<!--                                        <outputDirectory>${project.build.outputDirectory}/META-INF/versions/11</outputDirectory>-->
+<!--&lt;!&ndash;                                        <compilerArgs>&ndash;&gt;-->
+<!--&lt;!&ndash;                                            <arg>&#45;&#45;patch-module</arg>&ndash;&gt;-->
+<!--&lt;!&ndash;                                            <arg>example.mrjar=${project.build.outputDirectory}</arg>&ndash;&gt;-->
+<!--&lt;!&ndash;                                        </compilerArgs>&ndash;&gt;-->
+<!--                                    </configuration>-->
+<!--                                </execution>-->
+<!--                            </executions>-->
+<!--                        </plugin>-->
+<!--                        <plugin>-->
+<!--                            <groupId>org.apache.maven.plugins</groupId>-->
+<!--                            <artifactId>maven-jar-plugin</artifactId>-->
+<!--                            <executions>-->
+<!--                                <execution>-->
+<!--                                    <id>default-jar</id>-->
+<!--                                    <configuration>-->
+<!--                                        <archive>-->
+<!--                                            <manifestEntries>-->
+<!--                                                <Multi-Release>true</Multi-Release>-->
+<!--                                            </manifestEntries>-->
+<!--                                        </archive>-->
+<!--                                    </configuration>-->
+<!--                                </execution>-->
+<!--                            </executions>-->
+<!--                        </plugin>-->
+<!--                    </plugins>-->
+<!--                </pluginManagement>-->
+<!--            </build>-->
+<!--        </profile>-->
     </profiles>
 
     <build>
+<!--        <extensions>-->
+<!--            <extension>-->
+<!--                <groupId>pw.krejci</groupId>-->
+<!--                <artifactId>multi-release-jar-maven-plugin</artifactId>-->
+<!--                <version>0.1.5</version>-->
+<!--            </extension>-->
+<!--        </extensions>-->
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -67,5 +190,6 @@
             </plugin>
         </plugins>
     </build>
+
 
 </project>

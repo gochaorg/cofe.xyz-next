@@ -32,6 +32,7 @@
         <module>text-lex</module>
         <module>text-out</module>
         <module>gui-swing-test</module>
+        <module>sql</module>
     </modules>
 
     <build>
