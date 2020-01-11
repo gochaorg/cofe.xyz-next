@@ -395,12 +395,7 @@ public class PropertyBuilderGeneric<T extends PropertyBuilderGeneric<?>> {
             rd = reader;
             typ = type;
         }else if( value!=null ){
-            rd = new Fn0<>() {
-                @Override
-                public Object apply() {
-                    return value;
-                }
-            };
+            rd = ()->value;
             typ = value.getClass();
         }else{
             throw new IllegalArgumentException("value/read+type not set");

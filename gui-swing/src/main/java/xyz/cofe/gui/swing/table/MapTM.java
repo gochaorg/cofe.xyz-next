@@ -288,43 +288,7 @@ public class MapTM<K,V>
     }
     //</editor-fold>
 
-    private final CollectionListener<EventMap<K,V>,V> listener = new CollectionListener<>(){
-        @Override
-        public void collectionEvent( CollectionEvent<EventMap<K,V>, V> event ){
-            if( event instanceof DeletedEvent ){
-                DeletedEvent ev = (DeletedEvent)event;
-                if( ev.getSource() instanceof EventMap ){
-                    onMapEntryDeleted(
-                        (EventMap) ev.getSource(),
-                        (K)ev.getIndex(),
-                        (V)ev.getOldItem()
-                    );
-                }
-            }
-            if( event instanceof UpdatedEvent ){
-                UpdatedEvent ev = (UpdatedEvent)event;
-                if( ev.getSource() instanceof EventMap ){
-                    onMapEntryUpdated(
-                        (EventMap) ev.getSource(),
-                        (K)ev.getIndex(),
-                        (V)ev.getNewItem(),
-                        (V)ev.getOldItem()
-                    );
-                }
-            }
-            if( event instanceof InsertedEvent ){
-                InsertedEvent ev = (InsertedEvent)event;
-                if( ev.getSource() instanceof EventMap ){
-                    onMapEntryInserted(
-                        (EventMap) ev.getSource(),
-                        (K)ev.getIndex(),
-                        (V)ev.getNewItem()
-                    );
-                }
-            }
-        }
-
-//        @Override
+    //        @Override
 //        protected void updated(EventMap<K,V> map, V old, K key, V value) {
 //            onMapEntryUpdated(map, key, value, old);
 //        }
@@ -338,7 +302,38 @@ public class MapTM<K,V>
 //        protected void inserted(EventMap<K,V> map, K key, V value) {
 //            onMapEntryInserted(map, key, value);
 //        }
-
+    private final CollectionListener<EventMap<K,V>,V> listener = event->{
+        if( event instanceof DeletedEvent ){
+            DeletedEvent ev = (DeletedEvent)event;
+            if( ev.getSource() instanceof EventMap ){
+                onMapEntryDeleted(
+                    (EventMap) ev.getSource(),
+                    (K)ev.getIndex(),
+                    (V)ev.getOldItem()
+                );
+            }
+        }
+        if( event instanceof UpdatedEvent ){
+            UpdatedEvent ev = (UpdatedEvent)event;
+            if( ev.getSource() instanceof EventMap ){
+                onMapEntryUpdated(
+                    (EventMap) ev.getSource(),
+                    (K)ev.getIndex(),
+                    (V)ev.getNewItem(),
+                    (V)ev.getOldItem()
+                );
+            }
+        }
+        if( event instanceof InsertedEvent ){
+            InsertedEvent ev = (InsertedEvent)event;
+            if( ev.getSource() instanceof EventMap ){
+                onMapEntryInserted(
+                    (EventMap) ev.getSource(),
+                    (K)ev.getIndex(),
+                    (V)ev.getNewItem()
+                );
+            }
+        }
     };
 
     // Очередь сообщений

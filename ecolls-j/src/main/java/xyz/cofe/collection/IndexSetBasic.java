@@ -290,15 +290,29 @@ public class IndexSetBasic<A extends Comparable<A>>
         }
     }
 
+//    TODO Разработа с учетом java 12, миниально 9
+//    public Stream<Pair<A,Integer>> stream(){
+//        synchronized( sync ){
+//            if( size()<1 )return Stream.empty();
+//            if( size()==1 )return Stream.of( Pair.of(get(0),0));
+//            return Stream.iterate(
+//                Pair.of(get(0),0),
+//                x -> x!=null && x.b()!=null && x.b() <= (size()-1),
+//                x -> x!=null && x.b()!=null && x.b() <  (size()-1) ? Pair.of( get(x.b()+1), x.b()+1 ) : null
+//            );
+//        }
+//    }
+
+    // TODO поддержка java 8
     public Stream<Pair<A,Integer>> stream(){
         synchronized( sync ){
             if( size()<1 )return Stream.empty();
             if( size()==1 )return Stream.of( Pair.of(get(0),0));
             return Stream.iterate(
                 Pair.of(get(0),0),
-                x -> x!=null && x.b()!=null && x.b() <= (size()-1),
+                //x -> x!=null && x.b()!=null && x.b() <= (size()-1),
                 x -> x!=null && x.b()!=null && x.b() <  (size()-1) ? Pair.of( get(x.b()+1), x.b()+1 ) : null
-            );
+            ).limit( size() );
         }
     }
 

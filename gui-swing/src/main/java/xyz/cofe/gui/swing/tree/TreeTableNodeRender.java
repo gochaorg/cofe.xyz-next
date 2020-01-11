@@ -43,6 +43,8 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
+
+import xyz.cofe.ecolls.Fn1;
 import xyz.cofe.ecolls.Fn2;
 import xyz.cofe.gui.swing.color.ColorModificator;
 import xyz.cofe.gui.swing.color.Colors;
@@ -1138,7 +1140,7 @@ public class TreeTableNodeRender
             TreeTableNodeBasic ttnb = (TreeTableNodeBasic)node;
 
             if( isLeaf ){
-                var extractable = ttnb.getPreferredDataFollowable();
+                Fn1<Object,Boolean> extractable = ttnb.getPreferredDataFollowable();
                 Object data = ttnb.getData();
                 if( extractable!=null ){
                     boolean canExtract = extractable.apply(data);
@@ -1204,7 +1206,7 @@ public class TreeTableNodeRender
             setBackgroundModificator(fmt.getBackgroundModificator());
         }
 
-        var custPaint = nodeValue.getCustomPainter();
+        Fn2<Graphics,Rectangle,Object> custPaint = nodeValue.getCustomPainter();
         if( custPaint!=null )setCustomPainter(custPaint);
     }
     //</editor-fold>

@@ -1028,7 +1028,7 @@ public class PropertyDB {
                 list.add( namedEditors.values() );
             }
         }
-        var itr = Eterable.<PropertyEditor>empty().union(list);
+        Eterable itr = Eterable.<PropertyEditor>empty().union(list);
         return itr;
     }
     //</editor-fold>
@@ -1258,7 +1258,7 @@ public class PropertyDB {
                 final UiBean uib = (UiBean)beanCls.getAnnotation(UiBean.class);
                 final String[] hiddenPropName = uib!=null ? uib.hiddenPeroperties() : new String[]{};
 
-                Predicate filter = new Predicate<>() {
+                Predicate filter = new Predicate() {
                     @Override
                     public boolean test(Object value) {
                         if( value instanceof Property ){

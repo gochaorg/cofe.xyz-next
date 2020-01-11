@@ -28,6 +28,7 @@ import xyz.cofe.collection.EventList;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.table.TableModel;
@@ -134,7 +135,7 @@ public class ExtendTM extends WrapTM {
         if( co instanceof ExtendColumn )srcColumnIndex = ((ExtendColumn)co).getSourceColumn();
         Object srcVal = tableModel.getValueAt(rowIndex, srcColumnIndex);
 
-        var conv = (co instanceof GetReaderForRow)
+        Function conv = (co instanceof GetReaderForRow)
             ? ((GetReaderForRow)co).getReader(rowIndex)
             : co.getReader();
 
@@ -170,7 +171,7 @@ public class ExtendTM extends WrapTM {
         }
         Object srcVal = tableModel.getValueAt(rowIndex, srcColumnIndex);
 
-        var writer = co.getWriter();
+        Function<Column.Cell,Boolean> writer = co.getWriter();
         if(writer==null)return;
 
         Boolean succ = writer.apply(new Column.Cell(srcVal,aValue));

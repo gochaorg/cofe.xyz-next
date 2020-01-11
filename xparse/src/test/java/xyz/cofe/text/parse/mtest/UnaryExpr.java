@@ -2,6 +2,8 @@ package xyz.cofe.text.parse.mtest;
 
 import xyz.cofe.iter.Eterable;
 import xyz.cofe.num.BaseNumbers;
+import xyz.cofe.num.BitCount;
+import xyz.cofe.num.SingleBase;
 import xyz.cofe.text.parse.Token;
 import xyz.cofe.text.parse.TokenPointer;
 
@@ -54,15 +56,15 @@ public class UnaryExpr extends BaseExpr {
 
     @Override
     public Number eval(){
-        var exp = getTarget();
+        Expr exp = getTarget();
         if( exp==null )throw new IllegalStateException("can't evaluate target operand - not defined");
 
-        var value = exp.eval();
+        Number value = exp.eval();
         if( value==null )throw new IllegalStateException("can't evaluate target operand - return null");
 
-        var cbase = BaseNumbers.singleBase(value,BaseNumbers.bitCount(value));
+        SingleBase cbase = BaseNumbers.singleBase(value, BitCount.of(value));
 
-        var tOp = getOp();
+        Token tOp = getOp();
         if( tOp==null )throw new IllegalStateException("can't evaluate operator not defined");
 
         switch( tOp.getText() ){

@@ -151,17 +151,6 @@ public class ContextMenuBuilder {
             
             MenuActionItem ma = new MenuActionItem(act);
             
-            if( act instanceof MenuScriptAction ){
-                String type = XmlMenuBuilder.readAttrOrText(
-                    ((MenuScriptAction)act).getMenuElement(),"type", "Default"
-                );
-                if( type!=null ){
-                    if( MenuActionItem.Type.Checked.name().equalsIgnoreCase(type) ){
-                        ma.setType(MenuActionItem.Type.Checked);
-                    }
-                }
-            }
-            
             return ma;
         }
     };

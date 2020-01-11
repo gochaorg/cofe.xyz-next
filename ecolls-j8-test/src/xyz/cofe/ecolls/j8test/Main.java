@@ -1,6 +1,7 @@
 package xyz.cofe.ecolls.j8test;
 
 import xyz.cofe.collection.LRUCache;
+import xyz.cofe.typeconv.spi.GetTypeConvertor;
 
 public class Main {
     public static void main(String[] args){
@@ -13,5 +14,7 @@ public class Main {
         cache.setCacheSizeMax(10);
         cache.put("a","abc");
         cache.put("b","abc");
+
+        System.out.println(GetTypeConvertor.class);
     }
 }

@@ -1,6 +1,7 @@
 package xyz.cofe.text.parse.mtest;
 
 import xyz.cofe.iter.Eterable;
+import xyz.cofe.text.parse.Token;
 import xyz.cofe.text.parse.TokenPointer;
 import xyz.cofe.text.parse.toks.FloatNumberToken;
 import xyz.cofe.text.parse.toks.IntegerNumberToken;
@@ -17,7 +18,7 @@ public class Atom extends BaseExpr {
             ""+(begin != null ? begin.lookup() : null)+
             '}';
 
-        var t = ptr.lookup();
+        Token t = ptr.lookup();
         if( t instanceof IntegerNumberToken ){
         }
     }
@@ -63,12 +64,12 @@ public class Atom extends BaseExpr {
 
     @Override
     public Number eval(){
-        var ex = expr;
+        Expr ex = expr;
         if( ex!=null )return ex.eval();
 
-        var p = getBegin();
+        TokenPointer p = getBegin();
         if( p!=null ){
-            var t = p.lookup();
+            Token t = p.lookup();
             if( t!=null ){
                 if( t instanceof IntegerNumberToken ){
                     return ((IntegerNumberToken) t).getValue();

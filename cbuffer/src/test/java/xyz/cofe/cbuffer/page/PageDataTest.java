@@ -81,12 +81,12 @@ public class PageDataTest {
         PageDataImpl pd = new PageDataImpl();
         new PDLogger(pd,System.out);
 
-        var slowMem = new MemContentBuffer();
+        MemContentBuffer slowMem = new MemContentBuffer();
         pd.setSlowBuffer(slowMem);
 
         slowMem.setSize((2048*16)*10+1024/2);
 
-        var fastMem = new MemContentBuffer();
+        MemContentBuffer fastMem = new MemContentBuffer();
         pd.setFastBuffer(fastMem);
 
         pd.setPageSize(2048);

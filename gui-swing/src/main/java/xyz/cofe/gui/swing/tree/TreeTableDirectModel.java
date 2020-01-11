@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import xyz.cofe.collection.Tree;
 import xyz.cofe.collection.TreeEvent;
 import xyz.cofe.ecolls.Closeables;
 import xyz.cofe.gui.swing.table.Column;
@@ -445,8 +446,8 @@ public class TreeTableDirectModel implements TreeTableModelInterface
 
         rootListeners.append(
         root.listen( TreeEvent.Inserted.class, ev -> {
-            var tnchild = ((TreeEvent.Inserted)ev).getChild();
-            var tnprnt = ((TreeEvent.Inserted)ev).getParent();
+            Tree tnchild = ((TreeEvent.Inserted)ev).getChild();
+            Tree tnprnt = ((TreeEvent.Inserted)ev).getParent();
 
             if( !(tnchild instanceof TreeTableNode) )return;
             if( !(tnprnt instanceof TreeTableNode) )return;
@@ -505,8 +506,8 @@ public class TreeTableDirectModel implements TreeTableModelInterface
         root.listen( TreeEvent.Deleted.class, _ev -> {
             TreeEvent.Deleted ev = (TreeEvent.Deleted)_ev;
 
-            var tnchild = ((TreeEvent.Deleted)ev).getChild();
-            var tnprnt = ((TreeEvent.Deleted)ev).getParent();
+            Tree tnchild = ((TreeEvent.Deleted)ev).getChild();
+            Tree tnprnt = ((TreeEvent.Deleted)ev).getParent();
 
             if( !(tnchild instanceof TreeTableNode) )return;
             if( !(tnprnt instanceof TreeTableNode) )return;
@@ -694,7 +695,7 @@ public class TreeTableDirectModel implements TreeTableModelInterface
             return editable;
         }
 
-        var conv = col==null ? null : col.getWriter();
+        Function conv = col==null ? null : col.getWriter();
 
         if( conv!=null ){
             return true;
@@ -747,7 +748,7 @@ public class TreeTableDirectModel implements TreeTableModelInterface
             type = col!=null ? col.getType() : null;
         }
 
-        var conv = col==null ? null : col.getWriter();
+        Function<Column.Cell,Boolean> conv = col==null ? null : col.getWriter();
 
         if( conv!=null ){
             if( conv.apply(new Column.Cell(node, aValue)) ){

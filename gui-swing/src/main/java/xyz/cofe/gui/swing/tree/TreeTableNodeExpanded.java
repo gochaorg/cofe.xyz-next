@@ -27,7 +27,7 @@ public class TreeTableNodeExpanded extends TreeEvent implements NodeGetSource {
      * Источник события - узел дерева который сгенерировал событие
      * @return зел дерева
      */
-    public TreeTableNode getSource(){
+    public TreeTableNode<?> getSource(){
         return source;
     }
 }

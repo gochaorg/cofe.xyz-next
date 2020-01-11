@@ -7,6 +7,7 @@ import xyz.cofe.text.parse.mtest.BrOpenTok;
 import xyz.cofe.text.parse.mtest.Expr;
 import xyz.cofe.text.parse.mtest.TokRef;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 import static xyz.cofe.text.parse.TokBuilder.*;
@@ -54,7 +55,7 @@ public class FloatNumberToken extends Token {
                 )
             )
         ).build( (a,b,toks)->{
-            var fnum = toks.pattern()
+            Optional<FloatNumberToken> fnum = toks.pattern()
                 .like(0, NumberStart.class)
                 .like(2, NumberPart.class).match( (start,part)->
                     new FloatNumberToken(start.getBegin(), part.getEnd())

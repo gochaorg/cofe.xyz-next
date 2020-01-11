@@ -30,8 +30,8 @@ public interface CommonPointer<PointerType extends CommonPointer<PointerType,Ite
      * @return символ
      */
     default Item lookup(int offset){
-        var self = this;
-        var trgt = self.move(offset);
+        CommonPointer<PointerType,Item,Pos> self = this;
+        PointerType trgt = self.move(offset);
         if( trgt.eof() )return null;
         return trgt.lookup();
     };

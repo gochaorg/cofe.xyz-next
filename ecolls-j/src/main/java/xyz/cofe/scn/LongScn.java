@@ -14,24 +14,24 @@ public interface LongScn<OWNER extends LongScn<OWNER,CAUSE>,CAUSE> extends Scn<O
         return LongScnImpl.getAtomicLong(this).get();
     }
 
-    private Pair<Long,Long> incScn(){
-        Long s1,s2;
-        synchronized ( this ){
-            AtomicLong v = LongScnImpl.getAtomicLong(this);
-            s1 = v.get();
-            s2 = v.incrementAndGet();
-        }
-        return Pair.of(s1,s2);
-    }
+//    private Pair<Long,Long> incScn(){
+//        Long s1,s2;
+//        synchronized ( this ){
+//            AtomicLong v = LongScnImpl.getAtomicLong(this);
+//            s1 = v.get();
+//            s2 = v.incrementAndGet();
+//        }
+//        return Pair.of(s1,s2);
+//    }
 
     default Pair<Long,Long> nextscn(){
-        Pair<Long,Long> scnpair = incScn();
+        Pair<Long,Long> scnpair = LongScnImpl.incScn(this);
         fireScnChanged(scnpair.a(),scnpair.b());
         return scnpair;
     }
 
     default <CAUSE> Pair<Long,Long> nextscn(CAUSE cause){
-        Pair<Long,Long> scnpair = incScn();
+        Pair<Long,Long> scnpair = LongScnImpl.incScn(this);
         fireScnChanged(scnpair.a(),scnpair.b(),cause);
         return scnpair;
     }

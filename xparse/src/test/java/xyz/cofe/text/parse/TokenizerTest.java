@@ -6,6 +6,7 @@ import org.junit.Test;
 import xyz.cofe.text.parse.tmpl.InOutTemplate;
 import xyz.cofe.text.parse.toks.*;
 
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -31,14 +32,12 @@ public class TokenizerTest {
 
     @Test
     public void test03(){
-        var idParser = sequence(
+        Sequence idParser = sequence(
             Letter,
             repeat(LetterOrDigit)
         ).build( IdToken::new );
 
-        Token t1 = Tokenizer.parse( "aa2bc",
-            idParser
-        );
+        Token t1 = Tokenizer.parse( "aa2bc", idParser );
         System.out.println(t1);
         assertTrue(t1!=null);
 
@@ -56,7 +55,7 @@ public class TokenizerTest {
 
     @Test
     public void test04(){
-        var tmp = InOutTemplate.parse("input ${in} output ${out}");
+        InOutTemplate tmp = InOutTemplate.parse("input ${in} output ${out}");
         String txt = tmp.apply("123", "abc");
         System.out.println(txt);
 
@@ -74,14 +73,14 @@ public class TokenizerTest {
     public void test06(){
         String txt = "aa1 123.45";
 
-        var idParser = sequence(
+        Sequence idParser = sequence(
             Letter,
             repeat(LetterOrDigit)
         ).build( IdToken::new );
 
-        var wsParser = repeat(Whitespace).min(1).build( WhiteSpaceToken::new );
+        Repeat wsParser = repeat(Whitespace).min(1).build( WhiteSpaceToken::new );
 
-        var numParser = alt(
+        CharAlternatives numParser = alt(
             sequence(
                 repeat(Digit).min(1).build(
                     (b,e,lst)->new NumberStart(b,e).value(
@@ -98,7 +97,7 @@ public class TokenizerTest {
                     )
                 )
             ).build( (a,b,toks)->{
-                var fnum = toks.pattern()
+                Optional<FloatNumberToken> fnum = toks.pattern()
                     .like(0, NumberStart.class)
                     .like(2, NumberPart.class).match( (start,part)->
                         new FloatNumberToken(start.getBegin(), part.getEnd())
@@ -110,7 +109,7 @@ public class TokenizerTest {
             repeat(Digit).min(1)
         );
 
-        var tokenizer = new Tokenizer(txt,0,idParser,wsParser, numParser);
+        Tokenizer tokenizer = new Tokenizer(txt,0,idParser,wsParser, numParser);
         int idx = -1;
         for( Token t : tokenizer ){
             idx++;

@@ -17,7 +17,7 @@ public class Closeables implements AutoCloseable {
     private final WeakHashMap<Object,Object> weaklinks = new WeakHashMap<>();
 
     public static Closeables of( AutoCloseable ... clArr ){
-        var cl = new Closeables();
+        Closeables cl = new Closeables();
         if( clArr!=null ){
             for( AutoCloseable c : clArr ){
                 if( c!=null )cl.add(c);

@@ -1,14 +1,19 @@
 open module xyz.cofe.gui.swing {
     requires java.base;
+
     requires java.xml;
-    requires transitive java.logging;
-    requires transitive xyz.cofe.ecolls;
-    requires transitive java.desktop;
-    requires transitive java.scripting;
-    requires transitive xyz.cofe.xml.utl;
-    requires transitive xyz.cofe.text.out;
-    requires transitive xyz.cofe.text.lex;
-    requires transitive balloontip;
+
+    requires java.logging;
+    requires xyz.cofe.ecolls;
+    requires java.desktop;
+    requires java.scripting;
+
+    requires xyz.cofe.xml.utl;
+    requires xyz.cofe.text.out;
+    requires xyz.cofe.text.lex;
+
+    requires balloontip;
+
     exports xyz.cofe.gui.swing;
     exports xyz.cofe.gui.swing.text;
     exports xyz.cofe.gui.swing.text.str;
@@ -25,6 +30,7 @@ open module xyz.cofe.gui.swing {
     exports xyz.cofe.gui.swing.tree;
     exports xyz.cofe.gui.swing.typeconv.impl;
     exports xyz.cofe.j2d;
+
     uses xyz.cofe.gui.swing.properties.PropertyDBService;
     provides xyz.cofe.gui.swing.properties.PropertyDBService
         with xyz.cofe.gui.swing.properties.ReadBeanArray,

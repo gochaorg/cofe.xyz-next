@@ -138,12 +138,12 @@ public class CachedTM<E>
             this.source = source;
             if( this.source!=null ){
                 if( this.source instanceof EventList ){
-                    var c = addEventListener((EventList)this.source);
+                    AutoCloseable c = addEventListener((EventList)this.source);
                     if( c!=null ){
                         sourceCloseableSet.add(c);
                     }
                 }else if( this.source instanceof EventSet ){
-                    var c = addEventListener((EventSet)this.source);
+                    AutoCloseable c = addEventListener((EventSet)this.source);
                     if( c!=null ){
                         sourceCloseableSet.add(c);
                     }

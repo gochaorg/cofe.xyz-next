@@ -809,7 +809,7 @@ public class PropertySheet extends JPanel {
                     if( uib!=null ){
                         final String[] hidden = uib.hiddenPeroperties();
                         if( hidden!=null && hidden.length>0 ){
-                            Predicate filterHidden = new Predicate<>() {
+                            Predicate filterHidden = new Predicate() {
                                 @Override
                                 public boolean test(Object value) {
                                     if( value instanceof Property ){

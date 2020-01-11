@@ -788,7 +788,7 @@ public class PropertyTable
             cachedTM = new CachedTM(){
                 @Override
                 protected boolean contains(Collection col, Object obj) {
-                    var inOperator = PropertyTable.this.inOperator;
+                    Fn2<Object,Collection,Boolean> inOperator = PropertyTable.this.inOperator;
                     if( inOperator!=null ){
                         Boolean v = inOperator.apply(obj, col);
                         if( v!=null ){
@@ -1563,7 +1563,7 @@ public class PropertyTable
     }
 
     public void createNew( int pos, boolean setfocus){
-        var fn = getDefaultItemBuilder();
+        Supplier fn = getDefaultItemBuilder();
         if( fn==null ){
             throw new IllegalStateException("defaultItemBuilder not set");
         }

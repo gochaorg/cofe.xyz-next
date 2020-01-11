@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import xyz.cofe.ecolls.Pair;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -12,8 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ProdIterTest {
     @Test
     public void test01(){
-        List<String> lst1 = List.of("A","B","C","D");
-        List<Integer> lst2 = List.of(1,2,3,4);
+        List<String> lst1 = Arrays.asList("A", "B", "C", "D");
+        List<Integer> lst2 = Arrays.asList(1,2,3,4);
 
         BiProductIterator<String,Integer> itr = new BiProductIterator<String, Integer>(lst1,lst2);
         int idx = -1;
@@ -36,9 +37,9 @@ public class ProdIterTest {
 
     @Test
     public void test02(){
-        List<String> lst1 = List.of("A","B","C","D");
-        List<Integer> lst2 = List.of(1,2,3,4);
-        List<Boolean> lst3 = List.of(true,false);
+        List<String> lst1 = Arrays.asList("A","B","C","D");
+        List<Integer> lst2 = Arrays.asList(1,2,3,4);
+        List<Boolean> lst3 = Arrays.asList(true,false);
 
         Eterable.of(lst1).product(lst2,lst3, (a,b,c)->{
             System.out.println("a="+a+" b="+b+" c="+c);

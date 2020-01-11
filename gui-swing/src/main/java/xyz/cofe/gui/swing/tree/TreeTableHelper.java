@@ -312,10 +312,10 @@ public class TreeTableHelper {
                 (Object data) -> {
                         if( data==null )return false;
 
-                        var extrble = cextr.fetch(data.getClass());
+                        Fn1<Object, Boolean> extrble = cextr.fetch(data.getClass());
                         if( extrble!=null )return extrble.apply(data);
 
-                        var extrs = cfollowers.extractersOf(data.getClass());
+                        NodesExtracter[] extrs = cfollowers.extractersOf(data.getClass());
                         return (extrs != null && extrs.length >= 1);
                     };
 
@@ -345,7 +345,7 @@ public class TreeTableHelper {
                 @Override
                 public TreeTableNodeFormat getTreeTableNodeFormatOf(Object nodeData) {
                     if( nodeData!=null ){
-                        var ffmt = cmap.fetch(nodeData.getClass());
+                        Fn1<Object,TreeTableNodeFormat> ffmt = cmap.fetch(nodeData.getClass());
                         if( ffmt!=null ){
                             TreeTableNodeFormat nfmt = ffmt.apply(nodeData);
                             if( nfmt==null )return nfmt;
@@ -382,7 +382,7 @@ public class TreeTableHelper {
             }
 
             final Class fcls = cls;
-            final var fnamingArg = naming;
+            final Fn1<T,String> fnamingArg = naming;
 
             Fn1<Object,String> fnaming = (Object arg) -> {
                     if( arg==null )return null;
@@ -429,7 +429,7 @@ public class TreeTableHelper {
                 nodeData -> {
                     if( nodeData!=null ){
                         if( nodeData!=null ){
-                            var fText = cmap.fetch(nodeData.getClass());
+                            Fn1<Object, String> fText = cmap.fetch(nodeData.getClass());
                             if( fText!=null ){
                                 String ntext = fText.apply(nodeData);
                                 if( ntext==null )return fNullName;
@@ -1201,7 +1201,7 @@ public class TreeTableHelper {
                         Object vt = en.getValue();
                         //vtype.forEach( (cls,vt) -> {
                         if( cls!=null && vt!=null && vt instanceof Fn2 ){
-                            var fn = (Fn2)vt;
+                            Fn2 fn = (Fn2)vt;
                             ttnvc.addValueType(cls, fn);
                         }
                     }
@@ -1217,10 +1217,10 @@ public class TreeTableHelper {
                         Class cls = en.getKey();
                         Object vf = en.getValue();
                         if( cls!=null && vf!=null && vf instanceof Fn2 ){
-                            var fn = (Fn2)vf;
+                            Fn2 fn = (Fn2)vf;
                             ttnvc.addValueFormat(cls, fn);
                         }else if( cls!=null && vf!=null && vf instanceof Fn1 ){
-                            var fn = (Fn1)vf;
+                            Fn1 fn = (Fn1)vf;
                             ttnvc.addValueFormat(cls, fn);
                         }
                     }
@@ -1236,10 +1236,10 @@ public class TreeTableHelper {
                         Class cls = en.getKey();
                         Object vf = en.getValue();
                         if( cls!=null && vf!=null && vf instanceof Fn2 ){
-                            var fn = (Fn2)vf;
+                            Fn2 fn = (Fn2)vf;
                             ttnvc.addCustomPainter(cls, fn);
                         }else if( cls!=null && vf!=null && vf instanceof Fn1 ){
-                            var fn = (Fn1)vf;
+                            Fn1 fn = (Fn1)vf;
                             ttnvc.addCustomPainter(cls, fn);
                         }
                     }
@@ -1255,10 +1255,10 @@ public class TreeTableHelper {
                         Class cls = en.getKey();
                         Object vf = en.getValue();
                         if( cls!=null && vf!=null && vf instanceof Fn2 ){
-                            var fn = (Fn2)vf;
+                            Fn2 fn = (Fn2)vf;
                             ttnvc.addValueEditor(cls, fn);
                         }else if( cls!=null && vf!=null && vf instanceof Fn1 ){
-                            var fn = (Fn1)vf;
+                            Fn1 fn = (Fn1)vf;
                             ttnvc.addValueEditor(cls, fn);
                         }
                     }

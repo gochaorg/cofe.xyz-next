@@ -2,6 +2,7 @@ package xyz.cofe.gui.swing.tree;
 
 import xyz.cofe.collection.NodesExtracter;
 import xyz.cofe.ecolls.Fn1;
+import xyz.cofe.iter.Eterable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -121,7 +122,7 @@ public class TreeTableNodeBasic
             setFollowStarted(sample.getFollowFinished());
 
             if( withChildren ){
-                var sampleChildren = sample.nodes();
+                Eterable<TreeTableNodeBasic> sampleChildren = sample.nodes();
                 //List<TreeTableNodeBasic> children = getChildrenList();
 
                 if( sampleChildren!=null ){
@@ -250,7 +251,7 @@ public class TreeTableNodeBasic
      * @see #getDataTextReader()
      */
     public String getDataText(){
-        var dataTextResolver = dataTextReader;
+        Fn1<Object,String> dataTextResolver = dataTextReader;
         if( dataTextResolver==null ){
             List<TreeTableNodeBasic> path = path();
             if( path!=null && path.size()>0 )path.remove(path.size()-1);
@@ -522,7 +523,7 @@ public class TreeTableNodeBasic
      */
     public Long getPreferredCacheLifeTime(){
         Long lifetime = -1L;
-        var path = path();
+        List<TreeTableNodeBasic> path = path();
         for( int i=path.size()-1; i>=0; i-- ){
             TreeTableNodeBasic ttnb = path.get(i);
             if( ttnb.cacheLifeTime!=null ){
@@ -565,7 +566,7 @@ public class TreeTableNodeBasic
      * @see #getPreferredDataFollower()
      */
     public Fn1<Object,Boolean> getPreferredDataFollowable(){
-        var extractable = dataFollowable;
+        Fn1<Object,Boolean> extractable = dataFollowable;
         if( extractable==null ){
             List<TreeTableNodeBasic> path = path();
             if( path!=null && path.size()>0 )path.remove(path.size()-1);

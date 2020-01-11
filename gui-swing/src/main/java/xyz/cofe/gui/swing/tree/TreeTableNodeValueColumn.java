@@ -391,7 +391,7 @@ public class TreeTableNodeValueColumn extends Column implements IsRowEditable
                 if( node instanceof TreeTableNode ){
                     Object dataOfNode = ((TreeTableNode)node).getData();
                     if( dataOfNode!=null ){
-                        var fnReader = getValueReaders().fetch(dataOfNode.getClass());
+                        Fn2 fnReader = getValueReaders().fetch(dataOfNode.getClass());
                         if( fnReader!=null ){
                             Object value = fnReader.apply(dataOfNode, (TreeTableNode)node);
 
@@ -407,7 +407,7 @@ public class TreeTableNodeValueColumn extends Column implements IsRowEditable
                                 ttnv.valueType = null;
                             }
 
-                            var fnFormat =
+                            Fn2<Object,TreeTableNode,TreeTableNodeFormat> fnFormat =
                                 getValueFormat().fetch(dataOfNode.getClass());
 
                             if( fnFormat!=null ){
@@ -415,7 +415,7 @@ public class TreeTableNodeValueColumn extends Column implements IsRowEditable
                                 ttnv.setFormat(fmt);
                             }
 
-                            var fnEditor
+                            Fn2<Object,TreeTableNode,TreeTableNodeValueEditor.Editor> fnEditor
                                 = getValueEditor().fetch(dataOfNode.getClass());
 
                             if( fnEditor!=null ){
@@ -514,7 +514,7 @@ public class TreeTableNodeValueColumn extends Column implements IsRowEditable
                     TreeTableNode ttnode = (TreeTableNode)cell.object;
                     Object dataOfNode = ttnode.getData();
                     if( dataOfNode!=null ){
-                        var writer
+                        Fn3 writer
                             = getValueWriters().fetch(dataOfNode.getClass());
 
                         if( writer==null )return false;
@@ -673,10 +673,10 @@ public class TreeTableNodeValueColumn extends Column implements IsRowEditable
         TreeTableNode ttnode = (TreeTableNode)node;
         Object dataOfNode = ttnode.getData();
         if( dataOfNode!=null ){
-            var writer
+            Object writer
                 = getValueWriters().fetch(dataOfNode.getClass());
 
-            var editor
+            Object editor
                 = getValueEditor().fetch(dataOfNode.getClass());
 
             if( writer!=null || editor!=null )return true;

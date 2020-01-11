@@ -532,7 +532,7 @@ public class XVisitorAdapter implements XVisitor
         }
         
         public ContentPatternAbstract buildContentPattern(){
-            var recivers = new ArrayList<>(getConsumers());
+            List<Fn2<XEventPath,String,Object>> recivers = new ArrayList<Fn2<XEventPath,String,Object>>(getConsumers());
             ContentPatternAbstract ppa = new ContentPatternAbstract() {
                 @Override
                 public void delegate(XEventPath path, String content) {
