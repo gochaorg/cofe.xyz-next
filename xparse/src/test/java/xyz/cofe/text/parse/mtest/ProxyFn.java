@@ -12,7 +12,7 @@ public class ProxyFn<A,R> implements Function<A,R> {
 
     @Override
     public R apply( A a ){
-        var target = this.target;
+        Function<A,R> target = this.target;
         if( target!=null ) return target.apply(a);
         return null;
     }

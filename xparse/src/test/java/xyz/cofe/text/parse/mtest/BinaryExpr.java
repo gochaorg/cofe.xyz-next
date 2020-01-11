@@ -75,21 +75,21 @@ public class BinaryExpr extends BaseExpr {
 
     @Override
     public Number eval(){
-        var lExp = getLeft();
+        Expr lExp = getLeft();
         if( lExp==null )throw new IllegalStateException("can't evaluate left operand - not defined");
 
-        var lVal = lExp.eval();
+        Number lVal = lExp.eval();
         if( lVal==null )throw new IllegalStateException("can't evaluate left operand - return null");
 
-        var rExp = getRight();
+        Expr rExp = getRight();
         if( rExp==null )throw new IllegalStateException("can't evaluate right operand - not defined");
 
-        var rVal = rExp.eval();
+        Number rVal = rExp.eval();
         if( rVal==null )throw new IllegalStateException("can't evaluate right operand - return null");
 
-        var cbase = BaseNumbers.commonBase(lVal,rVal, BitCount.max(lVal,rVal));
+        CommonBase cbase = BaseNumbers.commonBase(lVal,rVal, BitCount.max(lVal,rVal));
 
-        var tOp = getOp();
+        Token tOp = getOp();
         if( tOp==null )throw new IllegalStateException("can't evaluate operator not defined");
 
         switch( tOp.getText() ){

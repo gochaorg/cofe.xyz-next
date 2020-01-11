@@ -77,12 +77,12 @@ public class ArrPattern<Item> {
             if( call==null ) throw new IllegalArgumentException("call==null");
 
             Optional<A> oA = get0.apply();
-            if( oA.isEmpty() ){
+            if( !oA.isPresent() ){
                 return Optional.empty();
             }
 
             Optional<B> oB = get1.apply();
-            if( oB.isEmpty() ){
+            if( !oB.isPresent() ){
                 return Optional.empty();
             }
 

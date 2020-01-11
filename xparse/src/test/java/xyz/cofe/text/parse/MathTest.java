@@ -2,6 +2,7 @@ package xyz.cofe.text.parse;
 
 import org.junit.Test;
 import xyz.cofe.ecolls.Fn3;
+import xyz.cofe.iter.Eterable;
 import xyz.cofe.text.parse.mtest.Atom;
 import xyz.cofe.text.parse.mtest.BinaryExpr;
 import xyz.cofe.text.parse.mtest.BrCloseTok;
@@ -30,18 +31,18 @@ public class MathTest {
     ){
         if( ptr.eof() )return null;
 
-        var leftRes = leftArg.apply(ptr);
+        Result leftRes = leftArg.apply(ptr);
         if( leftRes==null )return null;
 
         ptr = leftRes.getEnd();
-        var curRes = leftRes;
+        Result curRes = leftRes;
 
         while( true ){
             if( ptr.eof() )break;
 
-            var op = ptr.lookup();
+            Token op = ptr.lookup();
             if( operator.test( op ) ){
-                var rightRes = rightArg.apply(ptr.move(1));
+                Result rightRes = rightArg.apply(ptr.move(1));
                 if( rightRes!=null ){
                     curRes = builder.apply(op).apply(curRes).apply(rightRes);
                     ptr = curRes.getEnd();
@@ -78,41 +79,39 @@ public class MathTest {
     @Test
     public void test01(){
         String source = "5.0 + 1 * 2.0 - 3.4 * ( 6.7 - 3.2 )";
-        var toks = Lexer.tokens(source);
+        Eterable<Token> toks = Lexer.tokens(source);
 
-        toks.forEach( tok ->
-            System.out.println(tok)
-        );
+        toks.forEach(System.out::println);
 
         /////////////////////////////
 
-        var atom1 = alt( Atom::parseFloat, Atom::parseInteger );
+        Alternatives atom1 = alt( Atom::parseFloat, Atom::parseInteger );
 
         ProxyFn<TokenPointer,Expr> exp = new ProxyFn<>(null);
 
-        var atom2b = seq(
+        Sequence atom2b = seq(
             BrOpenTok::ref,
             exp,
             BrCloseTok::ref
         ).build( (begin,end,seq)->new Atom(begin, end, seq.get(1)) );
 
-        var atom3 = seq(
+        Sequence atom3 = seq(
             SumTok::unaryMinus,
             exp
         ).build( (begin,end,seq)->new UnaryExpr( begin.lookup(), seq.get(1), begin, end) );
 
-        var atom = alt(
+        Alternatives atom = alt(
             atom1, atom2b, atom3
         );
 
-        var binMul = binary(
+        Function binMul = binary(
             t -> t instanceof MulTok,
             atom,
             atom,
             BinaryExpr::new
         );
 
-        var binSum = binary(
+        Function binSum = binary(
             t -> t instanceof SumTok,
             binMul,
             binMul,
@@ -121,17 +120,17 @@ public class MathTest {
 
         exp.setTarget( binSum );
 
-        var ptr = new BasicTokenPointer(toks.toList(),0);
+        TokenPointer ptr = new BasicTokenPointer(toks.toList(),0);
 
-        var binOp = exp.apply(ptr);
+        Expr binOp = exp.apply(ptr);
 
         if( binOp!=null ){
-            System.out.println("-".repeat(40));
+            System.out.println(Str.repeat("-",40));
             binOp.walk().tree().forEach(node->System.out.println(
-                "..".repeat(node.getLevel())+" "+node.getNode()
+                Str.repeat("..",node.getLevel())+" "+node.getNode()
             ));
 
-            System.out.println("-".repeat(40));
+            System.out.println(Str.repeat("-",40));
             System.out.println("eval="+binOp.eval());
         }
     }

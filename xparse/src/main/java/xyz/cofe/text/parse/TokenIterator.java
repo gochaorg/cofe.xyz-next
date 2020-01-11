@@ -17,12 +17,12 @@ public class TokenIterator implements Iterator<Token> {
     protected Token fetch( CharPointer pointer){
         if( pointer==null )return null;
 
-        var parsers = getParsers();
+        Function<CharPointer, ? extends Token>[] parsers = getParsers();
         if( parsers==null )return null;
 
-        for( var parser : parsers ){
+        for( Function<CharPointer, ? extends Token> parser : parsers ){
             if( parser==null ) continue;
-            var t = parser.apply(pointer);
+            Token t = parser.apply(pointer);
             if( t!=null ){
                 return t;
             }
