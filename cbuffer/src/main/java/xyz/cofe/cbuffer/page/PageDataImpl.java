@@ -97,7 +97,7 @@ public class PageDataImpl implements PageData, PageSizeProperty, PageBuffersProp
     protected int allocatePage(){
         // поиск среди свободных
         if( freepages.size()>0 ){
-            var p = freepages.removeByIndex(0);
+            Integer p = freepages.removeByIndex(0);
             onAllocFreePage.notify(p);
             return p;
         }

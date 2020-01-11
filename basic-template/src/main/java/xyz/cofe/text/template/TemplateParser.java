@@ -321,33 +321,29 @@ public class TemplateParser {
     }
 
     //<editor-fold defaultstate="collapsed" desc="start( ptr ) : AstNode">
-    protected final Fn1<Pointer<Token>,AstNode> start_code = new Fn1<>() {
-        @Override
-        public AstNode apply(Pointer<Token> ptr) {
-            AstNode c = code( ptr );
-            if( c==null )return null;
+    protected final Fn1<Pointer<Token>,AstNode> start_code = ptr->{
+        AstNode c = code( ptr );
+        if( c==null )return null;
 
-            AstNode n = start(ptr);
-            if( n==null )return c;
+        AstNode n = start(ptr);
+        if( n==null )return c;
 
-            return new Sequence(c, n);
-        }
+        return new Sequence(c, n);
     };
-    protected final Fn1<Pointer<Token>,AstNode> start_any = new Fn1<>() {
-        @Override
-        public AstNode apply(Pointer<Token> ptr) {
-            Token t = ptr.lookup(0);
 
-            xyz.cofe.text.template.ast.Text text = new xyz.cofe.text.template.ast.Text(t);
-            ptr.move(1);
+    protected final Fn1<Pointer<Token>,AstNode> start_any = ptr->{
+        Token t = ptr.lookup(0);
 
-            AstNode v = start(ptr);
-            if( v==null )return text;
+        Text text = new Text(t);
+        ptr.move(1);
 
-            return new Sequence(text, v);
-        }
+        AstNode v = start(ptr);
+        if( v==null )return text;
+
+        return new Sequence(text, v);
     };
-    protected final Fn1<Pointer<Token>,AstNode> start_escape = new Fn1<>() {
+
+    protected final Fn1<Pointer<Token>,AstNode> start_escape = new Fn1<Pointer<Token>, AstNode>() {
         @Override
         public AstNode apply(Pointer<Token> ptr) {
             Token t = ptr.lookup(0);
@@ -374,7 +370,7 @@ public class TemplateParser {
         if( t==null )return null;
 
         String id = t.getId();
-        for( var me : start_patterns.entrySet() ){
+        for( Map.Entry<String,Fn1<Pointer<Token>,AstNode>> me : start_patterns.entrySet() ){
             String mid = me.getKey();
             Fn1<Pointer<Token>,AstNode> fn = me.getValue();
             if( mid.equals(id) ){
