@@ -369,11 +369,11 @@ public class TabHeader extends JPanel implements Closeable, TabPane.TabQuery
         //elActions.addEventListListener(actionsListener);
         TripleConsumer<Integer,Action,Action> onChanged = (k,old,cur) -> {
             if( old!=null ){
-                var but = destroyButton(old);
+                JButton but = destroyButton(old);
                 TabHeader.this.remove(but);
             }
             if( cur!=null ){
-                var but = createButton(cur);
+                JButton but = createButton(cur);
 
                 int co = elActions.size();
                 int addIdx = -1;

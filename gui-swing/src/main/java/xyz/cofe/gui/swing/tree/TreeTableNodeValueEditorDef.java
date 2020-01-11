@@ -143,7 +143,7 @@ public class TreeTableNodeValueEditorDef extends TreeTableNodeValueEditor {
             try{
                 Object ostr = super.getCellEditorValue();
 
-                var prsr = parser;
+                Fn1<String,T> prsr = parser;
                 if( prsr==null )throw new IllegalStateException("parser not set");
 
                 if( ostr==null ){
@@ -172,7 +172,7 @@ public class TreeTableNodeValueEditorDef extends TreeTableNodeValueEditor {
         @Override
         public void startEditing(Object value, Object context) {
             try{
-                var srlz = getSerializer();
+                Fn1<T,String> srlz = getSerializer();
                 if( srlz==null ){
                     throw new IllegalStateException("serializer not set");
                 }

@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +19,7 @@ import javax.swing.table.TableModel;
 
 import xyz.cofe.collection.*;
 import xyz.cofe.ecolls.Closeables;
+import xyz.cofe.ecolls.Fn1;
 import xyz.cofe.ecolls.Fn3;
 
 /**
@@ -549,7 +551,7 @@ public class ListTM<E> implements TableModel {
 
         if( c==null )return null;
 
-        var conv =
+        Function conv =
             (c instanceof GetReaderForRow)
                 ? ((GetReaderForRow)c).getReader(rowIndex)
                 : c.getReader();
@@ -583,7 +585,7 @@ public class ListTM<E> implements TableModel {
 
         if( c==null )return;
 
-        var cellWriter = c.getWriter();
+        Function<Column.Cell,Boolean> cellWriter = c.getWriter();
         if( cellWriter==null )return;
 
         Boolean succ = cellWriter.apply(new Column.Cell(v,aValue));

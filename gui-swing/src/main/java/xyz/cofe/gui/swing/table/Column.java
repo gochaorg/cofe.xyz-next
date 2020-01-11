@@ -186,7 +186,7 @@ public class Column
     @Override
     public Function<Object, Object> getReader(int row) {
         return readLock( ()->{
-            var rr = rowReader;
+            Function<Integer,? extends Function> rr = rowReader;
             if( rr==null )return getReader();
 
             Function conv = rr.apply(row);

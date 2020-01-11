@@ -795,7 +795,7 @@ public class TableFocusTracker
         Object lastItm, int lastRow, int lastCol,
         Object currentItem, int currentRow, int currentCol
     ){
-        var f = rowChanged;
+        Fn2 f = rowChanged;
         if( f!=null )f.apply(lastRow, currentRow);
     }
     //</editor-fold>
@@ -846,7 +846,7 @@ public class TableFocusTracker
         Object lastItm, int lastRow, int lastCol,
         Object currentItem, int currentRow, int currentCol
     ){
-        var f = cellChanged;
+        Fn4 f = cellChanged;
         if( f!=null )f.apply(lastRow, lastCol, currentRow, currentCol);
     }
     //</editor-fold>
@@ -915,7 +915,7 @@ public class TableFocusTracker
         Object lastItm, int lastRow, int lastCol,
         Object currentItem, int currentRow, int currentCol
     ){
-        var f = itemChanged;
+        Fn6 f = itemChanged;
         if( f!=null )f.apply(lastRow,lastCol,lastItm, currentRow,currentCol,currentItem);
     }
     //</editor-fold>

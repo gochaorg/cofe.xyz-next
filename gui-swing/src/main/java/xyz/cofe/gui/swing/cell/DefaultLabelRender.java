@@ -384,7 +384,7 @@ public class DefaultLabelRender extends LabelRender {
 
             if( val instanceof TreeTableNodeValue ){
                 TreeTableNodeValue ttnv = (TreeTableNodeValue)val;
-                var cutmp = ttnv.getCustomPainter();
+                Fn2<Graphics,Rectangle,Object> cutmp = ttnv.getCustomPainter();
                 if(cutmp!=null){
                     customPainter = cutmp;
                 }else{

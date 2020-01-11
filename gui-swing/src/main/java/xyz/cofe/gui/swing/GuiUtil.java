@@ -138,7 +138,7 @@ public class GuiUtil
         {
             Container cont = (Container)from;
             Component[] childrenArray = cont.getComponents();
-            var childrenIters = Eterable.of(childrenArray);
+            Eterable childrenIters = Eterable.of(childrenArray);
             return childrenIters;
         }
         return emptyComponents;

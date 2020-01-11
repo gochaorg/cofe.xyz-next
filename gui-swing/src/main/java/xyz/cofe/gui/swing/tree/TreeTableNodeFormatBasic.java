@@ -153,7 +153,7 @@ public class TreeTableNodeFormatBasic implements TreeTableNodeFormat {
     public AttributedString createAttributedString( String text, Object value ){
         if( text==null )throw new IllegalArgumentException( "text==null" );
 
-        var txtConv = convertor;
+        Function<Object,String> txtConv = convertor;
         String txt = text.toString();
 
         if( txtConv!=null ){

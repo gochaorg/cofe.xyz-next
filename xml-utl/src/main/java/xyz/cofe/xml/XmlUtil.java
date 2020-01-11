@@ -78,6 +78,7 @@ import xyz.cofe.collection.Visitor;
 import xyz.cofe.ecolls.Predicates;
 import xyz.cofe.io.fn.IOFun;
 import xyz.cofe.iter.Eterable;
+import xyz.cofe.iter.TreeIterBuilder;
 import xyz.cofe.iter.TreeStep;
 import xyz.cofe.text.Text;
 
@@ -1000,7 +1001,7 @@ public class XmlUtil
         if (node== null) {
             throw new IllegalArgumentException("node==null");
         }
-        var e = Eterable.tree(node, (NodesExtracter)followers());
+        TreeIterBuilder e = Eterable.tree(node, (NodesExtracter)followers());
         return e.go();
     }
     //</editor-fold>

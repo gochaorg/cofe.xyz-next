@@ -42,6 +42,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import xyz.cofe.collection.graph.Edge;
+import xyz.cofe.collection.graph.Path;
 import xyz.cofe.ecolls.Fn1;
 import xyz.cofe.gui.swing.properties.Property;
 import xyz.cofe.gui.swing.properties.PropertyValue;
@@ -183,7 +186,7 @@ public class CSVExchanger
             .map( pth -> new SequenceCaster(pth) ).collect(Collectors.toList());*/
 
         final List<SequenceCaster> casters = new ArrayList<SequenceCaster>();
-        for( var p : tc.getCastPaths(String.class, Boolean.class) ){
+        for( Path p : tc.getCastPaths(String.class, Boolean.class) ){
             SequenceCaster sc = new SequenceCaster(p);
             casters.add( sc );
         }
@@ -230,30 +233,30 @@ public class CSVExchanger
     }
 
     private void initNumCast(TypeCastGraph tc){
-        var lp1 = tc.getCastPaths(String.class, BigDecimal.class);
-        for( var p : lp1 ){
-            for( var e : p.fetch(0, p.nodeCount()) ){
+        List<Path<Class,Function<Object,Object>>> lp1 = tc.getCastPaths(String.class, BigDecimal.class);
+        for( Path<Class,Function<Object,Object>> p : lp1 ){
+            for( Edge e : p.fetch(0, p.nodeCount()) ){
                 logFiner("initNumCast {0}", e.getEdge());
             }
         }
 
-        var lp2 = tc.getCastPaths(BigDecimal.class, int.class);
-        for( var p : lp2 ){
-            for( var e : p.fetch(0, p.nodeCount()) ){
+        List<Path<Class,Function<Object,Object>>> lp2 = tc.getCastPaths(BigDecimal.class, int.class);
+        for( Path<Class,Function<Object,Object>> p : lp2 ){
+            for( Edge e : p.fetch(0, p.nodeCount()) ){
                 logFiner("initNumCast {0}", e.getEdge());
             }
         }
 
-        for( var p1 : lp1 ){
-            for( var p2 : lp2 ){
-                var path = new LinkedList<Function<Object,Object>>();
+        for( Path<Class,Function<Object,Object>> p1 : lp1 ){
+            for( Path<Class,Function<Object,Object>> p2 : lp2 ){
+                List<Function<Object,Object>> path = new ArrayList<Function<Object,Object>>();
 
-                for( var e1 : p1.fetch(0, p1.nodeCount()) ){
+                for( Edge<Class,Function<Object,Object>> e1 : p1.fetch(0, p1.nodeCount()) ){
                     path.add( e1.getEdge() );
                 }
 
                 //p2.forEach( e2 -> { path.add(e2.getEdge()); } );
-                for( var e2 : p2.fetch(0, p2.nodeCount()) ){
+                for( Edge<Class,Function<Object,Object>> e2 : p2.fetch(0, p2.nodeCount()) ){
                     path.add( e2.getEdge() );
                 }
 
@@ -381,7 +384,7 @@ public class CSVExchanger
     }
 
     private String getTextOfCell( Object ob, Column col, TypeCastGraph tc, Consumer<Throwable> errReciver ){
-        var conv = col.getReader();
+        Function<Object,Object> conv = col.getReader();
         if( conv==null )return null;
 
         try {
@@ -452,7 +455,7 @@ public class CSVExchanger
         };
 
         Eterable<String> strIterable = () -> strLineIterator;
-        var emptyLineSkip = strIterable.filter( str -> str!=null && str.trim().length()>0 );
+        Eterable<String> emptyLineSkip = strIterable.filter( str -> str!=null && str.trim().length()>0 );
 
         Fn1<Map<Column,String>,Object> itemBuilder = map -> {
                 if( defItmBuilder==null )return null;
@@ -506,7 +509,7 @@ public class CSVExchanger
                 return obj;
             };
 
-        var strConv = lineToObject(csv, rmapcol, itemBuilder);
+        Function<String,Object> strConv = lineToObject(csv, rmapcol, itemBuilder);
 
         Eterable<Object> convIter = emptyLineSkip.map(strConv);
         Iterable<Object> skipNullObjects = convIter.notNull();

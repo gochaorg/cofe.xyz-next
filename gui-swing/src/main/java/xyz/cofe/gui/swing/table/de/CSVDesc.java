@@ -361,8 +361,7 @@ public class CSVDesc {
     /**
      * Перечень фиксированных колонок
      */
-    protected List<FixedColumn> columns = new BasicEventList<>() {
-    };
+    protected List<FixedColumn> columns = new BasicEventList<FixedColumn>();
 
     /**
      * Указывает перечень фиксированных колонок

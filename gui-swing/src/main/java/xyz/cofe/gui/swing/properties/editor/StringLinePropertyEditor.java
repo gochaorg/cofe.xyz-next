@@ -136,10 +136,7 @@ public class StringLinePropertyEditor extends AbstractPropertyEditor implements 
         nullCheckBox.setText("null");
 
         //Consumer cons = (e) -> { nullCheckBox.setSelected(false); };
-        var cons = new Consumer<KeyEvent>() {
-            @Override
-            public void accept(KeyEvent obj)
-            { nullCheckBox.setSelected(false); }};
+        Consumer<KeyEvent> cons = obj->nullCheckBox.setSelected(false);
 
         SwingListener.onKeyPressed(textField, cons);
         SwingListener.onKeyTyped(textField, cons);

@@ -288,7 +288,7 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
 
     //<editor-fold defaultstate="collapsed" desc="onTreeNodeExpanded()">
     private void onTreeNodeExpanded(TreeTableNodeExpanded ev) {
-        var ettn1 = ev==null ? null : ev.getSource();
+        TreeTableNode ettn1 = ev==null ? null : ev.getSource();
         TreeTableNodeBasic ettn = (TreeTableNodeBasic)ettn1;
         Object ettnData = ettn==null ? null : ettn.getData();
 
@@ -298,7 +298,7 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
 
         TreeSet<Integer> includeRows = new TreeSet<>();
 
-        for( var twnode : ev.getSource().walk().go()){
+        for( TreeTableNode twnode : ev.getSource().walk().go()){
             TreeTableNode node = ((TreeTableNode)twnode);
 
             int si = ((TreeTableModelInterface)getTableModel()).getRowOf(node);
@@ -358,7 +358,7 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
 
     //<editor-fold defaultstate="collapsed" desc="onTreeNodeCollapsed()">
     private void onTreeNodeCollapsed(TreeTableNodeCollapsed ev) {
-        var ettn1 = ev==null ? null : ev.getSource();
+        TreeTableNode<?> ettn1 = ev==null ? null : ev.getSource();
 
         TreeTableNodeBasic ettn = (TreeTableNodeBasic)ettn1;
         Object ettnData = ettn==null ? null : ettn.getData();
@@ -370,7 +370,7 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
         TreeSet<Integer> removedRows = new TreeSet<>();
         TreeSet<Integer> forRemoveFrontRows = new TreeSet<>();
 
-        for( var twnode : ev.getSource().walk().tree()){
+        for( TreeStep twnode : ev.getSource().walk().tree()){
             TreeStep ts = (((TreeStep)twnode));
             TreeTableNode node = (TreeTableNode) ts.getNode();
 

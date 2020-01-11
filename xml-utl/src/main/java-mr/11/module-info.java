@@ -1,5 +1,6 @@
 open module xyz.cofe.xml.utl {
     requires java.base;
+    requires java.xml;
     requires transitive java.logging;
     requires transitive xyz.cofe.ecolls;
     requires transitive xyz.cofe.text;

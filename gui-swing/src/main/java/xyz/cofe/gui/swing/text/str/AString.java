@@ -211,7 +211,7 @@ public class AString extends BaseAString {
 
         StringBuilder sb = new StringBuilder();
 
-        var aiters =
+        Eterable<BaseAString> aiters =
                 Eterable.<BaseAString>single(this).union(Eterable.of(astrings));
 
         int ptr = 0;
@@ -1011,15 +1011,12 @@ public class AString extends BaseAString {
                 return Format.this;
             }
             public Format sscript(){
-                formatters.add(new Fn1<>() {
-                    @Override
-                    public AString apply( AString str ){
-                        LinkedHashSet<AttributedCharacterIterator.Attribute> set
-                            = new LinkedHashSet<>();
-                        set.add(TextAttribute.SUPERSCRIPT);
-                        str.removeAttributes(set, begin, end);
-                        return str;
-                    }
+                formatters.add(str->{
+                    LinkedHashSet<AttributedCharacterIterator.Attribute> set
+                        = new LinkedHashSet<>();
+                    set.add(TextAttribute.SUPERSCRIPT);
+                    str.removeAttributes(set, begin, end);
+                    return str;
                 });
                 return Format.this;
             }
