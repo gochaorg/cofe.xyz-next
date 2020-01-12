@@ -19,6 +19,14 @@
         <timestamp>${maven.build.timestamp}</timestamp>
     </properties>
 
+    <!-- Подключение git для хранения исходников -->
+    <scm>
+        <connection>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</connection>
+        <url>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</url>
+        <developerConnection>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -39,6 +47,7 @@
             </properties>
         </profile>
 
+        <!-- Поддержка multi-release jar -->
         <profile>
             <id>jdk11</id>
             <activation>
@@ -84,12 +93,6 @@
                                                 <Multi-Release>true</Multi-Release>
                                             </manifestEntries>
                                         </archive>
-<!--                                        <includes>-->
-<!--                                            <include>/xyz/**</include>-->
-<!--                                            <include>/META-INF/maven/**</include>-->
-<!--                                            <include>/META-INF/versions/11/module-info.class</include>-->
-<!--                                            <include>/META-INF/services/**</include>-->
-<!--                                        </includes>-->
                                         <excludes>
                                             <exclude>**/versions/11/xyz/**</exclude>
                                         </excludes>
@@ -102,68 +105,131 @@
             </build>
         </profile>
 
-<!--        <profile>-->
-<!--            <id>jdk11</id>-->
-<!--            <activation>-->
-<!--                <jdk>[11,)</jdk>-->
-<!--            </activation>-->
-<!--            <build>-->
-<!--                <pluginManagement>-->
-<!--                    <plugins>-->
-<!--                        <plugin>-->
-<!--                            <groupId>org.apache.maven.plugins</groupId>-->
-<!--                            <artifactId>maven-compiler-plugin</artifactId>-->
-<!--                            <executions>-->
-<!--                                <execution>-->
-<!--                                    <id>jdk11</id>-->
-<!--                                    <goals>-->
-<!--                                        <goal>compile</goal>-->
-<!--                                    </goals>-->
-<!--                                    <configuration>-->
-<!--                                        <release>11</release>-->
-<!--&lt;!&ndash;                                        <compileSourceRoots>&ndash;&gt;-->
-<!--&lt;!&ndash;                                            <compileSourceRoot>${project.basedir}/src/main/java11</compileSourceRoot>&ndash;&gt;-->
-<!--&lt;!&ndash;                                        </compileSourceRoots>&ndash;&gt;-->
-<!--                                        <outputDirectory>${project.build.outputDirectory}/META-INF/versions/11</outputDirectory>-->
-<!--&lt;!&ndash;                                        <compilerArgs>&ndash;&gt;-->
-<!--&lt;!&ndash;                                            <arg>&#45;&#45;patch-module</arg>&ndash;&gt;-->
-<!--&lt;!&ndash;                                            <arg>example.mrjar=${project.build.outputDirectory}</arg>&ndash;&gt;-->
-<!--&lt;!&ndash;                                        </compilerArgs>&ndash;&gt;-->
-<!--                                    </configuration>-->
-<!--                                </execution>-->
-<!--                            </executions>-->
-<!--                        </plugin>-->
-<!--                        <plugin>-->
-<!--                            <groupId>org.apache.maven.plugins</groupId>-->
-<!--                            <artifactId>maven-jar-plugin</artifactId>-->
-<!--                            <executions>-->
-<!--                                <execution>-->
-<!--                                    <id>default-jar</id>-->
-<!--                                    <configuration>-->
-<!--                                        <archive>-->
-<!--                                            <manifestEntries>-->
-<!--                                                <Multi-Release>true</Multi-Release>-->
-<!--                                            </manifestEntries>-->
-<!--                                        </archive>-->
-<!--                                    </configuration>-->
-<!--                                </execution>-->
-<!--                            </executions>-->
-<!--                        </plugin>-->
-<!--                    </plugins>-->
-<!--                </pluginManagement>-->
-<!--            </build>-->
-<!--        </profile>-->
+        <profile>
+            <id>pub-sonatype</id>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+
+            <build>
+                <plugins>
+                    <!-- Поддержка junit -->
+<!--                    <plugin>-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-surefire-plugin</artifactId>-->
+<!--                        <version>2.15</version>-->
+<!--                    </plugin>-->
+
+                    <!-- Поддержка Service Provider Interfaces -->
+<!--                    <plugin>-->
+<!--                        <groupId>eu.somatik.serviceloader-maven-plugin</groupId>-->
+<!--                        <artifactId>serviceloader-maven-plugin</artifactId>-->
+<!--                        <version>1.0.3</version>-->
+<!--                        <configuration>-->
+<!--                            <services>-->
+<!--                                <param>xyz.cofe.types.spi.ConvertToStringService</param>-->
+<!--                                <param>xyz.cofe.types.spi.ConvertToValueService</param>-->
+<!--                                <param>xyz.cofe.typeconv.spi.GetTypeConvertor</param>-->
+<!--                                <param>xyz.cofe.fs.spi.OSFileSystemService</param>-->
+<!--                                <param>xyz.cofe.sql.ConnectionPoolService</param>-->
+<!--                            </services>-->
+<!--                        </configuration>-->
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <goals>-->
+<!--                                    <goal>generate</goal>-->
+<!--                                </goals>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
+<!--                    </plugin>-->
+
+                    <!-- Копиляция -->
+<!--                    <plugin>-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-compiler-plugin</artifactId>-->
+<!--                        <version>2.3.2</version>-->
+<!--                        <configuration>-->
+<!--                            <showDeprecation>true</showDeprecation>-->
+<!--                        </configuration>-->
+<!--                    </plugin>-->
+
+                    <!-- Архив исходников -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Документация java исходников -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.9.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Создание подписи -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Публикация в oss.sonatype.org -->
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+
+<!--                <testResources>-->
+<!--                    <testResource>-->
+<!--                        <directory>${project.basedir}/src/test/java</directory>-->
+<!--                    </testResource>-->
+<!--                </testResources>-->
+            </build>
+        </profile>
     </profiles>
 
     <build>
-<!--        <extensions>-->
-<!--            <extension>-->
-<!--                <groupId>pw.krejci</groupId>-->
-<!--                <artifactId>multi-release-jar-maven-plugin</artifactId>-->
-<!--                <version>0.1.5</version>-->
-<!--            </extension>-->
-<!--        </extensions>-->
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -188,8 +254,24 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <!-- Версионность -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <preparationGoals>clean install</preparationGoals>
+                    <goals>deploy</goals>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                </configuration>
+            </plugin>
+            <!-- Поддержка junit -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.15</version>
+            </plugin>
         </plugins>
     </build>
-
 
 </project>
