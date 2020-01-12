@@ -9,6 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>gui-swing-j2d</artifactId>
+    <artifactId>gui-swing-resources</artifactId>
+
 
 </project>
