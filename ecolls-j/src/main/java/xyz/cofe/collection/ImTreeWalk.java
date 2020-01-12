@@ -7,6 +7,10 @@ import xyz.cofe.iter.TreeStep;
 
 import java.util.Iterator;
 
+/**
+ * Функции итерации по дочерним узлам
+ * @param <A> Тип узла
+ */
 public interface ImTreeWalk<A extends ImTree<? extends A>> extends ImTree<A> {
     /**
      * Обход дочерних элементов

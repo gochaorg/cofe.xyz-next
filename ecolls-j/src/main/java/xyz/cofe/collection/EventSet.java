@@ -109,9 +109,17 @@ public interface EventSet<E>
         });
     }
 
+    /**
+     * Прокчи итератор
+     * @param <E> Тип элемента
+     */
     class EIterator<E> implements Iterator<E> {
         protected Iterator<E> itr;
 
+        /**
+         * Конструктор
+         * @param itr исходный итератор
+         */
         public EIterator(Iterator<E> itr){
             if( itr == null )throw new IllegalArgumentException( "itr == null" );
             this.itr = itr;
@@ -128,6 +136,9 @@ public interface EventSet<E>
         }
     }
 
+    /**
+     * Пустой итератор, не возвращает значения
+     */
     static class DummyIterator implements Iterator {
         @Override
         public boolean hasNext() {

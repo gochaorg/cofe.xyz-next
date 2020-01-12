@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 import xyz.cofe.collection.SortInsert;
 
 /**
- *
+ * Вставка значения в контейнер с профеллирование времени работы
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
  */
 public abstract class SortInsertProfiling<Container,Element> extends SortInsertDefault<Container,Element>
