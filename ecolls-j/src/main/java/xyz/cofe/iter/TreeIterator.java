@@ -364,32 +364,62 @@ public class TreeIterator<A> implements Iterator<TreeStep<A>> {
             this(null,null,0);
         }
 
+        /**
+         * Рабочий набор узлов
+         */
         protected List<TreeStep<A>> workset;
 
+        /**
+         * Возвращает рабочий набор узлов
+         * @return рабочий набор узлов
+         */
         public List<TreeStep<A>> getWorkset() {
             return workset;
         }
 
+        /**
+         * Указывает рабочий набор узлов
+         * @param workset рабочий набор узлов
+         */
         public void setWorkset(List<TreeStep<A>> workset) {
             this.workset = workset;
         }
 
         protected TreeStep<A> node;
 
+        /**
+         * Возвращает текущий узел
+         * @return текущий узел
+         */
         public TreeStep<A> getNode() {
             return node;
         }
 
+        /**
+         * Указывает текущий узел
+         * @param node текущий узел
+         */
         public void setNode(TreeStep<A> node) {
             this.node = node;
         }
 
+        /**
+         * Возвращает индекс текущего узла
+         */
         protected int nodeIndex;
 
+        /**
+         * Возвращает индекс текущего узла, согласно которому он был извлечен из функции следования
+         * @return индекс текущего узла
+         */
         public int getNodeIndex() {
             return nodeIndex;
         }
 
+        /**
+         * Указывает индекс текущего узла, согласно которому он был извлечен из функции следования
+         * @param nodeIndex индекс текущего узла
+         */
         public void setNodeIndex(int nodeIndex) {
             this.nodeIndex = nodeIndex;
         }

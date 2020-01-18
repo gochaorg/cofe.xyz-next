@@ -8,6 +8,10 @@ import java.util.Iterator;
 public class ArrayIterable<T> implements Eterable<T> {
     private T[] arr;
 
+    /**
+     * Конструктор
+     * @param srcArray исходный массив
+     */
     public ArrayIterable(T[] srcArray) {
         if( srcArray == null ){
             throw new IllegalArgumentException("srcArray == null");

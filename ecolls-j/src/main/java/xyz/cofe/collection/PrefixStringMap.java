@@ -41,6 +41,11 @@ public class PrefixStringMap<T> implements Map<String, T> {
     protected Map<String,T> wrappedMap = null;
     protected String prefix = null;
 
+    /**
+     * Конструктор
+     * @param prefix префикс
+     * @param wrappedMap целевая карта
+     */
     public PrefixStringMap(String prefix, Map<String,T> wrappedMap){
         if( prefix==null )throw new IllegalArgumentException("prefix==null");
         if( wrappedMap==null )throw new IllegalArgumentException("wrappedMap==null");
@@ -48,9 +53,22 @@ public class PrefixStringMap<T> implements Map<String, T> {
         this.prefix = prefix;
     }
 
-    public Map<String,T> getWrappedMap(){return wrappedMap;}
+    /**
+     * Карта которая хранит значения
+     * @return карта
+     */
+    public Map<String,T> target(){return wrappedMap;}
+
+    /**
+     * Префик используемый в ключах
+     * @return префикс ключей
+     */
     public String getPrefix(){ return prefix; }
 
+    /**
+     * Возвращает значения карты
+     * @return значения
+     */
     @Override
     public Collection<T> values() {
         List<T> l = new ArrayList<T>();
@@ -63,11 +81,20 @@ public class PrefixStringMap<T> implements Map<String, T> {
         return l;
     }
 
+    /**
+     * Возвращает кол-во элементов
+     * @return кол=во элементов
+     */
     @Override
     public int size() {
         return keySet().size();
     }
 
+    /**
+     * Удаляет элемент по его ключу
+     * @param key ключ
+     * @return удаленный элемент
+     */
     @Override
     public T remove(Object key) {
         if( key==null )return null;
@@ -75,6 +102,10 @@ public class PrefixStringMap<T> implements Map<String, T> {
         return wrappedMap.remove(k);
     }
 
+    /**
+     * Добавляет значения из другой карты
+     * @param m карта
+     */
     @Override
     public void putAll(Map<? extends String, ? extends T> m) {
         for(String key : m.keySet()){
@@ -84,6 +115,12 @@ public class PrefixStringMap<T> implements Map<String, T> {
         }
     }
 
+    /**
+     * Добавляет ключ/значение
+     * @param key ключ
+     * @param value значение
+     * @return предыдущее значение
+     */
     @Override
     public T put(String key, T value) {
         if( key==null )return null;
@@ -91,6 +128,7 @@ public class PrefixStringMap<T> implements Map<String, T> {
         return wrappedMap.put(k, value);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Set<String> keySet() {
         Set<String> keys = new TreeSet<String>();
@@ -103,11 +141,20 @@ public class PrefixStringMap<T> implements Map<String, T> {
         return keys;
     }
 
+    /**
+     * Проверяет что карта пуста
+     * @return true - нет элементов в карте
+     */
     @Override
     public boolean isEmpty() {
         return keySet().isEmpty();
     }
 
+    /**
+     * Возвращает значение по ключу
+     * @param key ключ
+     * @return значение или null
+     */
     @Override
     public T get(Object key) {
         String k = key==null ? null : prefix+key;
@@ -137,6 +184,10 @@ public class PrefixStringMap<T> implements Map<String, T> {
         };
     }
 
+    /**
+     * Возвращает перечень пар
+     * @return пары
+     */
     @Override
     public Set<Entry<String, T>> entrySet() {
         Set<Entry<String,T>> r = new HashSet<Entry<String, T>>();
@@ -150,19 +201,36 @@ public class PrefixStringMap<T> implements Map<String, T> {
         return r;
     }
 
+    /**
+     * Прочеряет наличие значения в карте
+     * @param value значение
+     * @return true - значение есть в карте
+     */
     @Override
     public boolean containsValue(Object value) {
         return values().contains(value);
     }
 
+    /**
+     * Проверяет наличие ключа в карте
+     * @param key ключ
+     * @return true - есть в карте
+     */
     @Override
     public boolean containsKey(Object key) {
         String k = key==null ? null : prefix+key.toString();
         return wrappedMap.containsKey(k);
     }
 
+    /**
+     * Удаялет все значения
+     */
     @Override
     public void clear() {
+//        for( Object k : keySet().toArray() ){
+//            remove(k);
+//        }
+        //TODO Вот тут херня какая-то
         wrappedMap.clear();
     }
 }

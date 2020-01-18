@@ -8,6 +8,7 @@ import java.util.WeakHashMap;
 /**
  * Поддержка реализации подписчиков на события CollectionEventPublisher
  */
+@SuppressWarnings("WeakerAccess")
 public class CollectionEventPublisherImpl {
     private static final WeakHashMap<CollectionEventPublisher, ListenersHelper> eventListeners = new WeakHashMap<>();
 
@@ -20,6 +21,7 @@ public class CollectionEventPublisherImpl {
      * @param <E> тип события
      * @return
      */
+    @SuppressWarnings({ "unchecked", "Convert2MethodRef", "WeakerAccess" })
     public static <COL, EL, L extends CollectionListener<COL,EL>, E extends CollectionEvent<COL,EL>>
     ListenersHelper<L, E>
     listenersHelperOf(CollectionEventPublisher<COL,EL> publisher) {

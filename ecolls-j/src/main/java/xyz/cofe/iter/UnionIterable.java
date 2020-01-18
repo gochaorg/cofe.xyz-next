@@ -5,19 +5,27 @@ import java.util.Iterator;
 
 /**
  * Итератор выдающий последовательность значений из итераторов
- * @param <TValue>
+ * @param <TValue> тип элементов
  */
-public class JoinIterable<TValue> implements Eterable<TValue>
+public class UnionIterable<TValue> implements Eterable<TValue>
 {
     private Iterable<TValue>[] src = null;
     private Iterable<Iterable<TValue>> srcItr = null;
 
-    public JoinIterable(Iterable<TValue> ... src)
+    /**
+     * Конструктор
+     * @param src итераторы
+     */
+    public UnionIterable( Iterable<TValue> ... src)
     {
         this.src = src;
     }
 
-    public JoinIterable(Iterable<Iterable<TValue>> src)
+    /**
+     * Конструктор
+     * @param src итераторы
+     */
+    public UnionIterable( Iterable<Iterable<TValue>> src)
     {
         if( src==null )throw new IllegalArgumentException("src==null");
         this.srcItr = src;
@@ -55,6 +63,6 @@ public class JoinIterable<TValue> implements Eterable<TValue>
             }
         }
 
-        return new JoinIterator<TValue>(list);
+        return new UnionIterator<TValue>(list);
     }
 }

@@ -5,5 +5,9 @@ package xyz.cofe.collection;
  * @param <K> тип индекса
  */
 public interface ItemIndex<K> {
+    /**
+     * Возвращает индекс элемента в коллекции
+     * @return индекс элемента
+     */
     K getIndex();
 }

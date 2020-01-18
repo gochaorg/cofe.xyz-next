@@ -1,11 +1,9 @@
 package xyz.cofe.iter;
 
-import xyz.cofe.collection.NodesExtracter;
 import xyz.cofe.ecolls.*;
 
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -83,7 +81,7 @@ public interface Eterable<A> extends Iterable<A> {
             niter[i+1] = iter[i];
         }
         niter[0] = this;
-        return new JoinIterable<>(niter);
+        return new UnionIterable<>(niter);
     }
 
     /**
@@ -98,7 +96,7 @@ public interface Eterable<A> extends Iterable<A> {
         iter.forEach( it -> lst.add(it) );
 
         Iterable<A>[] niter = lst.toArray(new Iterable[0]);
-        return new JoinIterable<>(niter);
+        return new UnionIterable<>(niter);
     }
 
     /**

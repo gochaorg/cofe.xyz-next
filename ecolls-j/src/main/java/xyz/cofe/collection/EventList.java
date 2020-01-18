@@ -212,6 +212,12 @@ public interface EventList<E>
     }
     //</editor-fold>
     //<editor-fold desc="read methods">
+
+    /**
+     * Возвращает кол-во элементов в коллекции
+     * @return кол-во элементов
+     * @see #isEmpty()
+     */
     @Override
     default int size() {
         return readLock(()->{
@@ -221,6 +227,10 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Проверяет что коллекция пуста
+     * @return true - коллекция пуста
+     */
     @Override
     default boolean isEmpty() {
         return readLock(()->{
@@ -230,6 +240,11 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Проверяет наличие элемента в коллеции
+     * @param o элемент
+     * @return true - элемент присуствует в коллекции
+     */
     @Override
     default boolean contains(Object o) {
         return readLock(()->{
@@ -239,6 +254,10 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Создает массив объектов коллеции
+     * @return массив объектов коллеции
+     */
     @Override
     default Object[] toArray() {
         return readLock(()->{
@@ -248,6 +267,12 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Создает массив объектов коллеции
+     * @param a пустой массив (изза особенности реализации Generic)
+     * @param <T> ТИп элементов массива
+     * @return массив
+     */
     @SuppressWarnings("SuspiciousToArrayCall")
     @Override
     default <T> T[] toArray(T[] a) {
@@ -258,6 +283,11 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Проверяет наличие всех элементов в коллеции
+     * @param c искомые объекты
+     * @return true - если все искомые объекты есть в коллеции
+     */
     @Override
     default boolean containsAll(Collection<?> c) {
         if( c == null )throw new IllegalArgumentException( "c == null" );
@@ -268,6 +298,11 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Получение объекта по его индексу
+     * @param index индекс элемента
+     * @return Элемент
+     */
     @Override
     default E get(int index) {
         return readLock(()->{
@@ -277,6 +312,11 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Поиск первого индекса элемента в коллекции
+     * @param o элемент
+     * @return индекс или -1, если не найден
+     */
     @Override
     default int indexOf(Object o) {
         return readLock(()->{
@@ -286,6 +326,11 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Поиск последнего индекса элемента в коллекции
+     * @param o элемент
+     * @return индекс или -1, если не найден
+     */
     @Override
     default int lastIndexOf(Object o) {
         return readLock(()->{
@@ -295,27 +340,52 @@ public interface EventList<E>
         });
     }
 
+    /**
+     * Получение итератора по списку, от начала к концу
+     * @return итератор
+     */
     @Override
     default Iterator<E> iterator() {
         return new SubEventListIterator<>(this);
     }
 
+    /**
+     * Получение итератора по списку
+     * @return итератор
+     */
     @Override
     default ListIterator<E> listIterator() {
         return new SubEventListIterator<>(this);
     }
 
+    /**
+     * Получение итератора по списку,, начала итерации согласно указанному индексу
+     * @param index индекс начала итерирования
+     * @return итератор
+     */
     @Override
     default ListIterator<E> listIterator(int index) {
         return new SubEventListIterator<>(this, index);
     }
 
+    /**
+     * Создание проекции списка
+     * @param fromIndex начальный индекс
+     * @param toIndex конечный индекс
+     * @return Проекция
+     */
     @Override
     default List<E> subList(int fromIndex, int toIndex) {
         return readLock(()->new SubEventList<>(this,fromIndex,toIndex));
     }
     //</editor-fold>
     //<editor-fold desc="modify methods">
+
+    /**
+     * Добавляет элемент в список
+     * @param e элемент
+     * @return true - список изменен
+     */
     @Override
     default boolean add(E e) {
         return withCollectionEventQueue(()->writeLock(()->{
@@ -331,6 +401,11 @@ public interface EventList<E>
         }));
     }
 
+    /**
+     * Удаляет элемент из списка
+     * @param o элемент
+     * @return true - список изменен
+     */
     @SuppressWarnings("SuspiciousMethodCalls")
     @Override
     default boolean remove(Object o) {
@@ -350,6 +425,11 @@ public interface EventList<E>
         }));
     }
 
+    /**
+     * Добавляет все элементы в список
+     * @param c элементы
+     * @return true - список изменен
+     */
     @SuppressWarnings("ConstantConditions")
     @Override
     default boolean addAll(Collection<? extends E> c) {
@@ -369,6 +449,11 @@ public interface EventList<E>
         }));
     }
 
+    /**
+     * Добавляет все элементы в список, в указанную позицию
+     * @param c элементы
+     * @return true - список изменен
+     */
     @Override
     default boolean addAll(int index, Collection<? extends E> c) {
         if( c == null ) throw new IllegalArgumentException("c == null");
@@ -386,48 +471,31 @@ public interface EventList<E>
         }));
     }
 
-//    @SuppressWarnings({"ConstantConditions", "UnnecessaryUnboxing"})
-//    default boolean removeByPredicate(Predicate<? super E> filter) {
-//        if( filter==null ) throw new IllegalArgumentException("filter==null");
-//
-//        List<E> tgt = target();
-//        if( tgt == null ) throw new TargetNotAvailable();
-//
-//        int changeCount = 0;
-//        TreeSet<Integer> removeSet = new TreeSet<>();
-//        for( int i = size()-1; i >= 0; i-- ){
-//            E e = tgt.get(i);
-//            if( filter.test(e) ){
-//                //fireDeleting(i, e);
-//                removeSet.add(i);
-//            }
-//        }
-//
-//        Iterator<Integer> iter = removeSet.descendingIterator();
-//        if( iter != null ){
-//            while( iter.hasNext() ) {
-//                int idx = iter.next().intValue();
-//                E e = tgt.remove(idx);
-//                fireDeleted(idx, e);
-//                changeCount++;
-//            }
-//        }
-//
-//        return changeCount>0;
-//    }
-
+    /**
+     * Удаляет указанные элементы из списока
+     * @param coll элементы
+     * @return true - список изменен
+     */
     @Override
     default boolean removeAll(Collection<?> coll) {
         if( coll == null ) throw new IllegalArgumentException("coll == null");
         return withCollectionEventQueue(()->writeLock(()->EventListImpl.removeByPredicate(this, coll::contains)));
     }
 
+    /**
+     * Удаляет элементы из списока, за исключением указанных
+     * @param coll элементы
+     * @return true - список изменен
+     */
     @Override
     default boolean retainAll(Collection<?> coll) {
         if( coll == null ) throw new IllegalArgumentException("coll == null");
         return withCollectionEventQueue(()->writeLock(()->EventListImpl.removeByPredicate(this, x->!coll.contains(x))));
     }
 
+    /**
+     * Удаляет все элементы
+     */
     @Override
     default void clear() {
         //scn(()->{
@@ -435,6 +503,12 @@ public interface EventList<E>
         //});
     }
 
+    /**
+     * Записиывает элемент в определенную позицию
+     * @param index индекс
+     * @param element элемент
+     * @return предыдущее значение
+     */
     @Override
     default E set(int index, E element) {
         return withCollectionEventQueue(()->writeLock(()->{
@@ -449,6 +523,11 @@ public interface EventList<E>
         }));
     }
 
+    /**
+     * Вставляет элемент в определнное место списка
+     * @param index индекс
+     * @param element элемент
+     */
     @Override
     default void add(int index, E element) {
         withCollectionEventQueue(()->writeLock(()->{
@@ -461,6 +540,11 @@ public interface EventList<E>
         }));
     }
 
+    /**
+     * Удялет элемент из списка
+     * @param index индекс элемента
+     * @return удаленный элемент
+     */
     @Override
     default E remove(int index) {
         return withCollectionEventQueue(()->writeLock(()->{
@@ -475,11 +559,25 @@ public interface EventList<E>
         }));
     }
 
+    /**
+     * Замена всех элементов
+     * @param operator функция замены
+     */
     @Override
     default void replaceAll(UnaryOperator<E> operator) {
         if( operator == null )throw new IllegalArgumentException( "operator == null" );
+        withCollectionEventQueue(()->writeLock(()->{
+            final ListIterator<E> li = this.listIterator();
+            while( li.hasNext() ){
+                li.set(operator.apply(li.next()));
+            }
+        }));
     }
 
+    /**
+     * Сортировка списка
+     * @param c функция сравнения
+     */
     @SuppressWarnings("unchecked")
     @Override
     default void sort(Comparator<? super E> c) {
@@ -494,6 +592,11 @@ public interface EventList<E>
         }));
     }
 
+    /**
+     * Удаление элементов согласно фильтру
+     * @param filter фильтр
+     * @return функция замены
+     */
     @Override
     default boolean removeIf(Predicate<? super E> filter) {
         if( filter == null )throw new IllegalArgumentException( "filter == null" );

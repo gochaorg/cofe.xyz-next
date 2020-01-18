@@ -25,6 +25,16 @@ public interface Triple<A,B,C> {
      */
     C c();
 
+    /**
+     * Cоздание 3ки параметров
+     * @param a Первый параметр
+     * @param b Второй параметр
+     * @param c Третий параметр
+     * @param <A> Тип первого параметр
+     * @param <B> Тип 2го параметр
+     * @param <C> Тип 3го параметр
+     * @return 3ка параметров
+     */
     static <A,B,C> Triple<A,B,C> of(A a, B b, C c){
         return new Triple<A, B, C>() {
             @Override

@@ -82,6 +82,11 @@ public interface EventSet<E>
     }
     //endregion
     //region read methods
+
+    /**
+     * Вовзаращает кол-во элементов в наборе
+     * @return кол-во элементов
+     */
     @Override
     default int size(){
         return readLock(()->{
@@ -91,6 +96,10 @@ public interface EventSet<E>
         });
     }
 
+    /**
+     * Проверяет на отсуствие элементов в наборе
+     * @return true - нет элементов
+     */
     @Override
     default boolean isEmpty(){
         return readLock(()->{
@@ -100,6 +109,11 @@ public interface EventSet<E>
         });
     }
 
+    /**
+     * Проверяет наличие элемента в наборе
+     * @param o элемент
+     * @return true - элемент присуствует во множестве
+     */
     @Override
     default boolean contains(Object o){
         return readLock(()->{
@@ -151,6 +165,10 @@ public interface EventSet<E>
         }
     }
 
+    /**
+     * Возвращает итератор
+     * @return итератор
+     */
     @SuppressWarnings("unchecked")
     @Override
     default Iterator<E> iterator(){
@@ -166,6 +184,10 @@ public interface EventSet<E>
         });
     }
 
+    /**
+     * Возвращает массив объектов
+     * @return массив
+     */
     @Override
     default Object[] toArray(){
         return readLock(()->{
@@ -175,6 +197,12 @@ public interface EventSet<E>
         });
     }
 
+    /**
+     * Возвращает массив объектов
+     * @param a тип массива
+     * @param <T> тип элемента массива
+     * @return массив
+     */
     @SuppressWarnings("SuspiciousToArrayCall")
     @Override
     default <T> T[] toArray(T[] a){
@@ -192,8 +220,12 @@ public interface EventSet<E>
 //            return tgt.toArray(generator);
 //        });
 //    }
-    //endregion
-    //region modify methods
+
+    /**
+     * Проверяет наличие указанных элементов во множестве
+     * @param c элементы
+     * @return true - все указанные элементы присуствуют во множестве
+     */
     @Override
     default boolean containsAll(Collection<?> c){
         return readLock(()->{
@@ -202,7 +234,14 @@ public interface EventSet<E>
             return tgt.containsAll(c);
         });
     }
+    //endregion
+    //region modify methods
 
+    /**
+     * Добавляет элемент во множество
+     * @param e элемент
+     * @return true - множество измененно
+     */
     @Override
     default boolean add(E e){
         return withCollectionEventQueue(()->writeLock(()->{
@@ -214,6 +253,11 @@ public interface EventSet<E>
         }));
     }
 
+    /**
+     * Удаляет элемент из множества
+     * @param o элемент
+     * @return true - множество измененно
+     */
     @SuppressWarnings("unchecked")
     @Override
     default boolean remove(Object o){
@@ -228,6 +272,11 @@ public interface EventSet<E>
         }));
     }
 
+    /**
+     * Добавляет элементы во множество
+     * @param c элементы
+     * @return множество измененно
+     */
     @Override
     default boolean addAll(Collection<? extends E> c){
         if( c == null )throw new IllegalArgumentException( "c == null" );
@@ -246,23 +295,41 @@ public interface EventSet<E>
         }));
     }
 
+    /**
+     * Удаляет элементы за исключением указанных
+     * @param c элементы
+     * @return множество измененно
+     */
     @Override
     default boolean retainAll(Collection<?> c){
         if( c == null )throw new IllegalArgumentException( "c == null" );
         return removeIf( x -> !c.contains(x) );
     }
 
+    /**
+     * Удаляет указанные элементы
+     * @param c элементы
+     * @return множество измененно
+     */
     @Override
     default boolean removeAll(Collection<?> c){
         if( c == null )throw new IllegalArgumentException( "c == null" );
         return removeIf(c::contains);
     }
 
+    /**
+     * Удаляет все элементы
+     */
     @Override
     default void clear(){
         removeIf(x->true);
     }
 
+    /**
+     * Удаляет все элементы согласно условию
+     * @param filter условие
+     * @return множество измененно
+     */
     @SuppressWarnings("unchecked")
     @Override
     default boolean removeIf(Predicate<? super E> filter) {

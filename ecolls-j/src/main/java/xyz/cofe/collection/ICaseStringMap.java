@@ -34,58 +34,35 @@ import java.util.Map;
 public class ICaseStringMap<V> extends LinkedHashMap<String, V>
 {
     protected boolean ignoreCase = true;
-//    protected boolean saveCase = true;
 
+    /**
+     * Конструктор
+     */
     public ICaseStringMap(){
     }
 
+    /**
+     * Конструктор
+     * @param ignoreCase игнорировать регистр
+     */
     public ICaseStringMap(boolean ignoreCase){
         this.ignoreCase = ignoreCase;
     }
 
+    /**
+     * Возвращает факт игнорирования регистра
+     * @return true - регистр игнорируется
+     */
     public boolean isIgnoreCase()
     {
         return ignoreCase;
     }
 
-//    public boolean isSaveCase()
-//    {
-//        return saveCase;
-//    }
-//
-//    @SuppressWarnings("element-type-mismatch")
-//    protected boolean unsavedCaseContainsKey(Object key)
-//    {
-//        if( key==null )return super.containsKey(key);
-//        if( isIgnoreCase() ){
-//            if( key instanceof String ){
-//                key = ((String)key).toLowerCase();
-//            }
-//            return super.containsKey(key);
-//        }else{
-//            return super.containsKey(key);
-//        }
-//    }
-//
-//    @SuppressWarnings("element-type-mismatch")
-//    protected boolean savedCaseContainsKey(Object needKey)
-//    {
-//        if( needKey==null )return super.containsKey(needKey);
-//        if( isIgnoreCase() ){
-//            if( needKey instanceof String ){
-//                for( String k : keySet() ){
-//                    if( k==null )continue;
-//                    if( ((String)needKey).equalsIgnoreCase(k) ){
-//                        return true;
-//                    }
-//                }
-//            }
-//            return super.containsKey(needKey);
-//        }else{
-//            return super.containsKey(needKey);
-//        }
-//    }
-
+    /**
+     * Проверка наличия ключа
+     * @param key ключ
+     * @return true - есть в карте
+     */
     @Override
     @SuppressWarnings("element-type-mismatch")
     public boolean containsKey(Object key)
@@ -101,6 +78,11 @@ public class ICaseStringMap<V> extends LinkedHashMap<String, V>
         }
     }
 
+    /**
+     * Получение значения по ключу
+     * @param key ключ
+     * @return значение
+     */
     @Override
     @SuppressWarnings("element-type-mismatch")
     public V get(Object key)
@@ -116,6 +98,12 @@ public class ICaseStringMap<V> extends LinkedHashMap<String, V>
         }
     }
 
+    /**
+     * Установка значения по ключу
+     * @param key ключ
+     * @param value значние
+     * @return предыдущее значение
+     */
     @Override
     public V put(String key, V value)
     {
@@ -130,6 +118,10 @@ public class ICaseStringMap<V> extends LinkedHashMap<String, V>
         }
     }
 
+    /**
+     * Слияние данных из другой карты
+     * @param m карта
+     */
     @Override
     public void putAll(Map<? extends String, ? extends V> m)
     {

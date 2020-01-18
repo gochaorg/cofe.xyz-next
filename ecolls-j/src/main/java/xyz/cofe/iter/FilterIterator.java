@@ -3,6 +3,10 @@ package xyz.cofe.iter;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
+/**
+ * Итератор - фильтр
+ * @param <T> тип элементов
+ */
 public class FilterIterator<T> implements Iterator<T>
 {
     /**

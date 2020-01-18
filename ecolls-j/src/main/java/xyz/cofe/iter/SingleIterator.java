@@ -9,6 +9,10 @@ public class SingleIterator<T> implements Iterator<T> {
     private T item = null;
     private boolean readed = false;
 
+    /**
+     * Конструктор
+     * @param item элемент
+     */
     public SingleIterator(T item) {
         this.item = item;
     }

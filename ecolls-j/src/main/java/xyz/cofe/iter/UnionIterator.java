@@ -2,7 +2,11 @@ package xyz.cofe.iter;
 
 import java.util.Iterator;
 
-public class JoinIterator<TValue> implements Iterator<TValue>
+/**
+ * Итератор выдающий последовательность значений из итераторов
+ * @param <TValue> тип элементов
+ */
+public class UnionIterator<TValue> implements Iterator<TValue>
 {
     private Iterable<Iterator<TValue>> src = null;
     private Iterator<Iterator<TValue>> srcitr = null;
@@ -10,7 +14,11 @@ public class JoinIterator<TValue> implements Iterator<TValue>
     private TValue currentValue;
     private Iterator<TValue> currentSrc = null;
 
-    public JoinIterator(Iterable<Iterator<TValue>> src)
+    /**
+     * Конструктор
+     * @param src итераторы
+     */
+    public UnionIterator( Iterable<Iterator<TValue>> src)
     {
         this.src = src;
 

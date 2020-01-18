@@ -9,27 +9,59 @@ import java.util.NoSuchElementException;
  */
 public class SubEventListIterator<E> implements ListIterator<E>, AutoCloseable
 {
+    /**
+     * Список
+     */
     protected EventList<E> elist = null;
+
+    /**
+     * Позиция
+     */
     protected int position = 0;
+
+    /**
+     * Предыдущаяя позиция
+     */
     protected int lastPosition = -1;
+
+    /**
+     * Итератор закрыт
+     */
     protected volatile boolean closed = false;
 
+    /**
+     * Конструктор
+     * @param elist список
+     */
     public SubEventListIterator(EventList<E> elist){
         if( elist==null )throw new IllegalArgumentException( "elist==null" );
         this.elist = elist;
     }
 
+    /**
+     * Конструктор
+     * @param elist список
+     * @param initialIndex начальный индекс
+     */
     public SubEventListIterator(EventList<E> elist, int initialIndex){
         if( elist==null )throw new IllegalArgumentException( "elist==null" );
         this.elist = elist;
         this.position = initialIndex;
     }
 
+    /**
+     * Закрытие итератора
+     * @throws Exception исключения не будет
+     */
     @Override
     public void close() throws Exception {
         closed = true;
     }
 
+    /**
+     * Флаг - есть следующий элемент
+     * @return true - есть следующий элемент
+     */
     @Override
     public boolean hasNext() {
         if( closed )return false;
@@ -42,6 +74,12 @@ public class SubEventListIterator<E> implements ListIterator<E>, AutoCloseable
         return true;
     }
 
+    /**
+     * Возвращает следующий элемент
+     * @return следующий элемент
+     * @throws NoSuchElementException достигнут конец
+     * @throws IllegalStateException итератор закрыт
+     */
     @Override
     public E next() {
         if( closed )throw new IllegalStateException("closed");
@@ -58,6 +96,10 @@ public class SubEventListIterator<E> implements ListIterator<E>, AutoCloseable
         return e;
     }
 
+    /**
+     * Проверяет наличие предыдущего значения
+     * @return true - есть предыдущее значение
+     */
     @Override
     public boolean hasPrevious() {
         if( closed )return false;
@@ -71,6 +113,12 @@ public class SubEventListIterator<E> implements ListIterator<E>, AutoCloseable
         return true;
     }
 
+    /**
+     * Возвращает предыдущее значение
+     * @return предыдущее значение или null
+     * @throws NoSuchElementException достигнут конец
+     * @throws IllegalStateException итератор закрыт
+     */
     @Override
     public E previous() {
         if( closed )throw new IllegalStateException("closed");
@@ -88,16 +136,27 @@ public class SubEventListIterator<E> implements ListIterator<E>, AutoCloseable
         return e;
     }
 
+    /**
+     * Возвращает индекс следующего элемента
+     * @return индекс следующего элемента
+     */
     @Override
     public int nextIndex() {
         return position;
     }
 
+    /**
+     * Возвращает индекс предыдущего элемента
+     * @return индекс предыдущего элемента
+     */
     @Override
     public int previousIndex() {
         return position-1;
     }
 
+    /**
+     * Удаляет значение
+     */
     @Override
     public void remove() {
         if( closed )throw new IllegalStateException("closed");
@@ -111,6 +170,10 @@ public class SubEventListIterator<E> implements ListIterator<E>, AutoCloseable
         lastPosition = -1;
     }
 
+    /**
+     * Устанавливает значение
+     * @param e значение
+     */
     @Override
     public void set(E e) {
         if( closed )throw new IllegalStateException("closed");
@@ -122,6 +185,10 @@ public class SubEventListIterator<E> implements ListIterator<E>, AutoCloseable
         lst.set(lastPosition, e);
     }
 
+    /**
+     * Добавляет значение
+     * @param e значение
+     */
     @Override
     public void add(E e) {
         if( closed )throw new IllegalStateException("closed");

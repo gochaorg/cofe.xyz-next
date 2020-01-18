@@ -116,16 +116,32 @@ public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?
         ScnImpl.listener(this).fireEvent(ev);
     }
 
+    /**
+     * Добавление подписчика на изменение номера scn
+     * @param listener подписчик
+     * @return отписка от уведомлений
+     */
     default AutoCloseable onScn(TripleConsumer<SCN,SCN,CAUSE> listener){
         if( listener == null )throw new IllegalArgumentException( "listener == null" );
         return addScnChangedListener((ScnListener<Owner, SCN, CAUSE>) scev->listener.accept(scev.getOldScn(),scev.getCurScn(),scev.cause()));
     }
 
+    /**
+     * Запуск блока кода, для предотвращения преждевремменого уведомления подписчиков.
+     * Подписчик будут уведомлены по завершению блока кода
+     * @param run блок кода
+     */
     default void scn(Runnable run){
         if( run == null )throw new IllegalArgumentException( "run == null" );
         ScnImpl.<Owner,SCN,CAUSE>listener(this).withQueue(run);
     }
 
+    /**
+     * Запуск блока кода, для предотвращения преждевремменого уведомления подписчиков.
+     * Подписчик будут уведомлены по завершению блока кода
+     * @param run блок кода
+     * @return результат выполнения кода
+     */
     default <T> T scn(Supplier<T> run){
         if( run == null )throw new IllegalArgumentException( "run == null" );
         return ScnImpl.<Owner,SCN,CAUSE>listener(this).withQueue(run);

@@ -4,8 +4,18 @@ import xyz.cofe.ecolls.Pair;
 
 import java.util.Iterator;
 
+/**
+ * Итератор - декартовое произведение
+ * @param <A> Тип первого списка
+ * @param <B> Тип второго списка
+ */
 @SuppressWarnings("WeakerAccess")
 public class BiProductIterator<A,B> implements Iterator<Pair<A,B>> {
+    /**
+     * Конструктор
+     * @param _1 Первый список
+     * @param _2 Второй список
+     */
     public BiProductIterator(Iterator<A> _1, Iterable<B> _2){
         if( _1==null )throw new IllegalArgumentException("_1 == null");
         if( _2==null )throw new IllegalArgumentException("_2 == null");
@@ -14,6 +24,11 @@ public class BiProductIterator<A,B> implements Iterator<Pair<A,B>> {
         fetched = fetch();
     }
 
+    /**
+     * Конструктор
+     * @param _1 Первый список
+     * @param _2 Второй список
+     */
     public BiProductIterator(Iterable<A> _1, Iterable<B> _2){
         if( _1==null )throw new IllegalArgumentException("_1 == null");
         if( _2==null )throw new IllegalArgumentException("_2 == null");

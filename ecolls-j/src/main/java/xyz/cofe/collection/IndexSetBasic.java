@@ -39,6 +39,8 @@ import xyz.cofe.ecolls.Pair;
 import xyz.cofe.collection.SortInsert;
 import xyz.cofe.collection.SortInsertProfiling;
 import xyz.cofe.ecolls.QuadConsumer;
+import xyz.cofe.ecolls.ReadWriteLockSupport;
+import xyz.cofe.scn.LongScn;
 
 /**
  * Список содежащий уникальные элементы, отсортированные в порядке возрастания
@@ -47,8 +49,10 @@ import xyz.cofe.ecolls.QuadConsumer;
  */
 @SuppressWarnings("WeakerAccess")
 public class IndexSetBasic<A extends Comparable<A>>
-        implements
-        IndexSet<A>
+    implements
+        IndexSet<A>,
+        ReadWriteLockSupport,
+        LongScn<IndexSetBasic<A>,Void>
 {
     //<editor-fold defaultstate="collapsed" desc="log Функции">
     private static final Logger logger = Logger.getLogger(IndexSetBasic.class.getName());
@@ -113,67 +117,74 @@ public class IndexSetBasic<A extends Comparable<A>>
     }
     //</editor-fold>
 
-    protected final Object sync;
     protected final List<A> list;
-    protected long scn = 0;
 
+    /**
+     * Конструктор
+     */
     public IndexSetBasic(){
-        //sync = this;
         list = createList();
-        sync = list;
-    }
-
-    public IndexSetBasic(Object sync){
-        //sync = this;
-        list = createList();
-        this.sync = sync!=null ? sync : list;
     }
 
     //<editor-fold defaultstate="collapsed" desc="createList()">
+
+    /**
+     * Создание списка который будет хранить значения
+     * @return
+     */
     protected List createList(){
         return new ArrayList();
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="size()">
+
+    /**
+     * Возвращает кол-во элементов
+     * @return кол-во элементов
+     */
     @Override
     public int size() {
-        synchronized(sync){
-            return list.size();
-        }
-    }
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="scn">
-    public long getScn(){
-        synchronized( sync ){ return scn; }
-    }
-
-    public long nextScn(){
-        synchronized( sync ){ scn++; return scn; }
+        return readLock(list::size);
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="get(idx):a">
+
+    /**
+     * Возвращает элемент по его индексу
+     * @param idx индекс
+     * @return элемент
+     */
     @Override
     public A get(int idx) {
-        synchronized(sync){
-            return list.get(idx);
-        }
+        return readLock(()->list.get(idx));
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="exists(a):boolean">
+
+    /**
+     * Проверка наличие элемента
+     * @param a элемент
+     * @return true - элемент присуствует
+     */
     @Override
     public boolean exists(A a) {
-        return indexOf(a) >= 0;
+        return readLock( ()->indexOf(a) >= 0 );
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="indexOf()">
+
+    /**
+     * Поиск индекса элемента
+     * @param a элемент
+     * @return индекс или -1
+     */
     protected int findIdexOf(A a){
         if( a==null )return -1;
-        synchronized(sync){
+        return readLock( ()->{
             if( list.isEmpty() )return -1;
             int listSize = list.size();
 
@@ -212,7 +223,7 @@ public class IndexSetBasic<A extends Comparable<A>>
 
             int fRightIdx = findIdexOfInRange(a, half, listSize);
             return fRightIdx;
-        }
+        });
     }
 
     protected int indexOfScanRange(){ return 30; }
@@ -267,27 +278,31 @@ public class IndexSetBasic<A extends Comparable<A>>
         return findIdexOfInRange(a, centerIdx, endex);
     }
 
+    /**
+     * Поиск индекс элемента
+     * @param a элемент
+     * @return индекс или -1
+     */
     @Override
     public int indexOf(A a) {
-        /*
-        if( a==null )return -1;
-        synchronized(sync){
-        return list.indexOf(a);
-        }
-        */
         return findIdexOf(a);
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="each()">
+
+    /**
+     * Обход всех элементов
+     * @param iter потребитель
+     */
     @Override
     public void each(Consumer<A> iter) {
         if( iter==null )throw new IllegalArgumentException("iter == null");
-        synchronized(sync){
+        readLock( ()->{
             for( A a : list ){
                 iter.accept(a);
             }
-        }
+        });
     }
 
 //    TODO Разработа с учетом java 12, миниально 9
@@ -304,8 +319,13 @@ public class IndexSetBasic<A extends Comparable<A>>
 //    }
 
     // TODO поддержка java 8
+
+    /**
+     * Создание стрима
+     * @return стрим элементов
+     */
     public Stream<Pair<A,Integer>> stream(){
-        synchronized( sync ){
+        return readLock( ()->{
             if( size()<1 )return Stream.empty();
             if( size()==1 )return Stream.of( Pair.of(get(0),0));
             return Stream.iterate(
@@ -313,42 +333,44 @@ public class IndexSetBasic<A extends Comparable<A>>
                 //x -> x!=null && x.b()!=null && x.b() <= (size()-1),
                 x -> x!=null && x.b()!=null && x.b() <  (size()-1) ? Pair.of( get(x.b()+1), x.b()+1 ) : null
             ).limit( size() );
-        }
+        });
     }
 
+    /**
+     * Обход элементов с получением индекса
+     * @param begin С какого индекса начать
+     * @param endEx По какой исключительно закнчить
+     * @param consumer Функция fn(index,item):any принимающая значения
+     */
     @Override
     public void eachByIndex( int begin, int endEx, BiConsumer<Integer,A> consumer ){
         if( begin<0 )throw new IllegalArgumentException("begin < 0");
         if( endEx<0 )throw new IllegalArgumentException("endEx < 0");
         if( consumer==null )throw new IllegalArgumentException("consumer == null");
         if( begin==endEx )return;
-        synchronized(sync){
-            int order = 1;
-            if( begin>endEx ){
-                order = -1;
-                int t = begin;
-                begin = endEx;
-                endEx = t;
-            }
+        readLock( ()->{
+            int order = begin>endEx ? -1 : 1;
+            int fbegin = begin>endEx ? endEx : begin;
+            int fendex = begin>endEx ? begin : endEx;
 
-            int cnt = endEx - begin;
+            int cnt = fendex - fbegin;
             if( cnt<1 )return;
 
             int size = list.size();
-            if( endEx>size )endEx = size;
+            if( fendex>size )fendex = size;
 
             if( order<0 ){
-                for( int i=endEx-1; i>=begin; i-- ){
+                for( int i=fendex-1; i>=fbegin; i-- ){
                     A a = get(i);
                     consumer.accept(i, a);
                 }
             }else{
-                for( int i=begin; i<endEx; i++ ){
+                for( int i=fbegin; i<fendex; i++ ){
                     A a = get(i);
                     consumer.accept(i, a);
                 }
             }
-        }
+        });
     }
 
     @Override
@@ -367,16 +389,16 @@ public class IndexSetBasic<A extends Comparable<A>>
             if( !incBegin || !incEnd )return;
 
             // выборка одного элемента
-            synchronized(sync){
+            readLock(()->{
                 int idx = indexOf(begin);
                 if( idx>=0 ){
                     consumer.accept(idx, begin, 0, 1);
                 }
                 return;
-            }
+            });
         }
 
-        synchronized(sync){
+        readLock(()->{
             if( cmpBE<0 ){
                 // выборка слева на право (в сторону увеличения)
                 Pair<Integer,A> from = tailEntry(begin, !incBegin, 0, size());
@@ -433,7 +455,7 @@ public class IndexSetBasic<A extends Comparable<A>>
                     consumer.accept(from.a(), from.b(), 1, 2);
                 }
             }
-        }
+        });
     }
 
     @Override
@@ -450,9 +472,9 @@ public class IndexSetBasic<A extends Comparable<A>>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="comparator()">
-    private Comparator<A> comparator_instance;
+    private volatile Comparator<A> comparator_instance;
     protected Comparator<A> comparator(){
-        synchronized(sync){
+        return readLock(()->{
             if( comparator_instance!=null )return comparator_instance;
             comparator_instance = new Comparator<A>() {
                 @Override
@@ -464,18 +486,18 @@ public class IndexSetBasic<A extends Comparable<A>>
                 }
             };
             return comparator_instance;
-        }
+        });
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="sortInsert()">
-    private SortInsert<List,A> sortInsert_instance;
+    private volatile SortInsert<List,A> sortInsert_instance;
     protected SortInsert<List,A> sortInsert(){
-        synchronized(sync){
+        return readLock(()->{
             if( sortInsert_instance!=null )return sortInsert_instance;
             sortInsert_instance = (SortInsert)SortInsertProfiling.createForList();
             return sortInsert_instance;
-        }
+        });
     }
     //</editor-fold>
 
@@ -483,21 +505,22 @@ public class IndexSetBasic<A extends Comparable<A>>
     @Override
     public int add(A a) {
         if( a==null )throw new IllegalArgumentException("a == null");
-
-        synchronized(sync){
+        return writeLock(()->{
             int idx = add0(a);
             updateMinMax();
             return idx;
-        }
+        });
     }
     //</editor-fold>
 
     @Override
     public IndexSet<A> append(A ... items) {
         if( items==null )throw new IllegalArgumentException("items == null");
-        for( A a : items ){
-            add(a);
-        }
+        writeLock(()->{
+            for( A a : items ){
+                add(a);
+            }
+        });
         return this;
     }
 
@@ -516,10 +539,10 @@ public class IndexSetBasic<A extends Comparable<A>>
     //<editor-fold defaultstate="collapsed" desc="minMax()">
     @Override
     public Pair<A, A> minMax() {
-        synchronized(sync){
+        return readLock(()->{
             if( minValue==null || maxValue==null )return null;
             return Pair.of( minValue, maxValue );
-        }
+        });
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="min/max()">
@@ -528,16 +551,16 @@ public class IndexSetBasic<A extends Comparable<A>>
 
     @Override
     public A min() {
-        synchronized(sync){
+        return readLock(()->{
             return minValue;
-        }
+        });
     }
 
     @Override
     public A max() {
-        synchronized(sync){
+        return readLock(()->{
             return maxValue;
-        }
+        });
     }
     //</editor-fold>
     //</editor-fold>
@@ -589,7 +612,7 @@ public class IndexSetBasic<A extends Comparable<A>>
         SortInsert si = sortInsert();
         t0 = System.nanoTime();
         int idx = si.sortInsert(list, a, comparator(), 0, list.size());
-        nextScn();
+        nextscn();
         t1 = System.nanoTime();
         sortInsertTimeNS = t1 - t0;
 
@@ -599,7 +622,7 @@ public class IndexSetBasic<A extends Comparable<A>>
     @Override
     public void add(Iterable<A> adds, BiConsumer<Integer, A> added) {
         if( adds==null )throw new IllegalArgumentException("adds == null");
-        synchronized(sync){
+        writeLock(()->{
             for( A a : adds ){
                 if( a!=null ){
                     int idx = add0(a);
@@ -609,13 +632,13 @@ public class IndexSetBasic<A extends Comparable<A>>
                 }
             }
             updateMinMax();
-        }
+        });
     }
 
     @Override
     public void add(IndexSet<A> adds, final BiConsumer<Integer, A> added) {
         if( adds==null )throw new IllegalArgumentException("adds == null");
-        synchronized(sync){
+        writeLock(()->{
             adds.each( (A a) -> {
                         if (a != null) {
                             int idx = add0(a);
@@ -626,7 +649,7 @@ public class IndexSetBasic<A extends Comparable<A>>
                     }
                 );
             updateMinMax();
-        }
+        });
     }
     //</editor-fold>
 
@@ -634,12 +657,11 @@ public class IndexSetBasic<A extends Comparable<A>>
     @Override
     public int remove(A a) {
         if( a==null )return -1;
-
-        synchronized(sync){
+        return writeLock(()->{
             int idx = remove0(a);
             updateMinMax();
             return idx;
-        }
+        });
     }
 
     private int remove0(A a){
@@ -649,7 +671,7 @@ public class IndexSetBasic<A extends Comparable<A>>
         if( idx<0 )return -1;
 
         list.remove(idx);
-        nextScn();
+        nextscn();
 
         return idx;
     }
@@ -657,7 +679,7 @@ public class IndexSetBasic<A extends Comparable<A>>
     @Override
     public void remove(Iterable<A> removes, BiConsumer<Integer, A> removed) {
         if( removes==null )throw new IllegalArgumentException("removes == null");
-        synchronized(sync){
+        writeLock(()->{
             for( A a : removes ){
                 int idx = remove0(a);
                 if( idx>=0 && removed!=null ){
@@ -665,13 +687,13 @@ public class IndexSetBasic<A extends Comparable<A>>
                 }
             }
             updateMinMax();
-        }
+        });
     }
 
     @Override
     public void remove(IndexSet<A> removes, final BiConsumer<Integer, A> removed) {
         if( removes==null )throw new IllegalArgumentException("removes == null");
-        synchronized(sync){
+        writeLock(()->{
             //for( A a : removes ){
             removes.each( (A a) -> {
                     int idx = remove0(a);
@@ -680,32 +702,32 @@ public class IndexSetBasic<A extends Comparable<A>>
                     }
                 });
             updateMinMax();
-        }
+        });
     }
 
     @Override
     public A removeByIndex(int idx) {
         if( idx<0 )throw new IndexOutOfBoundsException("idx < 0");
-        synchronized(sync){
+        return writeLock(()->{
             if( idx>=size() )throw new IndexOutOfBoundsException("idx("+idx+") > size("+size()+")");
             A res = list.remove(idx);
-            nextScn();
+            nextscn();
             updateMinMax();
             return res;
-        }
+        });
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="clear()">
     @Override
     public void clear(){
-        synchronized(sync){
+        writeLock(()->{
             if( list!=null ){
                 list.clear();
-                nextScn();
+                nextscn();
                 updateMinMax();
             }
-        }
+        });
     }
     //</editor-fold>
 
@@ -741,14 +763,16 @@ public class IndexSetBasic<A extends Comparable<A>>
     protected int tailEntryGetCall = 0;
 
     @Override
-    public Pair<Integer, A> tailEntry(A a, boolean strong, int begin, int endEx) {
+    public Pair<Integer, A> tailEntry(A a, boolean strong, int beginIndex, int endExIndex) {
         if( a==null )throw new IllegalArgumentException("a === null");
-        if( begin>endEx ){
-            int t = begin;
-            begin = endEx;
-            endEx = t;
-        }
-        synchronized(sync){
+        final int f1_begin = beginIndex>endExIndex ? endExIndex : beginIndex;
+        final int f1_endEx = beginIndex>endExIndex ? beginIndex : endExIndex;
+//        if( begin>endEx ){
+//            int t = begin;
+//            begin = endEx;
+//            endEx = t;
+//        }
+        return readLock(()->{
             try{
                 tailEntryCurrentDepth++;
                 if( tailEntryCurrentDepth==1 ){
@@ -762,8 +786,11 @@ public class IndexSetBasic<A extends Comparable<A>>
                     }
                 }
 
-                if( endEx>size() ){ endEx = size(); }
-                if( begin<0 ){ begin = 0; }
+                final int endEx = f1_endEx>size() ? size() : f1_endEx;
+                final int begin = f1_begin<0 ? 0 : f1_begin;
+
+//                if( endEx>size() ){ endEx = size(); }
+//                if( begin<0 ){ begin = 0; }
 
                 int searchAreaSize = endEx - begin;
 
@@ -843,7 +870,7 @@ public class IndexSetBasic<A extends Comparable<A>>
                 }
                 tailEntryCurrentDepth--;
             }
-        }
+        });
     }
     //</editor-fold>
 
@@ -879,9 +906,11 @@ public class IndexSetBasic<A extends Comparable<A>>
     protected int headEntryGetCall = 0;
 
     @Override
-    public Pair<Integer, A> headEntry(A a, boolean strong, int begin, int endEx) {
+    public Pair<Integer, A> headEntry(A a, boolean strong, int beginIndex, int endExIndex) {
         if( a==null )throw new IllegalArgumentException("a === null");
-        synchronized(sync){
+        final int f1_begin = beginIndex>endExIndex ? endExIndex : beginIndex;
+        final int f1_endEx = beginIndex>endExIndex ? beginIndex : endExIndex;
+        return readLock(()->{
             try{
                 headEntryCurrentDepth++;
                 if( headEntryCurrentDepth==1 ){
@@ -895,13 +924,17 @@ public class IndexSetBasic<A extends Comparable<A>>
                     }
                 }
 
-                if( begin>endEx ){
-                    int t = begin;
-                    begin = endEx;
-                    endEx = t;
-                }
+//                if( begin>endEx ){
+//                    int t = begin;
+//                    begin = endEx;
+//                    endEx = t;
+//                }
 
                 boolean recalcSearchAreaSize = false;
+
+                int endEx = f1_endEx;
+                int begin = f1_begin;
+
                 if( endEx>size() ){ endEx = size(); recalcSearchAreaSize = true; }
                 if( begin<0 ){ begin = 0; recalcSearchAreaSize = true; }
 
@@ -983,7 +1016,7 @@ public class IndexSetBasic<A extends Comparable<A>>
                 }
                 headEntryCurrentDepth--;
             }
-        }
+        });
     }
     //</editor-fold>
 
@@ -993,7 +1026,7 @@ public class IndexSetBasic<A extends Comparable<A>>
         if( a==null )throw new IllegalArgumentException("a == null");
         if( b==null )throw new IllegalArgumentException("b == null");
 
-        synchronized(sync){
+        return writeLock(()->{
             int ia = indexOf(a);
             if( ia<0 )return null;
 
@@ -1011,7 +1044,7 @@ public class IndexSetBasic<A extends Comparable<A>>
             }
 
             throw new UnsupportedOperationException("Not supported yet.");
-        }
+        });
     }
     //</editor-fold>
 }

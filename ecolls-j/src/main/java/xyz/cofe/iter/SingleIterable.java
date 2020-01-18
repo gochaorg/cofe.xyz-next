@@ -11,10 +11,18 @@ public class SingleIterable<T> implements Eterable<T> {
     private T item = null;
     private Supplier<T> lazyValue = null;
 
+    /**
+     * Конструктор
+     * @param item элемент
+     */
     public SingleIterable(T item) {
         this.item = item;
     }
 
+    /**
+     * Конструктор
+     * @param item элемент
+     */
     public SingleIterable(Supplier<T> item) {
         this.lazyValue = item;
     }

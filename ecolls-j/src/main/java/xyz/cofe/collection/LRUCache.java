@@ -66,20 +66,38 @@ public class LRUCache<K,V> extends LinkedHashMap<K,V>
 
     //</editor-fold>
 
+    /**
+     * Конструктор, по умолчанию указывает размер 1000
+     */
     public LRUCache(){
         this.cacheSizeMax = 1000;
     }
 
+    /**
+     * Конструктор
+     * @param cacheSizeMax размер кэша
+     */
     public LRUCache(int cacheSizeMax){
         this.cacheSizeMax = cacheSizeMax;
     }
 
+    /**
+     * Размер кэша
+     */
     protected volatile int cacheSizeMax = 1000;
 
+    /**
+     * Возвращает максимальное кэшируемое кол-во элементов
+     * @return максимальное кол-во эл в кэше
+     */
     public int getCacheSizeMax() {
         return cacheSizeMax;
     }
 
+    /**
+     * Указывает максимальное кол-во элементов в кэше
+     * @param cacheSizeMax
+     */
     public void setCacheSizeMax(int cacheSizeMax) {
         this.cacheSizeMax = cacheSizeMax;
     }

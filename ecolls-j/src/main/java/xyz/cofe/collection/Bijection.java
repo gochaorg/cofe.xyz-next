@@ -55,6 +55,7 @@ import java.util.logging.Logger;
  * @param <X> Тип значений x
  * @param <Y> Тип значений y
  */
+@SuppressWarnings("ALL")
 public class Bijection<X extends Comparable,Y extends Comparable>
 {
     //<editor-fold defaultstate="collapsed" desc="log Функции">
@@ -118,6 +119,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     protected final TreeMap<Y,X> yToXmap;
 
     //<editor-fold defaultstate="collapsed" desc="getEntries() : Set<Pair<X,Y>>">
+
+    /**
+     * Возвращает копию пар x,y
+     * @return пары x,y
+     */
     public Set<Pair<X,Y>> getEntries(){
         synchronized(sync){
             Set<Pair<X,Y>> set = new LinkedHashSet<>();
@@ -130,6 +136,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="eachXY()">
+
+    /**
+     * Обход всех пар x,y
+     * @param reciver потребитель
+     */
     public void eachXY( BiConsumer<X,Y> reciver ){
         if( reciver==null )throw new IllegalArgumentException("reciver == null");
         synchronized(sync){
@@ -141,6 +152,13 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="setXY()">
+
+    /**
+     * Установка значения пары x,y
+     * @param x значение
+     * @param y значение
+     * @return Старые значения
+     */
     public LinkedHashSet<Pair<X,Y>> setXY( X x, Y y ){
         if( x==null )throw new IllegalArgumentException("x == null");
         if( y==null )throw new IllegalArgumentException("y == null");
@@ -211,6 +229,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         }
     }
 
+    /**
+     * Установка значений пар x,y
+     * @param itr пары x,y
+     * @return замененные значения
+     */
     public LinkedHashSet<Pair<X,Y>> setXY( Iterable<Pair<X,Y>> itr ){
         if( itr==null )throw new IllegalArgumentException("itr == null");
         synchronized(sync){
@@ -230,6 +253,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         }
     }
 
+    /**
+     * Установка значений пар x,y
+     * @param itr пары x,y
+     * @return замененные значения
+     */
     public LinkedHashSet<Pair<X,Y>> setXYMapEntries( Iterable<Map.Entry<X,Y>> itr ){
         if( itr==null )throw new IllegalArgumentException("itr == null");
         synchronized(sync){
@@ -249,6 +277,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         }
     }
 
+    /**
+     * Установка значений пар x,y
+     * @param itr пары x,y
+     * @return замененные значения
+     */
     public LinkedHashSet<Pair<X,Y>> setXYMap( Map<X,Y> itr ){
         if( itr==null )throw new IllegalArgumentException("itr == null");
         return setXYMapEntries(itr.entrySet());
@@ -256,6 +289,13 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="removeX()">
+
+    /**
+     * Удаление ассоциации
+     * @param x значение
+     * @return удаленная пара
+     */
+    @SuppressWarnings("WeakerAccess")
     public LinkedHashSet<Pair<X,Y>> removeX( X x ){
         if( x==null )return null;
         synchronized(sync){
@@ -271,6 +311,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         }
     }
 
+    /**
+     * Удаление ассоциации
+     * @param itr значения
+     * @return удаленная пара
+     */
     public LinkedHashSet<Pair<X,Y>> removeX( Iterable<X> itr ){
         if( itr==null )return new LinkedHashSet<>();
         synchronized(sync){
@@ -285,6 +330,12 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="removeY()">
+    /**
+     * Удаление ассоциации
+     * @param y значения
+     * @return удаленная пара
+     */
+    @SuppressWarnings("WeakerAccess")
     public LinkedHashSet<Pair<X,Y>> removeY( Y y ){
         if( y==null )return null;
         synchronized(sync){
@@ -301,6 +352,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         }
     }
 
+    /**
+     * Удаление ассоциации
+     * @param itr значения
+     * @return удаленная пара
+     */
     public LinkedHashSet<Pair<X,Y>> removeY( Iterable<Y> itr ){
         if( itr==null )return new LinkedHashSet<>();
         synchronized(sync){
@@ -315,6 +371,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="size() : int">
+
+    /**
+     * Кол-во значений в карте
+     * @return кол-во
+     */
     public int size(){
         synchronized(sync){
             return xToYmap.size();
@@ -323,6 +384,10 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="clear()">
+
+    /**
+     * Удаление всех значений
+     */
     public void clear(){
         synchronized(sync){
             xToYmap.clear();
@@ -333,6 +398,12 @@ public class Bijection<X extends Comparable,Y extends Comparable>
 
     //<editor-fold defaultstate="collapsed" desc="hasX() / hasY()">
     //<editor-fold defaultstate="collapsed" desc="hasX()">
+
+    /**
+     * Проверка наличия ассоциации
+     * @param x значение
+     * @return true - есть парное значение
+     */
     public boolean hasX( X x ){
         synchronized( sync ){
             return xToYmap.containsKey(x);
@@ -341,6 +412,12 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="hasY()">
+
+    /**
+     * Проверка наличия ассоциации
+     * @param y значение
+     * @return true - есть парное значение
+     */
     public boolean hasY( Y y ){
         synchronized( sync ){
             return yToXmap.containsKey(y);
@@ -351,6 +428,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
 
     //<editor-fold defaultstate="collapsed" desc="getXSet() / getYSet()">
     //<editor-fold defaultstate="collapsed" desc="getXSet()">
+
+    /**
+     * Получение значений x
+     * @return значения
+     */
     public NavigableSet<X> getXSet(){
         synchronized( sync ){
             NavigableSet<X> s = new TreeSet<>(xToYmap.keySet());
@@ -360,6 +442,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="getYSet()">
+
+    /**
+     * Получение значений y
+     * @return значения
+     */
     public NavigableSet<Y> getYSet(){
         synchronized( sync ){
             NavigableSet<Y> s = new TreeSet<>(yToXmap.keySet());
@@ -370,6 +457,11 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="getXMin() / getXMax()">
+
+    /**
+     * Получение минимального значения x
+     * @return минимальное значение
+     */
     public X getXMin(){
         synchronized(sync){
             if( xToYmap.isEmpty() )return null;
@@ -377,15 +469,24 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         }
     }
 
+    /**
+     * Получение максимального значения x
+     * @return максимальное значение
+     */
     public X getXMax(){
         synchronized(sync){
             if( xToYmap.isEmpty() )return null;
             return xToYmap.lastKey();
         }
     }
-//</editor-fold>
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="getYMin() / getYMax()">
+
+    /**
+     * Получение минимального значения y
+     * @return минимальное значение
+     */
     public Y getYMin(){
         synchronized(sync){
             if( yToXmap.isEmpty() )return null;
@@ -393,6 +494,10 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         }
     }
 
+    /**
+     * Получение максимаьлного значения y
+     * @return максимальное значение
+     */
     public Y getYMax(){
         synchronized(sync){
             if( yToXmap.isEmpty() )return null;
@@ -402,45 +507,93 @@ public class Bijection<X extends Comparable,Y extends Comparable>
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="getXbyY() getYbyX()">
+
+    /**
+     * Получение асоциации по значению
+     * @param x значение
+     * @return ассоциированное значение
+     */
     public Y getYbyX( X x ){
         synchronized(sync){
             return xToYmap.get(x);
         }
     }
+
+    /**
+     * Получение асоциации по значению
+     * @param x значение
+     * @return ассоциированное значение
+     */
     public Y x( X x ){
         return getYbyX(x);
     }
 
+    /**
+     * Получение асоциации по значению
+     * @param y значение
+     * @return ассоциированное значение
+     */
     public X getXbyY( Y y ){
         synchronized(sync){
             return yToXmap.get(y);
         }
     }
+
+    /**
+     * Получение асоциации по значению
+     * @param y значение
+     * @return ассоциированное значение
+     */
     public X y(Y y){
         return getXbyY(y);
     }
     //</editor-fold>
 
+    /**
+     * Метод разрешения дупликатов
+     */
     public static enum ResolveDuplicate {
         Merge, Error
     }
 
+    /**
+     * Метод разрешения null ссылок
+     */
     public static enum ResolveNull {
         Remove, Skip, Error
     }
 
+    /**
+     * Обновление ассоциаций
+     */
     public class Update implements Runnable {
         //<editor-fold defaultstate="collapsed" desc="fn(x,y):Pair<X,Y>">
+        /**
+         * Функция ассоциации
+         */
         protected BiFunction<X,Y,Pair<X,Y>> fnXY = null;
 
+        /**
+         * Возвращает функция ассоциации
+         * @return функция
+         */
         public synchronized BiFunction<X, Y,Pair<X,Y>> getFnXY() {
             return fnXY;
         }
 
+        /**
+         * Указывает функцию ассоциации
+         * @param fnXY функция
+         */
         public synchronized void setFnXY(BiFunction<X, Y,Pair<X,Y>> fnXY) {
             this.fnXY = fnXY;
         }
 
+        /**
+         * Указывает функцию ассоциации
+         * @param fn функция
+         * @return self ссылка
+         */
         public Update fnXY( BiFunction<X, Y,Pair<X,Y>> fn ){
             setFnXY(fn);
             return this;
@@ -448,17 +601,33 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="xDuplicate">
+        /**
+         * Поведение при дублировании
+         */
         protected ResolveDuplicate xDuplicate = ResolveDuplicate.Error;
 
+        /**
+         * Указывает поведение при дублировании
+         * @return поведение
+         */
         public synchronized ResolveDuplicate getXDuplicate() {
             if( xDuplicate==null )return ResolveDuplicate.Error;
             return xDuplicate;
         }
 
+        /**
+         * Указывает поведение при дублировании
+         * @param xDuplicate поведение
+         */
         public synchronized void setXDuplicate(ResolveDuplicate xDuplicate) {
             this.xDuplicate = xDuplicate;
         }
 
+        /**
+         * Указывает поведение при дублировании
+         * @param resolv поведение
+         * @return self ссылка
+         */
         public Update xDuplicate( ResolveDuplicate resolv ){
             setXDuplicate(resolv);
             return this;
@@ -468,15 +637,28 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         //<editor-fold defaultstate="collapsed" desc="xNull">
         protected ResolveNull xNull = ResolveNull.Error;
 
+        /**
+         * Указывает поведение при null ссылке
+         * @return поведение
+         */
         public synchronized ResolveNull getXNull() {
             if( xNull==null )return ResolveNull.Error;
             return xNull;
         }
 
+        /**
+         * Указывает поведение при null ссылке
+         * @param xNull поведение
+         */
         public synchronized void setXNull(ResolveNull xNull) {
             this.xNull = xNull;
         }
 
+        /**
+         * Указывает поведение при null ссылке
+         * @param resolv поведение
+         * @return self ссылка
+         */
         public Update xNull( ResolveNull resolv ){
             setXNull(resolv);
             return this;
@@ -486,15 +668,28 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         //<editor-fold defaultstate="collapsed" desc="yDuplicate">
         protected ResolveDuplicate yDuplicate = ResolveDuplicate.Error;
 
+        /**
+         * Указывает поведение при дублировании
+         * @return поведение
+         */
         public synchronized ResolveDuplicate getYDuplicate() {
             if( yDuplicate==null )return ResolveDuplicate.Error;
             return yDuplicate;
         }
 
+        /**
+         * Указывает поведение при дублировании
+         * @param xDuplicate поведение
+         */
         public synchronized void setYDuplicate(ResolveDuplicate xDuplicate) {
             this.yDuplicate = xDuplicate;
         }
 
+        /**
+         * Указывает поведение при дублировании
+         * @param resolv поведение
+         * @return self ссылка
+         */
         public Update yDuplicate( ResolveDuplicate resolv ){
             setYDuplicate(resolv);
             return this;
@@ -504,21 +699,40 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         //<editor-fold defaultstate="collapsed" desc="yNull">
         protected ResolveNull yNull = ResolveNull.Error;
 
+        /**
+         * Указывает поведение при null ссылке
+         * @return поведение
+         */
         public synchronized ResolveNull getYNull() {
             if( yNull==null )return ResolveNull.Error;
             return yNull;
         }
 
-        public synchronized void setYNull(ResolveNull xNull) {
-            this.yNull = xNull;
+        /**
+         * Указывает поведение при null ссылке
+         * @param yNull поведение
+         * @return self ссылка
+         */
+        public synchronized void setYNull(ResolveNull yNull) {
+            this.yNull = yNull;
         }
 
+        /**
+         * Указывает поведение при null ссылке
+         * @param resolv поведение
+         * @return self ссылка
+         */
         public Update yNull( ResolveNull resolv ){
             setYNull(resolv);
             return this;
         }
         //</editor-fold>
 
+        /**
+         * Строгое поведение: <br>
+         * Во всех спорных случая будет генерироваться ошибка
+         * @return self ссылка
+         */
         public synchronized Update strong(){
             setXDuplicate(ResolveDuplicate.Error);
             setYDuplicate(ResolveDuplicate.Error);
@@ -527,6 +741,12 @@ public class Bijection<X extends Comparable,Y extends Comparable>
             return this;
         }
 
+        /**
+         * Слабое поведение: <br>
+         * Для дупликатов {@link ResolveDuplicate#Merge}, <br>
+         * Для null ссылок {@link ResolveNull#Remove}
+         * @return self ссылка
+         */
         public synchronized Update simple(){
             setXDuplicate(ResolveDuplicate.Merge);
             setYDuplicate(ResolveDuplicate.Merge);
@@ -565,6 +785,9 @@ public class Bijection<X extends Comparable,Y extends Comparable>
             return v <= Level.FINER.intValue();
         }
 
+        /**
+         * Обновление ассоциаций
+         */
         @Override
         public synchronized void run() {
             if( fnXY!=null ){
@@ -575,6 +798,9 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         protected boolean trackXInsert = false;
         protected boolean trackXDelete = false;
 
+        /**
+         * Обновление ассоциаций
+         */
         public synchronized void updateXY(){
             if( fnXY==null )return;
             synchronized(sync){
@@ -703,10 +929,20 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         }
     }
 
+    /**
+     * Обновление ассоциаций
+     * @return обновление
+     */
     public Update update(){
         return new Update();
     }
 
+    /**
+     * Обновление ассоциаций
+     * @param fn функция ассоциации
+     * @param strong метод проверки ошибок true - {@link Update#strong()} / false - {@link Update#simple()}
+     * @return обновление
+     */
     public Update update(BiFunction<X,Y,Pair<X,Y>> fn, boolean strong){
         if( fn==null )throw new IllegalArgumentException("fn == null");
         Update up = update().fnXY(fn);
@@ -715,10 +951,20 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         return up;
     }
 
+    /**
+     * Обновление ассоциаций.
+     * Метод проверки ошибок {@link Update#strong()}
+     * @param fn функция ассоциации
+     * @return обновление
+     */
     public Update update(BiFunction<X,Y,Pair<X,Y>> fn){
         return update(fn, true);
     }
 
+    /**
+     * Копирование данных согласно указанной карте
+     * @param sample образец для копирования
+     */
     public void assign( Bijection<X,Y> sample ){
         if( sample==null )throw new IllegalArgumentException("sample == null");
         synchronized(sync){
@@ -727,6 +973,10 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         }
     }
 
+    /**
+     * Клонирование карты
+     * @return клон
+     */
     @Override
     public Bijection<X,Y> clone(){
         synchronized(sync){

@@ -10,10 +10,27 @@ import java.util.List;
  * @param <E> Тип элемента списка
  */
 public class SubEventList<E> extends AbstractList<E> implements List<E> {
+    /**
+     * Список
+     */
     protected EventList<E> list = null;
+
+    /**
+     * Кол-во элементов
+     */
     protected int size = 0;
+
+    /**
+     * Смещение относительно списка
+     */
     protected int offset = 0;
 
+    /**
+     * Конструктор
+     * @param list список
+     * @param beginIndex начальный индекс включительно
+     * @param endIndexExclusive конечный индекс исключительно
+     */
     public SubEventList(EventList<E> list,int beginIndex,int endIndexExclusive){
         if( list==null )throw new IllegalArgumentException( "list==null" );
         if( beginIndex<0 )throw new IllegalArgumentException( "beginIndex<0" );
@@ -24,16 +41,29 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         size = endIndexExclusive - beginIndex;
     }
 
+    /**
+     * Возвращает кол-во элементов
+     * @return Кол-во элементов
+     */
     @Override
     public int size() {
         return size;
     }
 
+    /**
+     * Проверяет наличие элементов
+     * @return true - список пустой
+     */
     @Override
     public boolean isEmpty() {
         return size==0;
     }
 
+    /**
+     * Проверяет наличие элемента в списке
+     * @param o элемент
+     * @return true - содержиться в списке
+     */
     @Override
     public boolean contains(Object o) {
         for( int i=0; i<size; i++ ){
@@ -49,6 +79,10 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         return false;
     }
 
+    /**
+     * Получение массива элементов
+     * @return массив
+     */
     @Override
     public Object[] toArray() {
         Object[] a = new Object[]{};
@@ -63,6 +97,12 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         return a;
     }
 
+    /**
+     * Получение массива элементов
+     * @param a тип массива
+     * @param <T> тип элементов массива
+     * @return массив
+     */
     @Override
     public <T> T[] toArray(T[] a) {
         for( int i=0; i<size; i++ ){
@@ -76,6 +116,11 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         return a;
     }
 
+    /**
+     * Добавление элементов в список
+     * @param e элемент
+     * @return true - элемент добавлен
+     */
     @Override
     public boolean add(E e) {
         int pos = offset+size;
@@ -93,6 +138,11 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         }
     }
 
+    /**
+     * Проверяет надичие всех указанных элементов в списке
+     * @param c проверяемые элементы
+     * @return true - все указанные элементы содержится
+     */
     @Override
     public boolean containsAll(Collection<?> c) {
         for( Object o : c ){
@@ -101,6 +151,11 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         return true;
     }
 
+    /**
+     * Добавляет указанные элементы
+     * @param c элементы
+     * @return факт добавления
+     */
     @Override
     public boolean addAll(Collection<? extends E> c) {
         boolean added = false;
@@ -111,6 +166,9 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         return added;
     }
 
+    /**
+     * Удаление всех элементо
+     */
     @Override
     public void clear() {
         if( size<=0 )return;
@@ -122,6 +180,11 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         }
     }
 
+    /**
+     * Получение объекта по его индексу
+     * @param index индекс элемента
+     * @return Элемент
+     */
     @Override
     public E get(int index) {
         if( index<0 )return null;
@@ -132,6 +195,12 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         return list.get(ti);
     }
 
+    /**
+     * Записиывает элемент в определенную позицию
+     * @param index индекс
+     * @param e элемент
+     * @return предыдущее значение
+     */
     @Override
     public E set(int index, E e) {
         if( index<0 )return null;
@@ -142,6 +211,11 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         return list.set(ti,e);
     }
 
+    /**
+     * Вставляет элемент в определнное место списка
+     * @param index индекс
+     * @param e элемент
+     */
     @Override
     public void add(int index, E e) {
         if( index<0 )index = 0;
@@ -159,6 +233,11 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         }
     }
 
+    /*
+     * Удялет элемент из списка
+     * @param index индекс элемента
+     * @return удаленный элемент
+     */
     @Override
     public E remove(int index) {
         if( index<0 )return null;
@@ -172,6 +251,11 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         return r;
     }
 
+    /**
+     * Поиск первого индекса элемента в коллекции
+     * @param o элемент
+     * @return индекс или -1, если не найден
+     */
     @Override
     public int indexOf(Object o) {
         for( int i=0; i<size; i++ ){
@@ -187,6 +271,11 @@ public class SubEventList<E> extends AbstractList<E> implements List<E> {
         return -1;
     }
 
+    /**
+     * Поиск последнего индекса элемента в коллекции
+     * @param o элемент
+     * @return индекс или -1, если не найден
+     */
     @Override
     public int lastIndexOf(Object o) {
         for( int i=size-1; i>=0; i-- ){

@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 /**
  * Реализация приватных методов EventList для обратной совместимости с java 8
  */
+@SuppressWarnings("WeakerAccess")
 public class EventListImpl {
     /**
      * Удаление элементов согласно указанному предикату

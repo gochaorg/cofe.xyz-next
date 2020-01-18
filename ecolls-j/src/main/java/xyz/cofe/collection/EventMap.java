@@ -139,6 +139,11 @@ public interface EventMap<K,V>
     }
     //endregion
     //region reads
+
+    /**
+     * Возвращает кол-во пар значений в карте
+     * @return кол-во пар значений
+     */
     @Override
     default int size(){
         return withCollectionEventQueue(()->readLock(()->{
@@ -149,6 +154,10 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Проверяет что карта пустая
+     * @return true - карта пустая
+     */
     @Override
     default boolean isEmpty(){
         return withCollectionEventQueue(()->readLock(()->{
@@ -159,6 +168,11 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Проверяет наличие узла в ключа
+     * @param key ключ
+     * @return true - ключ присуствует
+     */
     @Override
     default boolean containsKey(Object key){
         return withCollectionEventQueue(()->readLock(()->{
@@ -169,6 +183,11 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Проверяет наличие значения в карте
+     * @param value значение
+     * @return true - значение присуствует
+     */
     @Override
     default boolean containsValue(Object value){
         return withCollectionEventQueue(()->readLock(()->{
@@ -179,6 +198,11 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Возвращает по ключю значение
+     * @param key ключ
+     * @return значение
+     */
     @Override
     default V get(Object key){
         return withCollectionEventQueue(()->readLock(()->{
@@ -189,6 +213,10 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Возвращает множество ключей
+     * @return множество ключей
+     */
     @Override
     default Set<K> keySet(){
         return withCollectionEventQueue(()->readLock(()->{
@@ -199,6 +227,10 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Возвращает значения
+     * @return значения
+     */
     @Override
     default Collection<V> values(){
         return withCollectionEventQueue(()->readLock(()->{
@@ -209,6 +241,10 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Возвращает множество пар
+     * @return множество пар
+     */
     @Override
     default Set<Entry<K, V>> entrySet(){
         return withCollectionEventQueue(()->readLock(()->{
@@ -221,6 +257,12 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Возвращает значение по ключю или значение по умолчанию, если нет соответ ключа
+     * @param key ключ
+     * @param defaultValue значение по умолчанию
+     * @return значение
+     */
     @Override
     default V getOrDefault(Object key, V defaultValue) {
         return withCollectionEventQueue(()->readLock(()->{
@@ -232,6 +274,13 @@ public interface EventMap<K,V>
     }
     //endregion
     //region modify functions
+
+    /**
+     * Указывает значение для ключа
+     * @param key ключ
+     * @param value значение
+     * @return предыдущее значение
+     */
     @Override
     default V put(K key, V value){
         return withCollectionEventQueue(()->writeLock(()->{
@@ -251,6 +300,11 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Удаляет пару для указанного ключа
+     * @param key ключ
+     * @return удаленное значение
+     */
     @SuppressWarnings({"unchecked", "SuspiciousMethodCalls"})
     @Override
     default V remove(Object key){
@@ -268,6 +322,10 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Добавляет карту в карту
+     * @param m карта
+     */
     @Override
     default void putAll(Map<? extends K, ? extends V> m){
         withCollectionEventQueue(()->writeLock(()->{
@@ -288,6 +346,9 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Очищает карту от всех пар ключ/значение
+     */
     @Override
     default void clear(){
         withCollectionEventQueue(()->writeLock(()->{
@@ -316,6 +377,12 @@ public interface EventMap<K,V>
 //        }));
 //    }
 
+    /**
+     * Добавляет значение для ключа, если ключ отсуствует карте
+     * @param key ключ
+     * @param value значение
+     * @return предыдущее значение или указанное значение
+     */
     @Override
     default V putIfAbsent(K key, V value) {
         return withCollectionEventQueue(()->writeLock(()->{
@@ -327,6 +394,12 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Удаляет пару если совпадает ключ и значение
+     * @param key ключ
+     * @param value значение
+     * @return true - пара удалена
+     */
     @SuppressWarnings({"unchecked", "SuspiciousMethodCalls"})
     @Override
     default boolean remove(Object key, Object value) {
@@ -346,6 +419,13 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Заменяет значение ключа, если старое значение совпадает с указанным
+     * @param key ключ
+     * @param oldValue старое значение
+     * @param newValue новое значение
+     * @return true - значение заменено
+     */
     @Override
     default boolean replace(K key, V oldValue, V newValue) {
         return withCollectionEventQueue(()->writeLock(()->{
@@ -360,6 +440,12 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * заменяет значение для существующего ключа
+     * @param key ключ
+     * @param value новое значение
+     * @return новое значение
+     */
     @Override
     default V replace(K key, V value) {
         return withCollectionEventQueue(()->writeLock(()->{
@@ -372,6 +458,13 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Вычисляет значение для ключа, если ключ отсуствует,
+     * то создает значение и добавляет его в карту и возвращает его.
+     * @param key ключ
+     * @param mappingFunction функция генерирования значения для ключа
+     * @return значение
+     */
     @Override
     default V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
         return withCollectionEventQueue(()->writeLock(()->{
@@ -388,6 +481,13 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Вычисляет значение для ключа, если ключ присуствует,
+     * то создает значение и добавляет его в карту и возвращает его.
+     * @param key ключ
+     * @param remappingFunction функция генерирования значения для ключа
+     * @return значение
+     */
     @Override
     default V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         return withCollectionEventQueue(()->writeLock(()->{
@@ -408,6 +508,13 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Вычисляет значение ключа и изменяет карту согласно функции remappingFunction
+     * @param key ключ
+     * @param remappingFunction функция принимающая ключ и старое значение,
+     *                          возвращающая новое значение, если вернет null, то соответ пара будет удалена
+     * @return значение
+     */
     @Override
     default V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         return withCollectionEventQueue(()->writeLock(()->{
@@ -433,6 +540,15 @@ public interface EventMap<K,V>
         }));
     }
 
+    /**
+     * Слиение данных, для указанного ключа берет значение (oldValue)
+     * и если oldValue == null, то возвращает указанне значение,
+     * иначе вернет результат вызова функции remmaping( oldValue, value )
+     * @param key ключ
+     * @param value значение
+     * @param remappingFunction функция отображения
+     * @return вычисленное значение
+     */
     @Override
     default V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         return withCollectionEventQueue(()->writeLock(()->{

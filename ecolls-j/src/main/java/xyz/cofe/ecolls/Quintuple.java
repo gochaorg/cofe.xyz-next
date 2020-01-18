@@ -39,6 +39,20 @@ public interface Quintuple<A,B,C,D,E> {
      */
     E e();
 
+    /**
+     * Cоздание 5ки параметров
+     * @param a Первый параметр
+     * @param b Второй параметр
+     * @param c Третий параметр
+     * @param d Четвертый параметр
+     * @param e Пятый параметр
+     * @param <A> Тип первого параметр
+     * @param <B> Тип 2го параметр
+     * @param <C> Тип 3го параметр
+     * @param <D> Тип 4го параметр
+     * @param <E> Тип 5го параметр
+     * @return 5 параметров
+     */
     static <A,B,C,D,E> Quintuple<A,B,C,D,E> of(A a, B b, C c, D d, E e){
         return new Quintuple<A, B, C, D, E>() {
             @Override

@@ -99,6 +99,10 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
         });
     }
 
+    /**
+     * Возвращает вложенность узла начиная от корня
+     * @return уровень, 0 - корень
+     */
     default int level(){
         int level = 0;
         UpTree ptr = this;
@@ -109,6 +113,10 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
         return level;
     }
 
+    /**
+     * Возвращает путь от корня
+     * @return путь
+     */
     default List<A> path(){
         ArrayList<A> path = new ArrayList<>();
         A ptr = (A)this;
@@ -164,10 +172,19 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
         });
     }
 
+    /**
+     * Возвращает индекс узла в списке дочерних узлов по отношению к родителю
+     * @return индекс
+     */
     default int getSibIndex(){
         return UpTreeImpl.sibIndex(this);
     }
 
+    /**
+     * Переходит соседнему узлу
+     * @param offset смещение от текущего
+     * @return узел или null
+     */
     default A sibling(int offset){
         return UpTreeImpl.sibling((A)this,offset);
     }

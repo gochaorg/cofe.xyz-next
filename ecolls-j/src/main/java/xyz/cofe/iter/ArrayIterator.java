@@ -9,6 +9,10 @@ public class ArrayIterator<T> implements Iterator<T> {
     private T[] array;
     private int index = 0;
 
+    /**
+     * Конструктор
+     * @param array исходный массив
+     */
     public ArrayIterator(T[] array) {
         if( array == null ){
             throw new IllegalArgumentException("array == null");

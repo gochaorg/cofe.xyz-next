@@ -3,11 +3,21 @@ package xyz.cofe.iter;
 import java.util.Iterator;
 import java.util.function.Function;
 
+/**
+ * Итератор отобрадения одного типа данных на другой
+ * @param <FromType> Исходный тип
+ * @param <ToType> Целевой тип
+ */
 public class MapIterator<FromType, ToType> implements Iterator<ToType>
 {
     private Iterator<FromType> src = null;
     private Function<FromType, ToType> convertor = null;
 
+    /**
+     * Конструктор
+     * @param src исходные данные
+     * @param convertor функция конвертировния
+     */
     public MapIterator(Iterator<FromType> src, Function<FromType, ToType> convertor)
     {
         if (src == null)

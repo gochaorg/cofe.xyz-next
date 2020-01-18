@@ -26,16 +26,29 @@ public class EventMapEntry<K,V> implements Map.Entry<K,V> {
         this.value = value;
     }
 
+    /**
+     * Возвращает ключ
+     * @return ключ
+     */
     @Override
     public K getKey() {
         return key;
     }
 
+    /**
+     * Возвращает значение
+     * @return значение
+     */
     @Override
     public V getValue() {
         return value;
     }
 
+    /**
+     * Устанавлиает значени для ключа
+     * @param value значение
+     * @return предыдущее значение
+     */
     @Override
     public V setValue(V value) {
         EventMap<K,V> em = eventMap.get();
