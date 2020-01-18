@@ -1,4 +1,33 @@
 <root>
-    <str>hello</str>
-    <num>123</num>
+    <contact>
+        <name>vasia</name>
+        <follow>
+            <contact>
+                <name>masha</name>
+                <follow>
+                    <contact>
+                        <name>ivan</name>
+                        <follow>
+                            <contact>
+                                <name>dusia</name>
+                            </contact>
+                        </follow>
+                    </contact>
+                </follow>
+            </contact>
+            <contact>
+                <name>dusia</name>
+                <follow>
+                    <contact>
+                        <name>petia</name>
+                        <follow>
+                            <contact>
+                                <name>masha</name>
+                            </contact>
+                        </follow>
+                    </contact>
+                </follow>
+            </contact>
+        </follow>
+    </contact>
 </root>

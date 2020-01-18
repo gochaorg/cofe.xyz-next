@@ -1,4 +1,9 @@
 package xyz.cofe.xml.tr;
 
-public class XPath {
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Retention(RetentionPolicy.RUNTIME)
+public @interface XPath {
+    String value();
 }

@@ -1,6 +1,7 @@
 package xyz.cofe.xml.tr;
 
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import xyz.cofe.typeconv.ExtendedCastGraph;
 import xyz.cofe.typeconv.TypeCastGraph;
 import xyz.cofe.xml.XmlUtil;
@@ -22,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class XFetcher implements InvocationHandler {
+public class XIFProxy implements InvocationHandler {
     protected final Node node;
-    public XFetcher( Node node){
+    public XIFProxy( Node node){
         if( node==null ) throw new IllegalArgumentException("node==null");
         this.node = node;
     }
@@ -34,12 +35,12 @@ public class XFetcher implements InvocationHandler {
         if( itf==null ) throw new IllegalArgumentException("itf==null");
         if( !itf.isInterface() )throw new IllegalArgumentException("can't extract from non interface ("+itf+")");
 
-        XFetcher extracter = new XFetcher(node);
-        //if( !extracter.isExtractable(itf) )throw new IllegalArgumentException("can't extract from "+itf);
+        XIFProxy extracter = new XIFProxy(node);
+        //if( !extracter.isFetchable(itf) )throw new IllegalArgumentException("can't extract from "+itf);
 
         return (T)
             Proxy.newProxyInstance(
-                XFetcher.class.getClassLoader(),//itf.getClass().getClassLoader(),
+                XIFProxy.class.getClassLoader(),//itf.getClass().getClassLoader(),
                 new Class[]{ itf },
                 extracter
             );
@@ -142,14 +143,70 @@ public class XFetcher implements InvocationHandler {
             }
         }
 
+        Class listTypeArg = listArgument(targetType,true);
+        if( listTypeArg!=null && listTypeArg.isInterface() ){
+            List resultList= new ArrayList();
+            try{
+                NodeList nl = (NodeList)xpathQuery.evaluate(node, XPathConstants.NODESET);
+                if( nl!=null ){
+                    for( int ni=0; ni<nl.getLength(); ni++ ){
+                        Node nodeOfList = nl.item(ni);
+                        if( nodeOfList!=null ){
+                            Object proxy = proxy(nodeOfList, listTypeArg);
+                            resultList.add(proxy);
+                        }
+                    }
+                }
+            } catch( XPathExpressionException e ){
+                e.printStackTrace();
+            }
+            return resultList;
+        }
+
         throw new IllegalArgumentException("targetType(="+targetType+") not acceptable");
     }
 
-    public boolean isExtractable( Type t ){
-        return isExtractable(null, t);
+    /**
+     * Получение типа аргумента для списка
+     * @param t тип который должен быть List&lt;A&gt;
+     * @param checkFetchable проверка на isFetchable
+     * @return тип A или null
+     */
+    private Class listArgument(Type t, boolean checkFetchable){
+        if( !(t instanceof ParameterizedType) )return null;
+        ParameterizedType pt = (ParameterizedType)t;
+
+        // Проверяем pt - это List<A>
+        Type rawType = pt.getRawType();
+        if( !(rawType instanceof Class) ){
+            return null;
+        }
+
+        Class rawClass = (Class)rawType;
+        if( !rawClass.isInterface() )return null;
+        if( !(List.class == rawClass) )return null;
+
+        // Проверяем что List<A>, A - это интерфейс, и он isFetchable(A)==true
+        Type[] actTypeArgs = pt.getActualTypeArguments();
+        if( actTypeArgs.length!=1 || !(actTypeArgs[0] instanceof Class) ){
+            return null;
+        }
+
+        Class listGenericArg = (Class)actTypeArgs[0];
+
+        if( checkFetchable ){
+//            if( isAtom(listGenericArg) ) return listGenericArg;
+            if( !listGenericArg.isInterface() ) return null;
+            if( !isFetchable(listGenericArg) ) return null;
+        }
+
+        return listGenericArg;
     }
 
-    protected boolean isExtractable( Set<Type> visited, Type t ){
+    public boolean isFetchable( Type t ){
+        return isFetchable(null, t);
+    }
+    protected boolean isFetchable( Set<Type> visited, Type t ){
         if( t==null ) throw new IllegalArgumentException("t==null");
 
         // защита от рекурсии
@@ -170,7 +227,7 @@ public class XFetcher implements InvocationHandler {
         }
         if( t instanceof ParameterizedType ){
             // Проверка что указанный тип является:
-            // List<A> , где A - интерфейс для получения данных - т.е. isExtractable(A)==true & A.isInterface()==true
+            // List<A> , где A - интерфейс для получения данных - т.е. isFetchable(A)==true & A.isInterface()==true
             ParameterizedType pt = (ParameterizedType)t;
 
             // Проверяем pt - это List<A>
@@ -183,20 +240,20 @@ public class XFetcher implements InvocationHandler {
             if( !rawClass.isInterface() )return false;
             if( !(List.class == rawClass) )return false;
 
-            // Проверяем что List<A>, A - это интерфейс, и он isExtractable(A)==true
+            // Проверяем что List<A>, A - это интерфейс, и он isFetchable(A)==true
             Type[] actTypeArgs = pt.getActualTypeArguments();
             if( actTypeArgs.length!=1 || !(actTypeArgs[0] instanceof Class) ){
                 return false;
             }
 
             Class listGenericArg = (Class)actTypeArgs[0];
-            if( isAtom(listGenericArg) )return true;
+//            if( isAtom(listGenericArg) )return true; //TODO возможно закоментировать
             if( !listGenericArg.isInterface() )return false;
-            return isExtractable(visited,listGenericArg);
+            return isFetchable(visited,listGenericArg);
         }
         return false;
     }
-    public boolean isExtractable( Method m ){
+    public boolean isFetchable( Method m ){
         if( m==null ) throw new IllegalArgumentException("m==null");
         if( m.getParameterCount()>0 )return false;
 
@@ -204,7 +261,7 @@ public class XFetcher implements InvocationHandler {
         if( ann==null )return false;
 
         Type genericReturnType = m.getGenericReturnType();
-        if( isExtractable(genericReturnType) )return true;
+        if( isFetchable(genericReturnType) )return true;
 
         return false;
     }
@@ -246,7 +303,7 @@ public class XFetcher implements InvocationHandler {
         Type gret = method.getGenericReturnType();
         Class cret = method.getReturnType();
 
-        if( !isExtractable(method) ){
+        if( !isFetchable(method) ){
             return cret.isPrimitive() ? defaultPrimitiveValue(cret) : null;
         }
 
