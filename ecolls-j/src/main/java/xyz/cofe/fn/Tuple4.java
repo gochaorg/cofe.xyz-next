@@ -60,7 +60,7 @@ public interface Tuple4<A,B,C,D> {
      * @param consumer функция приемник
      * @return self ссылка
      */
-    default Tuple4<A,B,C,D> apply( QuadConsumer<A, B, C, D> consumer ){
+    default Tuple4<A,B,C,D> apply( Consumer4<A, B, C, D> consumer ){
         if(consumer==null)throw new IllegalArgumentException("consumer == null");
         consumer.accept(a(),b(),c(),d());
         return this;
