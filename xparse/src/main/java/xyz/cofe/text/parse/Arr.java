@@ -1,6 +1,9 @@
 package xyz.cofe.text.parse;
 
-import xyz.cofe.ecolls.*;
+import xyz.cofe.fn.Pair;
+import xyz.cofe.fn.QuadConsumer;
+import xyz.cofe.fn.QuintConsumer;
+import xyz.cofe.fn.TripleConsumer;
 import xyz.cofe.iter.Eterable;
 
 import java.util.*;

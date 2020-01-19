@@ -1,7 +1,7 @@
 package xyz.cofe.gui.swing.tree;
 
-import xyz.cofe.ecolls.Fn2;
-import xyz.cofe.ecolls.Fn3;
+import xyz.cofe.fn.Fn2;
+import xyz.cofe.fn.Fn3;
 
 import java.awt.*;
 import java.util.logging.Level;

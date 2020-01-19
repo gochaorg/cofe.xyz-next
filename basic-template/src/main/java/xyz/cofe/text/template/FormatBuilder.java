@@ -1,6 +1,6 @@
 package xyz.cofe.text.template;
 
-import xyz.cofe.ecolls.Fn1;
+import xyz.cofe.fn.Fn1;
 
 /**
  * Построение функции форматирования

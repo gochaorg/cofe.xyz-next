@@ -26,7 +26,7 @@ package xyz.cofe.gui.swing.table;
 
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.EventList;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

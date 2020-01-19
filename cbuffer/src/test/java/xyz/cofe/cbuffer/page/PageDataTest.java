@@ -3,13 +3,11 @@ package xyz.cofe.cbuffer.page;
 import org.junit.Test;
 import xyz.cofe.cbuffer.MemContentBuffer;
 import xyz.cofe.ecolls.Closeables;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
 
 public class PageDataTest {
     public void describe(PageDataImpl pd){

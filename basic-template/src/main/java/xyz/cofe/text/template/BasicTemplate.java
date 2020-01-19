@@ -44,8 +44,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import xyz.cofe.ecolls.Fn0;
-import xyz.cofe.ecolls.Fn1;
+import xyz.cofe.fn.Fn0;
+import xyz.cofe.fn.Fn1;
 import xyz.cofe.text.template.ast.AstNode;
 import xyz.cofe.typeconv.ExtendedCastGraph;
 import xyz.cofe.typeconv.TypeCastGraph;

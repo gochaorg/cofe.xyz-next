@@ -24,7 +24,7 @@
 
 package xyz.cofe.gui.swing.text;
 
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

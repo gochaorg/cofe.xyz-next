@@ -24,7 +24,7 @@
 package xyz.cofe.gui.swing.table;
 
 
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;

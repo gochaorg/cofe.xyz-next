@@ -38,7 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 
-import xyz.cofe.ecolls.Fn2;
+import xyz.cofe.fn.Fn2;
 import xyz.cofe.gui.swing.color.ColorModificator;
 import xyz.cofe.gui.swing.color.NColorModificator;
 

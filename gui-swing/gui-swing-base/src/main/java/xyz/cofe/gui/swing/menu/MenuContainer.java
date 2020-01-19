@@ -24,7 +24,7 @@
 package xyz.cofe.gui.swing.menu;
 
 import xyz.cofe.collection.BasicEventList;
-import xyz.cofe.ecolls.TripleConsumer;
+import xyz.cofe.fn.TripleConsumer;
 
 /**
  * Контейнер для меню

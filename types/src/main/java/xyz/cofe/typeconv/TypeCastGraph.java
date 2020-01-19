@@ -5,7 +5,7 @@ import xyz.cofe.collection.graph.Edge;
 import xyz.cofe.collection.graph.Path;
 import xyz.cofe.collection.graph.PathFinder;
 import xyz.cofe.collection.graph.SimpleSDGraph;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.iter.Eterable;
 import xyz.cofe.iter.EterableProxy;
 import xyz.cofe.iter.SingleIterable;

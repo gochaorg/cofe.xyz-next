@@ -40,7 +40,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableModel;
 import xyz.cofe.collection.IndexSet;
 import xyz.cofe.collection.IndexSetBasic;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 /**
  * Модель таблицы с фильтрацией строк исходной таблицы

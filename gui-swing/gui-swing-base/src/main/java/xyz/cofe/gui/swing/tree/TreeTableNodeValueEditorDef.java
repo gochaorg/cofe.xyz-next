@@ -25,7 +25,7 @@
 package xyz.cofe.gui.swing.tree;
 
 import xyz.cofe.collection.ClassMap;
-import xyz.cofe.ecolls.Fn1;
+import xyz.cofe.fn.Fn1;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

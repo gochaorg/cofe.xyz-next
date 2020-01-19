@@ -26,11 +26,10 @@ package xyz.cofe.gui.swing.table;
 
 
 import xyz.cofe.collection.*;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;

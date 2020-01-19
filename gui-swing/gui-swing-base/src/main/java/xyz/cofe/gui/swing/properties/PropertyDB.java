@@ -3,7 +3,7 @@ package xyz.cofe.gui.swing.properties;
 import xyz.cofe.collection.BasicEventMap;
 import xyz.cofe.collection.ClassMap;
 import xyz.cofe.collection.EventMap;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.gui.swing.bean.UiBean;
 import xyz.cofe.gui.swing.properties.editor.AbstractPropertyEditor;
 import xyz.cofe.gui.swing.properties.editor.CustomEditor;

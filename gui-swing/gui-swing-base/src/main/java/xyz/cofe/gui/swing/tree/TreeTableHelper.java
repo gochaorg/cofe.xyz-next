@@ -37,9 +37,9 @@ import javax.swing.table.TableColumn;
 import xyz.cofe.collection.ClassMap;
 import xyz.cofe.collection.ClassNode;
 import xyz.cofe.collection.NodesExtracter;
-import xyz.cofe.ecolls.Fn1;
-import xyz.cofe.ecolls.Fn2;
-import xyz.cofe.ecolls.Fn3;
+import xyz.cofe.fn.Fn1;
+import xyz.cofe.fn.Fn2;
+import xyz.cofe.fn.Fn3;
 import xyz.cofe.gui.swing.table.Column;
 
 /**

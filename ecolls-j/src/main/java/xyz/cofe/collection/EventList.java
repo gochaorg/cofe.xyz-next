@@ -1,7 +1,7 @@
 package xyz.cofe.collection;
 
 import xyz.cofe.ecolls.ReadWriteLockSupport;
-import xyz.cofe.ecolls.TripleConsumer;
+import xyz.cofe.fn.TripleConsumer;
 import xyz.cofe.iter.Eterable;
 import xyz.cofe.scn.LongScn;
 

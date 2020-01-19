@@ -45,7 +45,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.gui.swing.bean.UiBean;
 
 /**

@@ -31,7 +31,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import xyz.cofe.collection.NodesExtracter;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.iter.EmptyIterable;
 import xyz.cofe.iter.MapIterable;
 import xyz.cofe.iter.TreeIterator;

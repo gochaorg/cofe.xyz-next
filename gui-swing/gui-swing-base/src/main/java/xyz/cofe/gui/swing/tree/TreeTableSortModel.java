@@ -28,7 +28,7 @@ import java.util.Comparator;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.gui.swing.table.RowData;
 import xyz.cofe.gui.swing.table.SortRowTM;
 

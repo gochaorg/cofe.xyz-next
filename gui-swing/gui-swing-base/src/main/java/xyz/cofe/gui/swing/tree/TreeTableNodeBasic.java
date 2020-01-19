@@ -1,7 +1,7 @@
 package xyz.cofe.gui.swing.tree;
 
 import xyz.cofe.collection.NodesExtracter;
-import xyz.cofe.ecolls.Fn1;
+import xyz.cofe.fn.Fn1;
 import xyz.cofe.iter.Eterable;
 
 import java.util.*;

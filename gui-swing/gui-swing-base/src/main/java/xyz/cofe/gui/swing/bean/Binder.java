@@ -7,7 +7,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
@@ -15,9 +14,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import xyz.cofe.ecolls.Fn2;
-import xyz.cofe.ecolls.Fn3;
-import xyz.cofe.ecolls.Fn4;
+import xyz.cofe.fn.Fn2;
+import xyz.cofe.fn.Fn3;
+import xyz.cofe.fn.Fn4;
 import xyz.cofe.text.Text;
 
 /**

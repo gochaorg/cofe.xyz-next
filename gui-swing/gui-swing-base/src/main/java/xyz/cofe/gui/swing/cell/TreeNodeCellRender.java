@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-import xyz.cofe.ecolls.Fn1;
+import xyz.cofe.fn.Fn1;
 import xyz.cofe.gui.swing.tree.ColumnScroll;
 import xyz.cofe.gui.swing.tree.ColumnScrollModel;
 import xyz.cofe.gui.swing.tree.TreeTableNode;

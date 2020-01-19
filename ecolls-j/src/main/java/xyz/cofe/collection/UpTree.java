@@ -1,6 +1,6 @@
 package xyz.cofe.collection;
 
-import xyz.cofe.ecolls.Triple;
+import xyz.cofe.fn.Triple;
 
 import java.util.ArrayList;
 import java.util.List;

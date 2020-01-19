@@ -37,7 +37,7 @@ import java.util.WeakHashMap;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import xyz.cofe.collection.LRUCache;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.gui.swing.color.ColorModificator;
 import xyz.cofe.gui.swing.color.NColorModificator;
 import xyz.cofe.gui.swing.text.str.FlatBlock;

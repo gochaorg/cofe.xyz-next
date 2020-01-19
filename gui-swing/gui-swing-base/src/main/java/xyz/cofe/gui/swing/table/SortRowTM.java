@@ -41,7 +41,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableModel;
 import xyz.cofe.collection.SortInsert;
 import xyz.cofe.collection.SortInsertDefault;
-import xyz.cofe.ecolls.Fn1;
+import xyz.cofe.fn.Fn1;
 import xyz.cofe.gui.swing.table.impl.SortRowTMImpl;
 import xyz.cofe.text.out.Output;
 

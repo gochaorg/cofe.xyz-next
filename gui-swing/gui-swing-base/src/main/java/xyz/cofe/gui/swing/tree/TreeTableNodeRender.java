@@ -44,8 +44,8 @@ import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
-import xyz.cofe.ecolls.Fn1;
-import xyz.cofe.ecolls.Fn2;
+import xyz.cofe.fn.Fn1;
+import xyz.cofe.fn.Fn2;
 import xyz.cofe.gui.swing.color.ColorModificator;
 import xyz.cofe.gui.swing.color.Colors;
 import xyz.cofe.gui.swing.properties.PropertyValue;

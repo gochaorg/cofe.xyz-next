@@ -1,7 +1,7 @@
 package xyz.cofe.text.parse;
 
 import org.junit.Test;
-import xyz.cofe.ecolls.Fn3;
+import xyz.cofe.fn.Fn3;
 import xyz.cofe.iter.Eterable;
 import xyz.cofe.text.parse.mtest.Atom;
 import xyz.cofe.text.parse.mtest.BinaryExpr;
@@ -13,8 +13,7 @@ import xyz.cofe.text.parse.mtest.MulTok;
 import xyz.cofe.text.parse.mtest.ProxyFn;
 import xyz.cofe.text.parse.mtest.SumTok;
 import xyz.cofe.text.parse.mtest.UnaryExpr;
-import xyz.cofe.text.parse.toks.FloatNumberToken;
-import xyz.cofe.text.parse.toks.IntegerNumberToken;
+
 import static xyz.cofe.text.parse.Builder.*;
 
 import java.util.function.Function;

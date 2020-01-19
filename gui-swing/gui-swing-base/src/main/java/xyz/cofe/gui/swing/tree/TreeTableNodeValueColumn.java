@@ -32,9 +32,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import xyz.cofe.collection.ClassMap;
-import xyz.cofe.ecolls.Fn1;
-import xyz.cofe.ecolls.Fn2;
-import xyz.cofe.ecolls.Fn3;
+import xyz.cofe.fn.Fn1;
+import xyz.cofe.fn.Fn2;
+import xyz.cofe.fn.Fn3;
 import xyz.cofe.gui.swing.table.Column;
 import xyz.cofe.gui.swing.table.IsRowEditable;
 

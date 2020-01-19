@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 
 import xyz.cofe.collection.graph.Edge;
 import xyz.cofe.collection.graph.Path;
-import xyz.cofe.ecolls.Fn1;
+import xyz.cofe.fn.Fn1;
 import xyz.cofe.gui.swing.properties.Property;
 import xyz.cofe.gui.swing.properties.PropertyValue;
 import xyz.cofe.gui.swing.table.Column;

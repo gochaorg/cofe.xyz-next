@@ -1,8 +1,8 @@
 package xyz.cofe.gui.swing.bean;
 
-import xyz.cofe.ecolls.Fn2;
-import xyz.cofe.ecolls.Fn3;
-import xyz.cofe.ecolls.Fn4;
+import xyz.cofe.fn.Fn2;
+import xyz.cofe.fn.Fn3;
+import xyz.cofe.fn.Fn4;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

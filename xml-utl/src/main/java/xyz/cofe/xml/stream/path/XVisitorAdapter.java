@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import xyz.cofe.collection.graph.Path;
-import xyz.cofe.ecolls.Fn2;
+import xyz.cofe.fn.Fn2;
 import xyz.cofe.typeconv.ExtendedCastGraph;
 import xyz.cofe.typeconv.TypeCastGraph;
 

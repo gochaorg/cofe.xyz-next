@@ -30,7 +30,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import xyz.cofe.collection.Pointer;
-import xyz.cofe.ecolls.*;
+import xyz.cofe.fn.Fn0;
+import xyz.cofe.fn.Fn1;
+import xyz.cofe.fn.Fn2;
 import xyz.cofe.text.lex.Token;
 import xyz.cofe.text.template.ast.*;
 

@@ -1,6 +1,6 @@
 package xyz.cofe.text.parse;
 
-import xyz.cofe.ecolls.Fn3;
+import xyz.cofe.fn.Fn3;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;

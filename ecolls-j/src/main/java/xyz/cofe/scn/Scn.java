@@ -1,11 +1,8 @@
 package xyz.cofe.scn;
 
-import xyz.cofe.ecolls.ListenersHelper;
-import xyz.cofe.ecolls.TripleConsumer;
+import xyz.cofe.fn.TripleConsumer;
 
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**

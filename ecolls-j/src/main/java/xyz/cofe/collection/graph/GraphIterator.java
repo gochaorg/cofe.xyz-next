@@ -24,20 +24,18 @@
 
 package xyz.cofe.collection.graph;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import xyz.cofe.collection.NodesExtracter;
 import xyz.cofe.ecolls.ListenersHelper;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.collection.BasicEventSet;
 
 /**

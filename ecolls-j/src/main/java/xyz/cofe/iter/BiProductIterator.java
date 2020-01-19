@@ -1,6 +1,6 @@
 package xyz.cofe.iter;
 
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 import java.util.Iterator;
 

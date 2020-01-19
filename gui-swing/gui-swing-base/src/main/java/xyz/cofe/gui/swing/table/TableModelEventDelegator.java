@@ -25,8 +25,8 @@
 package xyz.cofe.gui.swing.table;
 
 
-import xyz.cofe.ecolls.Fn1;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Fn1;
+import xyz.cofe.fn.Pair;
 
 import java.io.Closeable;
 import java.util.ArrayList;

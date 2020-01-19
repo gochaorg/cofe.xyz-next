@@ -1,6 +1,5 @@
 package xyz.cofe.gui.swing.bean;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -9,7 +8,7 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import xyz.cofe.ecolls.Fn4;
+import xyz.cofe.fn.Fn4;
 import xyz.cofe.text.Text;
 
 /**

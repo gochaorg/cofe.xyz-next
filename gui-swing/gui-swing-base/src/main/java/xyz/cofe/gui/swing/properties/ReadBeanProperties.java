@@ -28,7 +28,7 @@ import java.beans.PropertyDescriptor;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.gui.swing.bean.UiBean;
 import xyz.cofe.iter.Eterable;
 import xyz.cofe.text.template.SimpleTypes;

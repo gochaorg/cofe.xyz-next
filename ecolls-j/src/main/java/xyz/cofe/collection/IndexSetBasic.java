@@ -35,10 +35,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import xyz.cofe.ecolls.Pair;
-import xyz.cofe.collection.SortInsert;
-import xyz.cofe.collection.SortInsertProfiling;
-import xyz.cofe.ecolls.QuadConsumer;
+import xyz.cofe.fn.Pair;
+import xyz.cofe.fn.QuadConsumer;
 import xyz.cofe.ecolls.ReadWriteLockSupport;
 import xyz.cofe.scn.LongScn;
 

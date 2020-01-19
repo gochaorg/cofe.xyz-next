@@ -1,8 +1,8 @@
 package xyz.cofe.text.parse;
 
-import xyz.cofe.ecolls.Fn0;
-import xyz.cofe.ecolls.Fn1;
-import xyz.cofe.ecolls.Fn2;
+import xyz.cofe.fn.Fn0;
+import xyz.cofe.fn.Fn1;
+import xyz.cofe.fn.Fn2;
 
 import java.util.Optional;
 

@@ -1,9 +1,8 @@
 package xyz.cofe.iter;
 
-import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 import java.util.Arrays;
 import java.util.List;

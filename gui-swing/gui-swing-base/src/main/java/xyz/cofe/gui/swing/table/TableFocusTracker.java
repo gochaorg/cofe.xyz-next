@@ -43,9 +43,9 @@ import javax.swing.Timer;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import xyz.cofe.ecolls.Closeables;
-import xyz.cofe.ecolls.Fn2;
-import xyz.cofe.ecolls.Fn4;
-import xyz.cofe.ecolls.Fn6;
+import xyz.cofe.fn.Fn2;
+import xyz.cofe.fn.Fn4;
+import xyz.cofe.fn.Fn6;
 import xyz.cofe.gui.swing.GuiUtil;
 
 /**

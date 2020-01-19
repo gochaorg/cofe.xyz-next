@@ -1,8 +1,6 @@
 package xyz.cofe.scn;
 
-import xyz.cofe.ecolls.Pair;
-
-import java.util.concurrent.atomic.AtomicLong;
+import xyz.cofe.fn.Pair;
 
 /**
  * Поддержка номера изменений объекта

@@ -1,6 +1,9 @@
 package xyz.cofe.iter;
 
-import xyz.cofe.ecolls.*;
+import xyz.cofe.fn.Pair;
+import xyz.cofe.fn.QuadConsumer;
+import xyz.cofe.fn.QuintConsumer;
+import xyz.cofe.fn.TripleConsumer;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -125,7 +128,7 @@ public interface Eterable<A> extends Iterable<A> {
      * @param <B> Тип дополнительного множества
      * @return Декартово произведение
      */
-    default <B> Eterable<Pair<A,B>> product(Iterable<B> source){
+    default <B> Eterable<Pair<A,B>> product( Iterable<B> source){
         if(source==null)throw new IllegalArgumentException("source == null");
         return BiProductIterable.of(this,source);
     }

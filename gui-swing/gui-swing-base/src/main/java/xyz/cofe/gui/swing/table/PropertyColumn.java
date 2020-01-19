@@ -26,7 +26,6 @@ package xyz.cofe.gui.swing.table;
 
 import java.awt.Color;
 import java.beans.PropertyEditor;
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +43,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import xyz.cofe.collection.ClassMap;
-import xyz.cofe.ecolls.Fn1;
-import xyz.cofe.ecolls.Fn2;
+import xyz.cofe.fn.Fn1;
+import xyz.cofe.fn.Fn2;
 import xyz.cofe.ecolls.ListenersHelper;
 import xyz.cofe.gui.swing.properties.GetPropertyType;
 import xyz.cofe.gui.swing.properties.Icons;

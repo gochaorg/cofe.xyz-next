@@ -24,7 +24,7 @@
 
 package xyz.cofe.text;
 
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.iter.Eterable;
 
 import java.io.UnsupportedEncodingException;

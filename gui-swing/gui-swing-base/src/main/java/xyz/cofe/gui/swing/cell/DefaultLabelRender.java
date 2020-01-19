@@ -30,7 +30,6 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.net.URL;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -41,7 +40,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-import xyz.cofe.ecolls.Fn2;
+import xyz.cofe.fn.Fn2;
 import xyz.cofe.gui.swing.properties.Property;
 import xyz.cofe.gui.swing.properties.PropertyValue;
 import xyz.cofe.gui.swing.tree.FormattedValue;

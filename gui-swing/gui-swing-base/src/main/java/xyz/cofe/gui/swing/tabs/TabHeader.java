@@ -27,7 +27,7 @@ package xyz.cofe.gui.swing.tabs;
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.EventList;
 import xyz.cofe.ecolls.ListenersHelper;
-import xyz.cofe.ecolls.TripleConsumer;
+import xyz.cofe.fn.TripleConsumer;
 
 import java.awt.Color;
 import java.awt.Component;

@@ -2,7 +2,7 @@ package xyz.cofe.cbuffer.page;
 
 import xyz.cofe.collection.IndexSet;
 import xyz.cofe.collection.IndexSetBasic;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 import java.util.HashMap;
 import java.util.Map;

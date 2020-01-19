@@ -36,7 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 /**
  * Поиск выбранных объект/компонентов среди сфокусированных

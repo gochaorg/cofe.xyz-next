@@ -1,7 +1,6 @@
 package xyz.cofe.collection;
 
-import xyz.cofe.ecolls.Triple;
-import xyz.cofe.iter.TreeStep;
+import xyz.cofe.fn.Triple;
 
 import java.util.*;
 import java.util.function.Consumer;

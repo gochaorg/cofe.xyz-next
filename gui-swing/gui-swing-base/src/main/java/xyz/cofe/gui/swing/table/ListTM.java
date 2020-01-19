@@ -2,7 +2,6 @@ package xyz.cofe.gui.swing.table;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,8 +18,6 @@ import javax.swing.table.TableModel;
 
 import xyz.cofe.collection.*;
 import xyz.cofe.ecolls.Closeables;
-import xyz.cofe.ecolls.Fn1;
-import xyz.cofe.ecolls.Fn3;
 
 /**
  * Модель таблицы основанная на списке объектов

@@ -1,6 +1,6 @@
 package xyz.cofe.text.template;
 
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.iter.Eterable;
 
 import java.lang.reflect.Method;

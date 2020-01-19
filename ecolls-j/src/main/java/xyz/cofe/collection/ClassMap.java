@@ -24,7 +24,6 @@
 
 package xyz.cofe.collection;
 
-import java.io.Closeable;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -36,11 +35,10 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import xyz.cofe.collection.ClassSet;
-import xyz.cofe.ecolls.Closeables;
+
 import xyz.cofe.ecolls.ReadWriteLockProperty;
 import xyz.cofe.ecolls.ReadWriteLockSupport;
-import xyz.cofe.ecolls.TripleConsumer;
+import xyz.cofe.fn.TripleConsumer;
 
 /**
  * Карта с возможностью поиска совместимых подтипов.

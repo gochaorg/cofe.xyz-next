@@ -1,6 +1,6 @@
 package xyz.cofe.scn;
 
-import xyz.cofe.ecolls.Pair;
+import xyz.cofe.fn.Pair;
 
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;

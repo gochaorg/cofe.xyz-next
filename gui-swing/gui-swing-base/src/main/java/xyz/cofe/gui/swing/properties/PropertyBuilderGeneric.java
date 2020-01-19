@@ -29,8 +29,8 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import xyz.cofe.ecolls.Fn0;
-import xyz.cofe.ecolls.Fn1;
+import xyz.cofe.fn.Fn0;
+import xyz.cofe.fn.Fn1;
 import xyz.cofe.gui.swing.bean.UiBean;
 
 /**

@@ -1,15 +1,13 @@
 package xyz.cofe.collection;
 
-import xyz.cofe.ecolls.Pair;
 import xyz.cofe.ecolls.ReadWriteLockSupport;
-import xyz.cofe.ecolls.TripleConsumer;
+import xyz.cofe.fn.TripleConsumer;
 import xyz.cofe.scn.LongScn;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;

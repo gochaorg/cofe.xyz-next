@@ -23,8 +23,8 @@
  */
 package xyz.cofe.collection;
 
-import xyz.cofe.ecolls.Pair;
-import xyz.cofe.ecolls.QuadConsumer;
+import xyz.cofe.fn.Pair;
+import xyz.cofe.fn.QuadConsumer;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
