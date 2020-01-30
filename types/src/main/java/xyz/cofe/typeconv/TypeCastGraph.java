@@ -17,6 +17,9 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Граф преобразования данных из одног типа в другой
+ */
 public class TypeCastGraph
     extends SimpleSDGraph<Class, Function<Object,Object>>
 {
@@ -29,44 +32,32 @@ public class TypeCastGraph
 
     private static boolean isLogSevere(){
         Level level = logLevel();
-        return level==null
-            ? true
-            : level.intValue() <= Level.SEVERE.intValue();
+        return level==null || level.intValue()<=Level.SEVERE.intValue();
     }
 
     private static boolean isLogWarning(){
         Level level = logLevel();
-        return level==null
-            ? true
-            : level.intValue() <= Level.WARNING.intValue();
+        return level==null || level.intValue()<=Level.WARNING.intValue();
     }
 
     private static boolean isLogInfo(){
         Level level = logLevel();
-        return level==null
-            ? true
-            : level.intValue() <= Level.INFO.intValue();
+        return level==null || level.intValue()<=Level.INFO.intValue();
     }
 
     private static boolean isLogFine(){
         Level level = logLevel();
-        return level==null
-            ? false
-            : level.intValue() <= Level.FINE.intValue();
+        return level!=null && level.intValue()<=Level.FINE.intValue();
     }
 
     private static boolean isLogFiner(){
         Level level = logLevel();
-        return level==null
-            ? false
-            : level.intValue() <= Level.FINER.intValue();
+        return level!=null && level.intValue()<=Level.FINER.intValue();
     }
 
     private static boolean isLogFinest(){
         Level level = logLevel();
-        return level==null
-            ? false
-            : level.intValue() <= Level.FINEST.intValue();
+        return level!=null && level.intValue()<=Level.FINEST.intValue();
     }
 
     private static void logFine(String message,Object ... args){
@@ -129,6 +120,8 @@ public class TypeCastGraph
                 add(e);
             }
             classes.addAll(src.classes);
+            this.findPathMinimum = src.findPathMinimum;
+            this.edgeWeightConvertor = src.edgeWeightConvertor;
         }
     }
 
@@ -141,6 +134,9 @@ public class TypeCastGraph
         return new TypeCastGraph(this);
     }
 
+    /**
+     * Множество классов - узлов графа для преобрвзования
+     */
     protected ClassSet classes = new ClassSet();
 
     @Override

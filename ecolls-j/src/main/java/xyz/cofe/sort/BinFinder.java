@@ -11,7 +11,7 @@ import java.util.function.Predicate;
  * @param <LIST> Тип списка
  * @param <E> Тип значения
  */
-public interface SFinder<LIST,E> {
+public interface BinFinder<LIST,E> {
     /**
      * Получение элемента по его индексу
      * @param lst список
@@ -33,12 +33,12 @@ public interface SFinder<LIST,E> {
 
         while( true ){
             int areasize = endex - begin;
-            if( areasize<0 ){
+            if( areasize<=0 ){
                 // область поиска - нулевая
                 break;
             }
 
-            if( areasize==0 ){
+            if( areasize==1 ){
                 // область поиска сужена до одного элемента
                 E e = get(lst, begin);
                 if( cmp.compare(e,target)==0 ){
@@ -81,23 +81,34 @@ public interface SFinder<LIST,E> {
         }
     }
 
+    /**
+     * Поиск "головы" - ищет в списке начало некого значения.
+     *
+     * <p></p>
+     * Пример есть список: <br>
+     * [0] = 2 // &lt;- это будет "голова" для искомого значения 3 <br>
+     * [1] = 2 <br>
+     * [2] = 3 <br>
+     * [3] = 5 // &lt;- это будет "голова" для искомого значения 7 <br>
+     * [4] = 8 <br>
+     * [5] = 8 <br>
+     * [6] = 9 <br>
+     * @param lst список
+     * @param cmp функция согласно которой отсортированы элементы в списке
+     * @param target искомое значение
+     * @param begin начало области поиска
+     * @param endex конец (исключительно) области поиска
+     * @return индекс соответ голове или -1, еслли не найдено
+     */
     public default int headIndex( LIST lst, Comparator<E> cmp, E target, int begin, int endex ){
-        if( consumer==null ) throw new IllegalArgumentException("consumer==null");
         if( lst==null ) throw new IllegalArgumentException("lst==null");
         if( cmp==null ) throw new IllegalArgumentException("cmp==null");
+        return BinFinderImpl.headIndex(this,lst,cmp,target,begin,endex);
+    }
 
-        if( begin>endex ){
-            int t = begin;
-            begin = endex;
-            endex = t;
-        }
-
-        while( true ){
-            int areasize = endex-begin;
-            if( areasize<0 ){
-                // область поиска - нулевая
-                break;
-            }
-        }
+    public default int tailIndex( LIST lst, Comparator<E> cmp, E target, int begin, int endex ){
+        if( lst==null ) throw new IllegalArgumentException("lst==null");
+        if( cmp==null ) throw new IllegalArgumentException("cmp==null");
+        return BinFinderImpl.tailIndex(this, lst,cmp,target,begin,endex);
     }
 }

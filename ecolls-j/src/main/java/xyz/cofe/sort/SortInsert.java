@@ -22,13 +22,12 @@
  * THE SOFTWARE.
  */
 
-package xyz.cofe.collection;
+package xyz.cofe.sort;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import xyz.cofe.collection.SortInsertDefault;
 
 /**
  * Сортировка вставкой. <p>

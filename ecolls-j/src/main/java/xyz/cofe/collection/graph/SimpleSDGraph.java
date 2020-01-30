@@ -23,7 +23,9 @@
  */
 package xyz.cofe.collection.graph;
 
+import xyz.cofe.ecolls.ReadWriteLockSupport;
 import xyz.cofe.iter.Eterable;
+import xyz.cofe.scn.LongScn;
 
 import java.util.*;
 import java.util.ArrayList;
@@ -34,7 +36,7 @@ import java.util.ArrayList;
  * @param <N> Тип вершины
  * @param <E> Тип ребра
  */
-public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
+public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>, ReadWriteLockSupport, LongScn<SimpleSDGraph<N,E>,Void>
 {
     /**
      * Фабрика
@@ -71,8 +73,8 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
         }
         this.factory = factory;
 
-        edges = factory.createEdgePairs();
-        nodes = factory.createNodes();
+        edges = factory.readWriteLocks(this).createEdgePairs();
+        nodes = factory.readWriteLocks(this).createNodes();
     }
 
     /* (non-Javadoc)
@@ -108,10 +110,12 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("b == null");
         }
 
-        ArrayList<E> res = new ArrayList<E>();
-        E e = get(a,b);
-        if( e!=null )res.add( e );
-        return res;
+        return readLock(()->{
+            ArrayList<E> res = new ArrayList<E>();
+            E e = get(a,b);
+            if( e!=null )res.add( e );
+            return res;
+        });
     }
 
     /* (non-Javadoc)
@@ -125,12 +129,14 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("node == null");
         }
 
-        Collection<Edge<N,E>> list = factory.createEdgePairs();
-        for(Edge<N,E> e  :  edges)
-        {
-            if (e.getNodeA().equals(node) || e.getNodeB().equals(node))list.add(e);
-        }
-        return list;
+        return readLock(()->{
+            Collection<Edge<N,E>> list = factory.createEdgePairs();
+            for(Edge<N,E> e  :  edges)
+            {
+                if (e.getNodeA().equals(node) || e.getNodeB().equals(node))list.add(e);
+            }
+            return list;
+        });
     }
 
     /* (non-Javadoc)
@@ -144,12 +150,13 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("node == null");
         }
 
-        Collection<Edge<N,E>> list = factory.createEdgePairs();
-        for(Edge<N,E> e  :  edges)
-        {
-            if (e.getNodeA().equals(node))list.add(e);
-        }
-        return list;
+        return readLock(()->{
+            Collection<Edge<N, E>> list = factory.createEdgePairs();
+            for( Edge<N, E> e : edges ){
+                if( e.getNodeA().equals(node) ) list.add(e);
+            }
+            return list;
+        });
     }
 
     /* (non-Javadoc)
@@ -163,12 +170,13 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("node == null");
         }
 
-        Collection<Edge<N,E>> list = factory.createEdgePairs();
-        for(Edge<N,E> e : edges)
-        {
-            if (e.getNodeB().equals(node))list.add(e);
-        }
-        return list;
+        return readLock(()->{
+            Collection<Edge<N, E>> list = factory.createEdgePairs();
+            for( Edge<N, E> e : edges ){
+                if( e.getNodeB().equals(node) ) list.add(e);
+            }
+            return list;
+        });
     }
 
     /* (non-Javadoc)
@@ -186,14 +194,14 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("b == null");
         }
 
-        for(Edge<N,E> e  :  edges)
-        {
-            if( e.getNodeA().equals(a) && e.getNodeB().equals(b) )
-            {
-                return true;
+        return readLock(()->{
+            for( Edge<N, E> e : edges ){
+                if( e.getNodeA().equals(a) && e.getNodeB().equals(b) ){
+                    return true;
+                }
             }
-        }
-        return false;
+            return false;
+        });
     }
 
     /* (non-Javadoc)
@@ -225,7 +233,7 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("node == null");
         }
 
-        return indexOf(node) >= 0;
+        return readLock(()->indexOf(node) >= 0);
     }
 
     /**
@@ -240,13 +248,14 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("node == null");
         }
 
-        int idx = -1;
-        for(N n  :  nodes)
-        {
-            idx++;
-            if( n.equals(node) )return idx;
-        }
-        return -1;
+        return readLock(()->{
+            int idx = -1;
+            for( N n : nodes ){
+                idx++;
+                if( n.equals(node) ) return idx;
+            }
+            return -1;
+        });
     }
 
     /**
@@ -301,6 +310,7 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
 
         edges.add(es);
         onEdgeAdded(es);
+        nextscn();
     }
 
     /* (non-Javadoc)
@@ -314,11 +324,14 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("node == null");
         }
 
-        if (!contains(node))
-        {
-            nodes.add(node);
-            onNodeAdded(node);
-        }
+        writeLock(()->{
+            if( !contains(node) ){
+                nodes.add(node);
+                onNodeAdded(node);
+            }
+        });
+
+        nextscn();
     }
 
     /* (non-Javadoc)
@@ -334,30 +347,34 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
 
         Collection<Edge<N,E>> list = factory.createEdgePairs();
 
-        for(Edge<N,E> edge  :  edges)
-        {
-            if ( edge.getNodeA().equals(node) || edge.getNodeB().equals(node))
+        writeLock(()->{
+            for(Edge<N,E> edge  :  edges)
             {
-                list.add(edge);
+                if ( edge.getNodeA().equals(node) || edge.getNodeB().equals(node))
+                {
+                    list.add(edge);
+                }
             }
-        }
 
-        for(Edge<N,E> edge : list)
-        {
-            remove(edge);
-        }
-
-        N oldNode = null;
-        for(N n  :  nodes){
-            if( n.equals(node) ){
-                oldNode = n;
-                break;
+            for(Edge<N,E> edge : list)
+            {
+                remove(edge);
             }
-        }
-        if( oldNode!=null ){
-            nodes.remove(oldNode);
-            onNodeRemoved(oldNode);
-        }
+
+            N oldNode = null;
+            for(N n  :  nodes){
+                if( n.equals(node) ){
+                    oldNode = n;
+                    break;
+                }
+            }
+            if( oldNode!=null ){
+                nodes.remove(oldNode);
+                onNodeRemoved(oldNode);
+            }
+        });
+
+        nextscn();
     }
 
     /* (non-Javadoc)
@@ -366,10 +383,13 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
     @Override
     public void clearEdges()
     {
-        Collection<Edge<N,E>> oldEdges = edges;
-        edges = factory.createEdgePairs();
-        for(Edge<N,E> e : oldEdges) onEdgeRemoved(e);
-        oldEdges.clear();
+        writeLock(()->{
+            Collection<Edge<N,E>> oldEdges = edges;
+            edges = factory.createEdgePairs();
+            for(Edge<N,E> e : oldEdges) onEdgeRemoved(e);
+            oldEdges.clear();
+        });
+        nextscn();
     }
 
     /* (non-Javadoc)
@@ -378,15 +398,18 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
     @Override
     public void clearAll()
     {
-        Collection<Edge<N,E>> oldEdges = edges;
-        edges = factory.createEdgePairs();
-        for(Edge<N,E> e  :  oldEdges) onEdgeRemoved(e);
-        oldEdges.clear();
+        writeLock(()->{
+            Collection<Edge<N,E>> oldEdges = edges;
+            edges = factory.createEdgePairs();
+            for(Edge<N,E> e  :  oldEdges) onEdgeRemoved(e);
+            oldEdges.clear();
 
-        Collection<N> oldNodes = nodes;
-        nodes = factory.createNodes();
-        for(N n  :  oldNodes) onNodeRemoved(n);
-        oldNodes.clear();
+            Collection<N> oldNodes = nodes;
+            nodes = factory.createNodes();
+            for(N n  :  oldNodes) onNodeRemoved(n);
+            oldNodes.clear();
+        });
+        nextscn();
     }
 
     /* (non-Javadoc)
@@ -404,14 +427,16 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("b == null");
         }
 
-        for(Edge<N,E> e  :  edges)
-        {
-            if (e.getNodeA().equals(a) && e.getNodeB().equals(b))
+        return readLock(()->{
+            for(Edge<N,E> e  :  edges)
             {
-                return e.getEdge();
+                if (e.getNodeA().equals(a) && e.getNodeB().equals(b))
+                {
+                    return e.getEdge();
+                }
             }
-        }
-        return null;
+            return null;
+        });
     }
 
     /* (non-Javadoc)
@@ -430,13 +455,17 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("b == null");
         }
 
-        if (!contains(a)) add(a);
-        if (!contains(b)) add(b);
+        writeLock(()->{
+            if (!contains(a)) add(a);
+            if (!contains(b)) add(b);
 
-        removeEdge(a, b);
+            removeEdge(a, b);
 
-        Edge<N,E> newESet = factory.createEdge(a, b, e);
-        add(newESet);
+            Edge<N,E> newESet = factory.createEdge(a, b, e);
+            add(newESet);
+        });
+
+        nextscn();
     }
 
     /* (non-Javadoc)
@@ -459,6 +488,7 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
         }
 
         set(a, b, edge);
+        nextscn();
     }
 
     /* (non-Javadoc)
@@ -480,15 +510,18 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("b == null");
         }
 
-        removeEdge(a, b);
-
-        if( edges!=null )
-        {
-            for(E e : edges)
+        writeLock(()->{
+            removeEdge(a, b);
+            if( edges!=null )
             {
-                set(a, b, e);
+                for(E e : edges)
+                {
+                    set(a, b, e);
+                }
             }
-        }
+        });
+
+        nextscn();
     }
 
     /* (non-Javadoc)
@@ -506,18 +539,22 @@ public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>
             throw new IllegalArgumentException("b == null");
         }
 
-        Collection<Edge<N,E>> oldEdgeslist = factory.createEdgePairs();
-        for(Edge<N,E> e  :  edges)
-        {
-            if ( e.getNodeA().equals(a) && e.getNodeB().equals(b) )
+        writeLock(()->{
+            Collection<Edge<N,E>> oldEdgeslist = factory.createEdgePairs();
+            for(Edge<N,E> e  :  edges)
             {
-                oldEdgeslist.add(e);
+                if ( e.getNodeA().equals(a) && e.getNodeB().equals(b) )
+                {
+                    oldEdgeslist.add(e);
+                }
             }
-        }
 
-        for(Edge<N,E> e  :  oldEdgeslist)
-        {
-            remove(e);
-        }
+            for(Edge<N,E> e  :  oldEdgeslist)
+            {
+                remove(e);
+            }
+        });
+
+        nextscn();
     }
 }

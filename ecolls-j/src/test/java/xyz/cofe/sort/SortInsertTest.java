@@ -1,4 +1,4 @@
-package xyz.cofe.collection;
+package xyz.cofe.sort;
 
 import org.junit.Test;
 import xyz.cofe.sort.SortInsert;

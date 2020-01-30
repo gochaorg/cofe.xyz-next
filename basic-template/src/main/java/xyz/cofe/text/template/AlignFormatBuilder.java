@@ -166,7 +166,7 @@ public class AlignFormatBuilder
                             }
                         }
 
-                        List<String> lstr = TextCell.joinAsList(ltc);
+                        List<String> lstr = TextCell.horizontalJoin(ltc);
                         if( lstr!=null && lstr.isEmpty() ){
                             strings.add("");
                         }else{

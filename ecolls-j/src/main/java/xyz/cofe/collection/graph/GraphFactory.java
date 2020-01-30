@@ -23,7 +23,11 @@
  */
 package xyz.cofe.collection.graph;
 
+import xyz.cofe.ecolls.ReadWriteLockSupport;
+
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * Интерфейс фабрики классов графа
@@ -33,6 +37,34 @@ import java.util.*;
  */
 public interface GraphFactory<N,E>
 {
+    /**
+     * Указывает блокировки чтения/записи
+     * @param rwLocks блокировки
+     * @return self ссылка
+     */
+    default GraphFactory<N,E> readWriteLocks( ReadWriteLock rwLocks ){
+        return this;
+    }
+
+    /**
+     * Указывает блокировки чтения/записи
+     * @param rwLocks блокировки
+     * @return self ссылка
+     */
+    default GraphFactory<N,E> readWriteLocks( ReadWriteLockSupport rwLocks ){
+        return this;
+    }
+
+    /**
+     * Указывает блокировки чтения/записи
+     * @param readLock блокировка чтения
+     * @param writeLock блокировка записи
+     * @return self ссылка
+     */
+    default GraphFactory<N,E> readWriteLocks( Lock readLock, Lock writeLock ){
+        return this;
+    }
+
     /**
      * Создание ребра с вершинами
      * @param a Вершина А

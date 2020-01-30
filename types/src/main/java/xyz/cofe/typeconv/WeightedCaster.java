@@ -4,6 +4,9 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Взвешенный caster для преборазования веса
+ */
 public abstract class WeightedCaster
     implements
     Function<Object, Object>,

@@ -39,6 +39,8 @@ import xyz.cofe.fn.Pair;
 import xyz.cofe.fn.QuadConsumer;
 import xyz.cofe.ecolls.ReadWriteLockSupport;
 import xyz.cofe.scn.LongScn;
+import xyz.cofe.sort.SortInsert;
+import xyz.cofe.sort.SortInsertProfiling;
 
 /**
  * Список содежащий уникальные элементы, отсортированные в порядке возрастания
@@ -493,7 +495,7 @@ public class IndexSetBasic<A extends Comparable<A>>
     protected SortInsert<List,A> sortInsert(){
         return readLock(()->{
             if( sortInsert_instance!=null )return sortInsert_instance;
-            sortInsert_instance = (SortInsert)SortInsertProfiling.createForList();
+            sortInsert_instance = (SortInsert) SortInsertProfiling.createForList();
             return sortInsert_instance;
         });
     }

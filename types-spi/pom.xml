@@ -11,6 +11,8 @@
         <relativePath>../next-parent/pom.xml</relativePath>
     </parent>
     <artifactId>types-spi</artifactId>
+    <groupId>xyz.cofe</groupId>
+    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>

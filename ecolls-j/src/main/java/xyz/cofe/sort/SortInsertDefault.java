@@ -1,4 +1,4 @@
-package xyz.cofe.collection;
+package xyz.cofe.sort;
 
 /*
  * The MIT License
@@ -27,7 +27,6 @@ package xyz.cofe.collection;
 import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import xyz.cofe.collection.SortInsert;
 
 /**
  * Вставка в контейнер значения по умолчанию
