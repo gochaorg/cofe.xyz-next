@@ -134,7 +134,7 @@ public class CellFormat {
         this.border = border;
         return this;
     }
-//</editor-fold>
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="width">
     /**
@@ -218,7 +218,7 @@ public class CellFormat {
         cellBuilder.setTrimSpaces(trimCapsSapces);
         return this;
     }
-//</editor-fold>
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="evalNewLine">
     /**
@@ -445,7 +445,7 @@ public class CellFormat {
 
         return Border.format(lines, brd);
     }
-//</editor-fold>
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="build(String[] text,int targetHeight)">
     /**
@@ -457,7 +457,7 @@ public class CellFormat {
     public TextCell build(String[] text,int targetHeight){
         return new TextCell( format(text,targetHeight) );
     }
-//</editor-fold>
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="merge( CellFormat cf )">
     /**

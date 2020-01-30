@@ -256,7 +256,7 @@ public class TextCellBuilder {
     }
 
     protected String[] trimSpaces(String[] lines){
-//        String txt = Text.join(lines, "\n");
+//        String txt = Text.hjoin(lines, "\n");
 //        return Text.splitNewLines(txt.trim());
         String[] res = new String[lines.length];
         for( int i=0; i<lines.length; i++ ){
@@ -310,6 +310,7 @@ public class TextCellBuilder {
 
         String fill = getFillAlignText();
         if( fill==null || fill.length()<1 )fill = " ";
+
         String[] lines = Text.align(srcLines, align, fill, w);
         return lines;
     }

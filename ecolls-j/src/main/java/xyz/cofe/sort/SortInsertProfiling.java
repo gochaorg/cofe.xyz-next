@@ -153,7 +153,7 @@ public abstract class SortInsertProfiling<Container,Element> extends SortInsertD
     public synchronized int sortInsert(
             Container container,
             Element item,
-            Comparator comp,
+            Comparator<Element> comp,
             int begin,
             int endex
     ){

@@ -35,6 +35,7 @@ import xyz.cofe.text.Text;
  * Стиль бордюра вокруг ячейки
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
  */
+@SuppressWarnings("WeakerAccess")
 public class Border {
     //<editor-fold defaultstate="collapsed" desc="log Функции">
     private static void logFine(String message,Object ... args){
@@ -160,7 +161,7 @@ public class Border {
         leftBottomCell = TextCell.createBlock(leftBottomText, getLeftWidth(), getBottomHeigth());
         return leftBottomCell;
     }
-//</editor-fold>
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="rightBottomCell">
     private transient TextCell rightBottomCell = null;
@@ -332,7 +333,7 @@ public class Border {
             TextCell tLT = border.getLeftTopCell();
             TextCell tT = border.getTopCell(b);
             TextCell tRT = border.getRightTopCell();
-            res.addAll( TextCell.joinAsList(tLT, tT, tRT ) );
+            res.addAll( TextCell.horizontalJoin(tLT, tT, tRT ) );
         }
 
         if( lines.length>0 ){
@@ -364,7 +365,7 @@ public class Border {
             TextCell tLB = border.getLeftBottomCell();
             TextCell tB = border.getBottomCell(b);
             TextCell tRB = border.getRightBottomCell();
-            res.addAll( TextCell.joinAsList(tLB, tB, tRB ) );
+            res.addAll( TextCell.horizontalJoin(tLB, tB, tRB ) );
         }
 
         return res;

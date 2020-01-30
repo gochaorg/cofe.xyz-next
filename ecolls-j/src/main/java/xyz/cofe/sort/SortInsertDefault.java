@@ -114,6 +114,9 @@ public abstract class SortInsertDefault<Container,Element> extends SortInsert<Co
     protected void profEndInsert(){};
     protected boolean profiling(){ return false; }
 
+//    protected int sortInsert( Container container, Element item, Comparator<Element> comp, int begin, int endex ){
+//    }
+
     /**
      * Вставка сортировкой
      * @param container контейнер
@@ -124,90 +127,95 @@ public abstract class SortInsertDefault<Container,Element> extends SortInsert<Co
      * @return позиция в которую произведена вставка
      */
     @Override
-    public int sortInsert( Container container, Element item, Comparator comp, int begin, int endex ){
+    public int sortInsert( Container container, Element item, Comparator<Element> comp, int begin, int endex ){
         if( container==null )throw new IllegalArgumentException( "container==null" );
 
-        // диапазон в который производится вставка
-        int rangeSize = endex - begin;
+        //int cycle = 0; // счетчик циклов
+        while( true ){
 
-        // диапазон равен 0 - вставка в начало диапазона
-        if( rangeSize<=0 ){
-            if( profiling() )profBeginInsert();
-            insert(container, begin, item);
-            if( profiling() )profEndInsert();
-            return begin;
-        }
+            // диапазон в который производится вставка
+            int rangeSize = endex-begin;
 
-        int result = Integer.MIN_VALUE;
-
-        // диапазон содержит 1 элемент
-        // два варианта вставки, перед и после элемента
-        if( rangeSize==1 ){
-            // Object it = list.get(begin);
-            Object it = get(container, begin);
-            int cmp = comp.compare(item, it);
-
-            // вставка перед элементом
-            if( cmp<0 ){
-                // list.add( begin, item );
-                if( profiling() )profBeginInsert();
-                insert( container, begin, item );
-                if( profiling() )profEndInsert();
+            // диапазон равен 0 - вставка в начало диапазона
+            if( rangeSize<=0 ){
+                if( profiling() ) profBeginInsert();
+                insert(container, begin, item);
+                if( profiling() ) profEndInsert();
                 return begin;
-            }else{
-                // вставка после элемента
-                //list.add( begin+1, item );
-                if( profiling() )profBeginInsert();
-                insert( container, begin+1, item );
-                if( profiling() )profEndInsert();
-                return begin+1;
-                //return;
             }
-        }
-        else{
-            // диапазон содержит 2 или более элементов
-            // разделить диапазон на две части
-            // взять первый элемент из второй части и сравнить
-            // если меньше, то повторить для процедуру для первой части
-            // если равен, то вставить в начало второй части
-            // если больше, то повторить для процедуру для второй части
-            int leftPartSize = rangeSize / 2;
-            int rightPartSize = rangeSize - leftPartSize;
 
-            int leftBegin = begin;
-            int leftEndEx = begin+leftPartSize;
+            int result = Integer.MIN_VALUE;
 
-            int rightBegin = begin+leftPartSize;
-            int rightEndEx = rightBegin+rightPartSize;
+            // диапазон содержит 1 элемент
+            // два варианта вставки, перед и после элемента
+            if( rangeSize==1 ){
+                // Object it = list.get(begin);
+                Element it = get(container, begin);
+                int cmp = comp.compare(item, it);
 
-            if( leftPartSize<1 && rightPartSize<1 ){
-                throw new Error("error!");
-            }else if( leftPartSize<1 && rightPartSize>=1 ){
-                throw new Error("error!");
-            }else if( leftPartSize>=1 && rightPartSize>=1 ){
-                // Получаем значение центрального элемента (начало второй половины)
-                Object it0 = get(container,rightBegin);
-                int cmp = comp.compare(item, it0);
+                // вставка перед элементом
                 if( cmp<0 ){
-                    //sinsert(list, item, comp, leftBegin, leftEndEx);
-                    result = sortInsert(container, item, comp, leftBegin, leftEndEx);
-                    return result;
-                }else if( cmp==0 ){
-                    //list.add(rightBegin, item);
-                    if( profiling() )profBeginInsert();
-                    insert( container, rightBegin, item );
-                    if( profiling() )profEndInsert();
-                    return rightBegin;
-                }else if( cmp>0 ){
-                    // sinsert(list, item, comp, rightBegin, rightEndEx);
-                    result = sortInsert(container, item, comp, rightBegin, rightEndEx);
-                    return result;
+                    // list.add( begin, item );
+                    if( profiling() ) profBeginInsert();
+                    insert(container, begin, item);
+                    if( profiling() ) profEndInsert();
+                    return begin;
+                } else{
+                    // вставка после элемента
+                    //list.add( begin+1, item );
+                    if( profiling() ) profBeginInsert();
+                    insert(container, begin+1, item);
+                    if( profiling() ) profEndInsert();
+                    return begin+1;
+                    //return;
                 }
-            }else if( leftPartSize>=1 && rightPartSize<1 ){
-                throw new Error("error!");
+            } else{
+                // диапазон содержит 2 или более элементов
+                // разделить диапазон на две части
+                // взять первый элемент из второй части и сравнить
+                // если меньше, то повторить для процедуру для первой части
+                // если равен, то вставить в начало второй части
+                // если больше, то повторить для процедуру для второй части
+                int leftPartSize = rangeSize/2;
+                int rightPartSize = rangeSize-leftPartSize;
+
+                int leftBegin = begin;
+                int leftEndEx = begin+leftPartSize;
+
+                int rightBegin = begin+leftPartSize;
+                int rightEndEx = rightBegin+rightPartSize;
+
+                if( leftPartSize<1 && rightPartSize<1 ){
+                    throw new Error("error!");
+                } else if( leftPartSize<1 && rightPartSize >= 1 ){
+                    throw new Error("error!");
+                } else if( leftPartSize >= 1 && rightPartSize >= 1 ){
+                    // Получаем значение центрального элемента (начало второй половины)
+                    Element it0 = get(container, rightBegin);
+                    int cmp = comp.compare(item, it0);
+                    if( cmp<0 ){
+                        // result = sortInsert(container, item, comp, leftBegin, leftEndEx);
+                        // return result;
+                        begin = leftBegin;
+                        endex = leftEndEx;
+                        continue;
+                    } else if( cmp==0 ){
+                        if( profiling() ) profBeginInsert();
+                        insert(container, rightBegin, item);
+                        if( profiling() ) profEndInsert();
+                        return rightBegin;
+                    } else if( cmp>0 ){
+//                        result = sortInsert(container, item, comp, rightBegin, rightEndEx);
+//                        return result;
+                        begin = rightBegin;
+                        endex = rightEndEx;
+                        continue;
+                    }
+                } else if( leftPartSize >= 1 && rightPartSize<1 ){
+                    throw new Error("error!");
+                }
             }
         }
-
-        return result;
+//        return result;
     }
 }

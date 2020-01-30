@@ -29,7 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Хранит размеры текстового блока
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
  */
 public class Bounds {
@@ -63,14 +63,30 @@ public class Bounds {
     }
     //</editor-fold>
 
+    /**
+     * Кол-во символов по ширене
+     */
     protected int width = 0;
+
+    /**
+     * Кол-во симвлов по высоте
+     */
     protected int height = 0;
 
+    /**
+     * Конструктор
+     * @param w ширина блока
+     * @param h высота влока
+     */
     public Bounds(int w,int h){
         this.width = w;
         this.height = h;
     }
 
+    /**
+     * Конструктор копирования
+     * @param s образец
+     */
     public Bounds(Bounds s){
         if( s!=null ){
             this.width = s.width;
@@ -78,20 +94,37 @@ public class Bounds {
         }
     }
 
+    /**
+     * Возвращает ширину блока
+     * @return ширина
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * Возвращает высоту блока
+     * @return Высота блока
+     */
     public int getHeight() {
         return height;
     }
 
+    /**
+     * Клонирует объект
+     * @return клон
+     */
     @Override
     public Bounds clone(){
         return new Bounds(this);
     }
 
-    public static Bounds get( TextCell ... tcells ){
+    /**
+     * Вычисляет максимальные габариты
+     * @param tcells текстовые ячейки
+     * @return максимальные габариты
+     */
+    public static Bounds max( TextCell ... tcells ){
         int maxHeight = -1;
         int maxWidth = -1;
         for( TextCell tc : tcells ){
@@ -106,6 +139,11 @@ public class Bounds {
         return b;
     }
 
+    /**
+     * Вычисляет максимальные габариты
+     * @param lines текстовые ячейки
+     * @return габариты - по ширине соответ. максимальной длинной строке, по высоте кол-ву строк
+     */
     public static Bounds get( String ... lines ){
         if( lines==null )throw new IllegalArgumentException( "lines==null" );
         int w = 0;

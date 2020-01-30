@@ -161,21 +161,21 @@ public abstract class SortInsert<Container,Element> {
      * @param endex конец диапазона вставки
      * @return позиция в которую произведена вставка
      */
-    public abstract int sortInsert( Container container, Element item, Comparator comp, int begin, int endex );
+    public abstract int sortInsert( Container container, Element item, Comparator<Element> comp, int begin, int endex );
 
     /**
      * Создание экземпляра для работы со списком
      * @return экземпляр
      */
-    public static SortInsert<List,Object> createForList(){
-        return new SortInsertDefault<List, Object>() {
+    public static <E> SortInsert<List<E>,E> createForList(){
+        return new SortInsertDefault<List<E>, E>() {
             @Override
-            public void insert(List container, int position, Object item) {
+            public void insert(List<E> container, int position, E item) {
                 container.add(position, item);
             }
 
             @Override
-            public Object get(List container, int position) {
+            public E get(List<E> container, int position) {
                 return container.get(position);
             }
         };

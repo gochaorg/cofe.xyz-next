@@ -34,7 +34,8 @@ import xyz.cofe.iter.Eterable;
 import xyz.cofe.text.Text;
 
 /**
- * Блок форматированного текста
+ * Блок форматированного текста.
+ * Умеет объединять текстовые блоки по ширине
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
  */
 public class TextCell {
@@ -68,33 +69,68 @@ public class TextCell {
     }
     //</editor-fold>
 
+    /**
+     * данные блока
+     */
     protected ArrayList<String> data = new ArrayList<String>();
+
+    /**
+     * исходный текст
+     */
     protected String sourceText = null;
 
+    /**
+     * Конструктор
+     * @param data данные блока
+     */
     public TextCell(Iterable<String> data){
         if( data==null )throw new IllegalArgumentException( "data==null" );
         //Iterators.addTo(data, this.data);
         this.data.addAll(Eterable.of(data).toList());
     }
 
+    /**
+     * Конструктор
+     * @param data данные блока
+     */
     public TextCell(String[] data){
         if( data==null )throw new IllegalArgumentException( "data==null" );
         this.data.addAll(Arrays.asList(data));
     }
 
+    /**
+     * Конструктор
+     * @param data данные блока
+     * @param source исходный текст
+     */
     public TextCell(String[] data,String source){
         if( data==null )throw new IllegalArgumentException( "data==null" );
         this.data.addAll(Arrays.asList(data));
         this.sourceText = source;
     }
 
+    /**
+     * Возвращает текстовые линии в блоке
+     * @return текст
+     */
     public String[] getTextLines(){
         return data.toArray(new String[]{});
     }
 
+    /**
+     * Максмальная ширира текстового блока
+     */
     protected int maxWidth = Integer.MIN_VALUE;
+
+    /**
+     * Минимальная ширина текстового блока
+     */
     protected int minWidth = Integer.MAX_VALUE;
 
+    /**
+     * Вычисляет минимальную и максимальную ширину,
+     * обновляет {@link #maxWidth}, {@link #minWidth}
+     */
     protected void evalMinMaxWidth(){
         int minw = Integer.MAX_VALUE;
         int maxw = Integer.MIN_VALUE;
@@ -107,54 +143,96 @@ public class TextCell {
         minWidth = minw;
     }
 
+    /**
+     * Возвращает максимальную ширину
+     * @return максимальная ширина
+     */
     public int getMaxWidth(){
         if( maxWidth>Integer.MIN_VALUE )return maxWidth;
         evalMinMaxWidth();
         return maxWidth;
     }
 
+    /**
+     * Возвращает минимальную ширину
+     * @return минимальная ширина
+     */
     public int getMinWidth(){
         if( minWidth<Integer.MAX_VALUE )return minWidth;
         evalMinMaxWidth();
         return minWidth;
     }
 
+    /**
+     * Возвращает высоту блока
+     * @return высота блока
+     */
     public int getHeight(){
         return data.size();
     }
 
-    public TextCell join( Iterable<TextCell> tcells ){
+    /**
+     * Создает прямойгольный текстовй блок, объеденяя блоки по горизонтали
+     * @param tcells блоки
+     * @return широкий блок текста
+     */
+    public TextCell hjoin( Iterable<TextCell> tcells ){
         Eterable<TextCell> cells = Eterable.of(tcells);
         Eterable<TextCell> single = Eterable.single(this);
         //cells = Iterators.sequence(single,cells);
         cells = single.union(cells);
 
-        return new TextCell( joinAsList(cells) );
+        return new TextCell( horizontalJoin(cells) );
     }
 
-    public TextCell join( TextCell ... tcells ){
+    /**
+     * Создает прямойгольный текстовй блок, объеденяя блоки по горизонтали
+     * @param tcells блоки
+     * @return широкий блок текста
+     */
+    public TextCell hjoin( TextCell ... tcells ){
         List<TextCell> cells = Arrays.asList(tcells);
         cells.add(0, this);
-        return new TextCell( joinAsList(cells) );
+        return new TextCell( horizontalJoin(cells) );
     }
 
-    public static List<String> joinAsList( Iterable<TextCell> tcells ){
-        return joinAsList(Eterable.of(tcells).toList().toArray(new TextCell[]{}));
+    /**
+     * Создает прямойгольный текстовй блок, объеденяя блоки по горизонтали
+     * @param tcells блоки
+     * @return широкий блок текста
+     */
+    public static List<String> horizontalJoin( Iterable<TextCell> tcells ){
+        return horizontalJoin(Eterable.of(tcells).toList().toArray(new TextCell[]{}));
     }
 
-    public static TextCell joinAsTextCell( Iterable<TextCell> tcells ){
-        return new TextCell( joinAsList(tcells) );
+    /**
+     * Создает прямойгольный текстовй блок, объеденяя блоки по горизонтали
+     * @param tcells блоки
+     * @return широкий блок текста
+     */
+    public static TextCell horizontalJoinAsTextCell( Iterable<TextCell> tcells ){
+        return new TextCell( horizontalJoin(tcells) );
     }
 
-    public static TextCell joinAsTextCell( TextCell ... tcells ){
-        return new TextCell( joinAsList(tcells) );
+    /**
+     * Создает прямойгольный текстовй блок, объеденяя блоки по горизонтали
+     * @param tcells блоки
+     * @return широкий блок текста
+     */
+    public static TextCell horizontalJoinAsTextCell( TextCell ... tcells ){
+        return new TextCell( horizontalJoin(tcells) );
     }
 
-    public static List<String> joinAsList( TextCell ... tcells ){
+    /**
+     * Создает прямойгольный текстовй блок, объеденяя блоки по горизонтали
+     * @param tcells блоки
+     * @return широкий блок текста
+     */
+    public static List<String> horizontalJoin( TextCell ... tcells ){
         List<String> lines = new ArrayList<String>();
         StringBuilder sb = new StringBuilder();
 
-        Bounds b = Bounds.get(tcells);
+        Bounds b = Bounds.max(tcells);
         for( int y=0; y<b.getHeight(); y++ ){
             sb.setLength(0);
             for( TextCell tc : tcells ){
@@ -171,6 +249,13 @@ public class TextCell {
         return lines;
     }
 
+    /**
+     * Создает текстовый блок заполненый повторяющимся текстом
+     * @param repeatText текст
+     * @param width ширина блока
+     * @param height высота блока
+     * @return блок
+     */
     public static TextCell createBlock( String repeatText, int width, int height ){
         if( repeatText==null || repeatText.length()<1 )repeatText = " ";
         if( height<1 ){

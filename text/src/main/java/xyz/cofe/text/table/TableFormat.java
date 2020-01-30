@@ -31,7 +31,48 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Табличное форматирование текста
+ * Табличное форматирование текста.
+ *
+ * <p>
+ *     Таблица представляет из себя 4 логических блока данных:
+ *     <ol>
+ *         <li>
+ *             Заголовок - одна или несколько строк текста, содержащие названия колонок.
+ *             Заголовок может быть 0 или 1 у таблицы. <br>
+ *
+ *             Для формирования заголовка см функцию {@link #formatHeader(String...)}
+ *         </li>
+ *         <li>
+ *             Первая строка данных - может быть 0 или 1 строка, влияет на форматирование
+ *             см функцию {@link #formatFirstRow(String...)}
+ *         </li>
+ *         <li>
+ *             Средняя строка данных - может быть 0 и более строк.
+ *             см функцию {@link #formatMiddleRow(String...)}
+ *         </li>
+ *         <li>
+ *             Последняя строка данных - может быть 0 и 1 строка.
+ *             см функцию {@link #formatLastRow(String...)}
+ *         </li>
+ *     </ol>
+ *
+ *     Кажда строка (включая зоголовок см
+ *     {@link #getHeader()}, {@link #getFirstRow()},
+ *     {@link #getMiddleRow()}, {@link #getLastRow()}
+ *     ) содержит набор ячеек ({@link CellFormat}) <br><br>
+ *
+ *     Для каждой типа строки - ячейки в строке могут содержать свое собственное форматирование:
+ *     Форматирование первой ячейки в строке {@link #getFirstCell()},
+ *     средней {@link #getMiddleCell()}
+ *     и последней {@link #getLastCell()}.
+ *     <br><br>
+ *
+ *     Каждую ячейку можно отформатировать по след значениям:
+ *     Ширина, Выравнивание по горизонтали/вертикали, перенос текста, ограничение на длину текста.
+ *     <br><br>
+ *
+ *     Для каждого вида форматирования: таблицы, строки, ячейки есть возможность указать бордюр {@link Border}.
+ * </p>
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
  */
 public class TableFormat {
@@ -65,9 +106,16 @@ public class TableFormat {
     }
     //</editor-fold>
 
+    /**
+     * Конструктор по умолчанию
+     */
     public TableFormat(){
     }
 
+    /**
+     * Конструктор копирования
+     * @param src образец
+     */
     public TableFormat(TableFormat src){
         if( src!=null ){
             border = src.border!=null ? src.border.clone() : border;
@@ -128,6 +176,10 @@ public class TableFormat {
         }
     }
 
+    /**
+     * Клонирование
+     * @return клон
+     */
     @Override
     public TableFormat clone(){
         return new TableFormat(this);
@@ -335,13 +387,13 @@ public class TableFormat {
         if( brd.isEmpty() )return headerLines;
 
         TextCell headerTextCell = new TextCell(headerLines);
-        Bounds headerBounds = Bounds.get(headerTextCell);
+        Bounds headerBounds = Bounds.max(headerTextCell);
 
         List<String> out = new ArrayList<String>();
 
         // верхний слой
         if( brd.getTopHeight()>0 ){
-            out.addAll( TextCell.joinAsList(
+            out.addAll( TextCell.horizontalJoin(
                 brd.getLeftTopCell(),
                 brd.getTopCell(headerBounds),
                 brd.getRightTopCell()
@@ -349,7 +401,7 @@ public class TableFormat {
         }
 
         // средний слой
-        out.addAll( TextCell.joinAsList(
+        out.addAll( TextCell.horizontalJoin(
             brd.getLeftCell(headerBounds),
             headerTextCell,
             brd.getRightCell(headerBounds)
@@ -383,7 +435,7 @@ public class TableFormat {
         if( brd.isEmpty() )return dataLines;
 
         TextCell dataTextCell = new TextCell(dataLines);
-        Bounds dataBounds = Bounds.get(dataTextCell);
+        Bounds dataBounds = Bounds.max(dataTextCell);
 
         List<String> out = new ArrayList<String>();
 
@@ -397,7 +449,7 @@ public class TableFormat {
 //        }
 
         // средний слой
-        out.addAll( TextCell.joinAsList(
+        out.addAll( TextCell.horizontalJoin(
             brd.getLeftCell(dataBounds),
             dataTextCell,
             brd.getRightCell(dataBounds)
@@ -431,7 +483,7 @@ public class TableFormat {
         if( brd.isEmpty() )return dataLines;
 
         TextCell dataTextCell = new TextCell(dataLines);
-        Bounds dataBounds = Bounds.get(dataTextCell);
+        Bounds dataBounds = Bounds.max(dataTextCell);
 
         List<String> out = new ArrayList<String>();
 
@@ -445,7 +497,7 @@ public class TableFormat {
 //        }
 
         // средний слой
-        out.addAll( TextCell.joinAsList(
+        out.addAll( TextCell.horizontalJoin(
             brd.getLeftCell(dataBounds),
             dataTextCell,
             brd.getRightCell(dataBounds)
@@ -479,7 +531,7 @@ public class TableFormat {
         if( brd.isEmpty() )return dataLines;
 
         TextCell dataTextCell = new TextCell(dataLines);
-        Bounds dataBounds = Bounds.get(dataTextCell);
+        Bounds dataBounds = Bounds.max(dataTextCell);
 
         List<String> out = new ArrayList<String>();
 
@@ -493,7 +545,7 @@ public class TableFormat {
 //        }
 
         // средний слой
-        out.addAll( TextCell.joinAsList(
+        out.addAll( TextCell.horizontalJoin(
             brd.getLeftCell(dataBounds),
             dataTextCell,
             brd.getRightCell(dataBounds)
@@ -501,7 +553,7 @@ public class TableFormat {
 
         // нижний  слой
         if( brd.getBottomHeigth()>0 ){
-            out.addAll( TextCell.joinAsList(
+            out.addAll( TextCell.horizontalJoin(
                 brd.getLeftBottomCell(),
                 brd.getBottomCell(dataBounds),
                 brd.getRightBottomCell()

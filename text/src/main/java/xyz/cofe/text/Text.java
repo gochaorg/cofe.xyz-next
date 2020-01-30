@@ -1236,7 +1236,7 @@ public class Text {
     }
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="join()">
+    //<editor-fold defaultstate="collapsed" desc="hjoin()">
     /**
      * Объединяет строки вставляя между ними заданную строку
      *
@@ -1672,10 +1672,29 @@ public class Text {
      * @param len Длина текста, не меньше нуля по каторой выравнивается.
      * @return Текст
      */
-    public static String align(String text, Align align, String padText, int len) {
+    public static String align(String text, Align align, String padText, int len){
+        return align(text, align, padText, len, false);
+    }
+
+    /**
+     * Выравнивает текст до определенной длинны.
+     * Если текст привышает или равен указанную длину, то возвращается как
+     * есть
+     * @param text Текст
+     * @param align Как выравнивать. <br>
+     * <b>Begin</b> -  Выравнивать по левому краю, пробельные символы добавляются в конец. <br>
+     * <b>Center</b> - Выравнивать по центру, пробельные символы добавляются с обоих краев. <br>
+     * <b>End</b>    - Выравнивать по правому краю, пробельные символы добавляются в начало. <br>
+     * @param padText Текст который добавляется для выравнивания (Возможно null - тогда будет использоваться один пробел)
+     * @param len Длина текста, не меньше нуля по каторой выравнивается.
+     * @param trimText Усекать пробелы в начале и в конце строки ()
+     * @return Текст
+     */
+    public static String align(String text, Align align, String padText, int len, boolean trimText) {
         if (text == null) {
             throw new IllegalArgumentException("text==null");
         }
+
         if (align== null) {
             throw new IllegalArgumentException("align==null");
         }
@@ -1690,7 +1709,7 @@ public class Text {
             throw new IllegalArgumentException("len<0");
         }
 
-        text = text.trim();
+        if( trimText )text = text.trim();
 
         if (text.length() >= len)
             return text;

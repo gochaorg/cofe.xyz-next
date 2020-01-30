@@ -787,8 +787,8 @@ public class FullDecFormat {
                 padLeftCnt = 0;
             }
 
-            String padLeft  = Text.align("", Align.Begin, floatPad, padLeftCnt);
-            String padRight = Text.align("", Align.Begin, floatPad, padRightCnt);
+            String padLeft  = Text.align("", Align.Begin, floatPad, padLeftCnt, true);
+            String padRight = Text.align("", Align.Begin, floatPad, padRightCnt, true);
 
             String s = floatstr.toString();
             floatstr.setLength(0);
@@ -804,7 +804,7 @@ public class FullDecFormat {
             &&  intPad.length()>0
             &&  intWidth > intstr.length()
         ){
-            String s = Text.align(intstr.toString(), intAlign, intPad, intWidth);
+            String s = Text.align(intstr.toString(), intAlign, intPad, intWidth, true);
             intstr.setLength(0);
             intstr.append(s);
         }
@@ -826,7 +826,7 @@ public class FullDecFormat {
             &&  signIntPad.length()>0
             &&  signIntWidth > res.length()
         ){
-            String s = Text.align(res.toString(), signIntAlign, signIntPad, signIntWidth);
+            String s = Text.align(res.toString(), signIntAlign, signIntPad, signIntWidth, true);
             res.setLength(0);
             res.append(s);
         }
@@ -867,8 +867,8 @@ public class FullDecFormat {
                 padLeftCnt = 0;
             }
 
-            String padLeft  = Text.align("", Align.Begin, pad, padLeftCnt);
-            String padRight = Text.align("", Align.Begin, pad, padRightCnt);
+            String padLeft  = Text.align("", Align.Begin, pad, padLeftCnt, true);
+            String padRight = Text.align("", Align.Begin, pad, padRightCnt, true);
 
             String s = res.toString();
             res.setLength(0);

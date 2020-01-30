@@ -325,7 +325,7 @@ public class RowFormat {
         }
 
         // Габариты отфарматированных данных
-        Bounds dataBounds = Bounds.get(dataCells);
+        Bounds dataBounds = Bounds.max(dataCells);
 
         // Отформатированные данные с обрамлением
         TextCell[] borderCells = new TextCell[dataCells.length];
@@ -339,7 +339,7 @@ public class RowFormat {
         int splitterWidth = getVerticalSplitter().getWidth();
 
         if( borderCells.length>1 && splitterWidth>0 ){
-            Bounds borderCellsBounds = Bounds.get(borderCells);
+            Bounds borderCellsBounds = Bounds.max(borderCells);
             TextCell splitter = TextCell.createBlock(
                 getVerticalSplitter().getText(),
                 splitterWidth,
@@ -361,11 +361,11 @@ public class RowFormat {
             for( TextCell tc : borderCells )isRowSplitter.put(tc, Boolean.FALSE);
         }
 
-        TextCell rowContent = TextCell.joinAsTextCell(rowCells);
+        TextCell rowContent = TextCell.horizontalJoinAsTextCell(rowCells);
 
         // Внешнее обрамление
         Border outBorder = getBorder();
-        Bounds rowContentBounds = Bounds.get(rowContent);
+        Bounds rowContentBounds = Bounds.max(rowContent);
 
         // Верхний ряд
         ArrayList<TextCell> outTopCells = new ArrayList<TextCell>();
@@ -381,7 +381,7 @@ public class RowFormat {
                         splitterWidth, outBorder.getTopHeight());
                     outTopCells.add(splt);
                 }else{
-                    Bounds b = Bounds.get(tc);
+                    Bounds b = Bounds.max(tc);
                     TextCell horzLine = outBorder.getTopCell(b);
                     outTopCells.add( horzLine );
                 }
@@ -418,7 +418,7 @@ public class RowFormat {
                         splitterWidth, outBorder.getBottomHeigth());
                     outBottomCells.add(splt);
                 }else{
-                    Bounds b = Bounds.get(tc);
+                    Bounds b = Bounds.max(tc);
                     TextCell horzLine = outBorder.getBottomCell(b);
                     outBottomCells.add( horzLine );
                 }
@@ -428,9 +428,9 @@ public class RowFormat {
             }
         }
 
-        List<String> outList = TextCell.joinAsList(outTopCells);
-        outList.addAll( TextCell.joinAsList(outInnCells) );
-        outList.addAll( TextCell.joinAsList(outBottomCells) );
+        List<String> outList = TextCell.horizontalJoin(outTopCells);
+        outList.addAll( TextCell.horizontalJoin(outInnCells) );
+        outList.addAll( TextCell.horizontalJoin(outBottomCells) );
 
         return outList;
     }
