@@ -5,7 +5,6 @@ import java.util.function.Function;
 /**
  * Интерфейс для написания расширения (ExtendedClassGraph) прербразования типов данных
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
- * @ see ExtendedCastGraph
  */
 public interface GetTypeConvertor {
     /**
