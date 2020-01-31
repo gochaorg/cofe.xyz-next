@@ -10,19 +10,6 @@ import java.util.function.Supplier;
  * @author nt.gocha@gmail.com
  */
 public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?>,CAUSE> {
-//    private BiConsumer<ScnListener<Owner,SCN,CAUSE>, ScnEvent<Owner,SCN,CAUSE>> invoker(){
-//        return (ls,ev) -> {
-//            if( ls!=null ){
-//                ls.scnEvent(ev);
-//            }
-//        };
-//    }
-//
-//    private ListenersHelper<ScnListener<Owner,SCN,CAUSE>, ScnEvent<Owner,SCN,CAUSE>> listener(){
-//        ListenersHelper lh = ListenersHelper.get(Scn.class,this, invoker());
-//        return lh;
-//    }
-
     /**
      * Возвращает активных подписчиков
      * @return подписчики
@@ -136,6 +123,7 @@ public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?
     /**
      * Запуск блока кода, для предотвращения преждевремменого уведомления подписчиков.
      * Подписчик будут уведомлены по завершению блока кода
+     * @param <T> тип результата
      * @param run блок кода
      * @return результат выполнения кода
      */

@@ -9,7 +9,7 @@ public class BinFinderImpl {
     /**
      * Поиск "головы" - ищет в списке начало некого значения.
      *
-     * <p></p>
+     * <p>
      * Пример есть список: <br>
      * [0] = 2 // &lt;- это будет "голова" для искомого значения 3 <br>
      * [1] = 2 <br>
@@ -18,6 +18,8 @@ public class BinFinderImpl {
      * [4] = 8 <br>
      * [5] = 8 <br>
      * [6] = 9 <br>
+     * @param <LIST> Тип списка
+     * @param <E> Тип элемента в списке
      * @param finder ссылка на интерфейс BinFinder, для доступа к функции {@link BinFinder#get(Object, int)}
      * @param lst список
      * @param cmp функция согласно которой отсортированы элементы в списке
@@ -85,7 +87,7 @@ public class BinFinderImpl {
     /**
      * Поиск "хвоста" - ищет в списке хвост некого значения.
      *
-     * <p></p>
+     * <p>
      * Пример есть список: <br>
      * [0] = 2 <br>
      * [1] = 2 <br>
@@ -94,6 +96,8 @@ public class BinFinderImpl {
      * [4] = 8 <br>
      * [5] = 8 <br>
      * [6] = 9 // &lt;- это будет "хвост" для искомого значения 8 <br>
+     * @param <LIST> Тип списка
+     * @param <E> Тип элемента в списке
      * @param finder ссылка на интерфейс BinFinder, для доступа к функции {@link BinFinder#get(Object, int)}
      * @param lst список
      * @param cmp функция согласно которой отсортированы элементы в списке
@@ -101,7 +105,7 @@ public class BinFinderImpl {
      * @param begin начало области поиска
      * @param endex конец (исключительно) области поиска
      * @param found ранее найденое значение
-     * @param found ранее найденый индекс
+     * @param foundIndex ранее найденый индекс
      * @return индекс соответ хвосту или -1, еслли не найдено
      */
     public static <LIST,E> int tailIndex( BinFinder<LIST,E> finder, LIST lst, Comparator<E> cmp, E target, int begin, int endex, E found, int foundIndex ){
@@ -169,7 +173,7 @@ public class BinFinderImpl {
     /**
      * Поиск "хвоста" - ищет в списке хвост некого значения.
      *
-     * <p></p>
+     * <p>
      * Пример есть список: <br>
      * [0] = 2 <br>
      * [1] = 2 <br>
@@ -178,6 +182,8 @@ public class BinFinderImpl {
      * [4] = 8 <br>
      * [5] = 8 <br>
      * [6] = 9 // &lt;- это будет "хвост" для искомого значения 8 <br>
+     * @param <LIST> Тип списка
+     * @param <E> Тип элемента в списке
      * @param finder ссылка на интерфейс BinFinder, для доступа к функции {@link BinFinder#get(Object, int)}
      * @param lst список
      * @param cmp функция согласно которой отсортированы элементы в списке

@@ -148,11 +148,44 @@ public interface Tuple20<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T> {
      * Возвращает 20ку значений
      * @param a первый элемент
      * @param b второй элемент
+     * @param c 3й элемент
+     * @param d 4й элемент
+     * @param e 5й элемент
+     * @param f 6й элемент
+     * @param g 7й элемент
+     * @param h 8й элемент
+     * @param i 9й элемент
+     * @param j 10й элемент
+     * @param k 11й элемент
+     * @param l 12й элемент
+     * @param m 13й элемент
+     * @param n 14й элемент
+     * @param o 15й элемент
+     * @param p 16й элемент
+     * @param q 17й элемент
+     * @param r 18й элемент
+     * @param s 19й элемент
+     * @param t 20й элемент
      * @param <A> тип первого элемента
      * @param <B> тип второго элемента
      * @param <C> тип 3го элемента
      * @param <D> тип 4го элемента
      * @param <E> тип 5го элемента
+     * @param <F> тип 6го элемента
+     * @param <G> тип 7го элемента
+     * @param <H> тип 8го элемента
+     * @param <I> тип 9го элемента
+     * @param <J> тип 10го элемента
+     * @param <K> тип 11го элемента
+     * @param <L> тип 12го элемента
+     * @param <M> тип 13го элемента
+     * @param <N> тип 14го элемента
+     * @param <O> тип 15го элемента
+     * @param <P> тип 16го элемента
+     * @param <Q> тип 17го элемента
+     * @param <R> тип 18го элемента
+     * @param <S> тип 19го элемента
+     * @param <T> тип 20го элемента
      * @return 20ка значений
      */
     static <A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T> Tuple20<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T>
@@ -211,6 +244,7 @@ public interface Tuple20<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T> {
 
     /**
      * Передает значения элементов в функцию
+     * @param <Z> тип результата
      * @param fn функция приемник
      * @return результат вызова функции
      */

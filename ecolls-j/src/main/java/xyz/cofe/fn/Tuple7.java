@@ -57,11 +57,18 @@ public interface Tuple7<A,B,C,D,E,F,G> {
      * Возвращает 7ку значений
      * @param a первый элемент
      * @param b второй элемент
+     * @param c 3й элемент
+     * @param d 4й элемент
+     * @param e 5й элемент
+     * @param f 6й элемент
+     * @param g 7й элемент
      * @param <A> тип первого элемента
      * @param <B> тип второго элемента
      * @param <C> тип 3го элемента
      * @param <D> тип 4го элемента
      * @param <E> тип 5го элемента
+     * @param <F> тип 6го элемента
+     * @param <G> тип 7го элемента
      * @return 7ка значений
      */
     static <A,B,C,D,E,F,G> Tuple7<A,B,C,D,E,F,G>
@@ -105,6 +112,7 @@ public interface Tuple7<A,B,C,D,E,F,G> {
      * Передает значения элементов в функцию
      * @param fn функция приемник
      * @return результат вызова функции
+     * @param <Z> тип результата
      */
     default <Z> Z apply( Fn7<A, B, C, D, E, F, G, Z> fn ){
         if(fn==null)throw new IllegalArgumentException("fn == null");

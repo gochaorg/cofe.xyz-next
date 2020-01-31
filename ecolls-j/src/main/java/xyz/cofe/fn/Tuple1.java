@@ -55,6 +55,7 @@ public interface Tuple1<A> {
      * Передает значения элементов в функцию
      * @param fn функция приемник
      * @return результат вызова функции
+     * @param <Z> тип результата
      */
     default <Z> Z apply( Function<A, Z> fn ){
         if(fn==null)throw new IllegalArgumentException("fn == null");

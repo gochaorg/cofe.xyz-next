@@ -71,11 +71,22 @@ public interface Tuple9<A,B,C,D,E,F,G,H,I> {
      * Возвращает 9ку значений
      * @param a первый элемент
      * @param b второй элемент
+     * @param c 3й элемент
+     * @param d 4й элемент
+     * @param e 5й элемент
+     * @param f 6й элемент
+     * @param g 7й элемент
+     * @param h 8й элемент
+     * @param i 9й элемент
      * @param <A> тип первого элемента
      * @param <B> тип второго элемента
      * @param <C> тип 3го элемента
      * @param <D> тип 4го элемента
      * @param <E> тип 5го элемента
+     * @param <F> тип 6го элемента
+     * @param <G> тип 7го элемента
+     * @param <H> тип 8го элемента
+     * @param <I> тип 9го элемента
      * @return 9ка значений
      */
     static <A,B,C,D,E,F,G,H,I> Tuple9<A,B,C,D,E,F,G,H,I>
@@ -121,6 +132,7 @@ public interface Tuple9<A,B,C,D,E,F,G,H,I> {
      * Передает значения элементов в функцию
      * @param fn функция приемник
      * @return результат вызова функции
+     * @param <Z> тип результата
      */
     default <Z> Z apply( Fn9<A, B, C, D, E, F, G, H, I, Z> fn ){
         if(fn==null)throw new IllegalArgumentException("fn == null");

@@ -130,7 +130,7 @@ public class IndexSetBasic<A extends Comparable<A>>
 
     /**
      * Создание списка который будет хранить значения
-     * @return
+     * @return список для хранения значений
      */
     protected List createList(){
         return new ArrayList();

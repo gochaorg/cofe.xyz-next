@@ -84,7 +84,7 @@ public interface BinFinder<LIST,E> {
     /**
      * Поиск "головы" - ищет в списке начало некого значения.
      *
-     * <p></p>
+     * <p>
      * Пример есть список: <br>
      * [0] = 2 // &lt;- это будет "голова" для искомого значения 3 <br>
      * [1] = 2 <br>
@@ -106,6 +106,25 @@ public interface BinFinder<LIST,E> {
         return BinFinderImpl.headIndex(this,lst,cmp,target,begin,endex);
     }
 
+    /**
+     * Поиск "хвоста" - ищет в списке хвост некого значения.
+     *
+     * <p>
+     * Пример есть список: <br>
+     * [0] = 2 <br>
+     * [1] = 2 <br>
+     * [2] = 3 // &lt;- это будет "хвост" для искомого значения 2 <br>
+     * [3] = 5 // &lt;- это будет "хвост" для искомого значения 4 <br>
+     * [4] = 8 <br>
+     * [5] = 8 <br>
+     * [6] = 9 // &lt;- это будет "хвост" для искомого значения 8 <br>
+     * @param lst список
+     * @param cmp функция согласно которой отсортированы элементы в списке
+     * @param target искомое значение
+     * @param begin начало области поиска
+     * @param endex конец (исключительно) области поиска
+     * @return индекс соответ хвосту или -1, еслли не найдено
+     */
     public default int tailIndex( LIST lst, Comparator<E> cmp, E target, int begin, int endex ){
         if( lst==null ) throw new IllegalArgumentException("lst==null");
         if( cmp==null ) throw new IllegalArgumentException("cmp==null");

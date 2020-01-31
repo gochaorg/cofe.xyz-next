@@ -176,6 +176,7 @@ public interface Eterable<A> extends Iterable<A> {
      * @param consumer сторона которая принимает произведение
      * @param <B> Тип дополнительного множества
      * @param <C> Тип дополнительного множества
+     * @param <D> Тип дополнительного множества
      * @return Исходный итератор (self ссылка)
      */
     default <B,C,D> Eterable<A> product(Iterable<B> source1, Iterable<C> source2, Iterable<D> source3, QuadConsumer<A,B,C,D> consumer){
@@ -200,9 +201,12 @@ public interface Eterable<A> extends Iterable<A> {
      * @param source1 множество на которое производиться умножение
      * @param source2 множество на которое производиться умножение
      * @param source3 множество на которое производиться умножение
+     * @param source4 множество на которое производиться умножение
      * @param consumer сторона которая принимает произведение
      * @param <B> Тип дополнительного множества
      * @param <C> Тип дополнительного множества
+     * @param <D> Тип дополнительного множества
+     * @param <E> Тип дополнительного множества
      * @return Исходный итератор (self ссылка)
      */
     default <B,C,D,E> Eterable<A> product(Iterable<B> source1, Iterable<C> source2, Iterable<D> source3, Iterable<E> source4, QuintConsumer<A,B,C,D,E> consumer){

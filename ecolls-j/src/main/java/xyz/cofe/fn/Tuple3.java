@@ -29,6 +29,7 @@ public interface Tuple3<A,B,C> {
      * Возвращает тройку значений
      * @param a первый элемент
      * @param b второй элемент
+     * @param c третий элемент
      * @param <A> тип первого элемента
      * @param <B> тип второго элемента
      * @param <C> тип 3го элемента
@@ -61,6 +62,7 @@ public interface Tuple3<A,B,C> {
      * Передает значения элементов в функцию
      * @param fn функция приемник
      * @return результат вызова функции
+     * @param <Z> тип результата
      */
     default <Z> Z apply( Fn3<A, B, C, Z> fn ){
         if(fn==null)throw new IllegalArgumentException("fn == null");

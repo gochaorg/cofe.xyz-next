@@ -6,8 +6,28 @@
 
     <groupId>xyz.cofe</groupId>
     <artifactId>next-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>pom</packaging>
+
+    <name>common-parent for cofe.xyz-next</name>
+    <description>parent for common lib for any platform</description>
+    <url>https://github.com/gochaorg/cofe.xyz-next</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Georgiy P Kamnev</name>
+            <email>nt.gocha@gmail.com</email>
+            <!-- <organization>-none-</organization> -->
+            <!-- <organizationUrl>http://www.sonatype.com</organizationUrl> -->
+        </developer>
+    </developers>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

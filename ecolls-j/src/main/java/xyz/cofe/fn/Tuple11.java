@@ -82,15 +82,30 @@ public interface Tuple11<A,B,C,D,E,F,G,H,I,J,K> {
     K k();
 
     /**
-     * Возвращает 16ку значений
+     * Возвращает 11ку значений
      * @param a первый элемент
      * @param b второй элемент
+     * @param c 3й элемент
+     * @param d 4й элемент
+     * @param e 5й элемент
+     * @param f 6й элемент
+     * @param g 7й элемент
+     * @param h 8й элемент
+     * @param i 9й элемент
+     * @param j 10й элемент
+     * @param k 11й элемент
      * @param <A> тип первого элемента
      * @param <B> тип второго элемента
      * @param <C> тип 3го элемента
      * @param <D> тип 4го элемента
      * @param <E> тип 5го элемента
-     * @return 16ка значений
+     * @param <F> тип 6го элемента
+     * @param <G> тип 7го элемента
+     * @param <H> тип 8го элемента
+     * @param <I> тип 9го элемента
+     * @param <J> тип 10го элемента
+     * @param <K> тип 11го элемента
+     * @return 11ка значений
      */
     static <A,B,C,D,E,F,G,H,I,J,K> Tuple11<A,B,C,D,E,F,G,H,I,J,K>
     of(
@@ -139,6 +154,7 @@ public interface Tuple11<A,B,C,D,E,F,G,H,I,J,K> {
      * Передает значения элементов в функцию
      * @param fn функция приемник
      * @return результат вызова функции
+     * @param <Z> тип результата
      */
     default <Z> Z apply( Fn11<A, B, C, D, E, F, G, H, I, J, K, Z> fn ){
         if(fn==null)throw new IllegalArgumentException("fn == null");

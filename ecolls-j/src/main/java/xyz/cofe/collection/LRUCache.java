@@ -96,7 +96,7 @@ public class LRUCache<K,V> extends LinkedHashMap<K,V>
 
     /**
      * Указывает максимальное кол-во элементов в кэше
-     * @param cacheSizeMax
+     * @param cacheSizeMax максимальное кол-во элементов
      */
     public void setCacheSizeMax(int cacheSizeMax) {
         this.cacheSizeMax = cacheSizeMax;

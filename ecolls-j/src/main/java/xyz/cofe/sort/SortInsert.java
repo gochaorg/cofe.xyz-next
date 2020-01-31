@@ -164,6 +164,7 @@ public abstract class SortInsert<Container,Element> {
 
     /**
      * Создание экземпляра для работы со списком
+     * @param <E> Тип элемента списка
      * @return экземпляр
      */
     public static <E> SortInsert<List<E>,E> createForList(){

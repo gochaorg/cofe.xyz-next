@@ -69,6 +69,7 @@ public interface Tuple2<A,B> {
      * Передает значения элементов в функцию
      * @param fn функция приемник
      * @return результат вызова функции
+     * @param <Z> тип результата
      */
     default <Z> Z apply( BiFunction<A,B,Z> fn){
         if(fn==null)throw new IllegalArgumentException("fn == null");

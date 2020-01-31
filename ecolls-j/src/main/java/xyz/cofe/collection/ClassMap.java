@@ -328,7 +328,6 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      * Returns the value to which the specified key is mapped, or
      * {@code defaultValue} if this map contains no mapping for the key.
      *
-     * @implSpec
      * The default implementation makes no guarantees about synchronization
      * or atomicity properties of this method. Any implementation providing
      * atomicity guarantees must override this method and document its
@@ -358,7 +357,6 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      * the order of entry set iteration (if an iteration order is specified.)
      * Exceptions thrown by the action are relayed to the caller.
      *
-     * @implSpec
      * The default implementation is equivalent to, for this {@code map}:
      * <pre> {@code
      * for (Map.Entry<K, V> entry : map.entrySet())
@@ -387,7 +385,6 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      * function throws an exception.  Exceptions thrown by the function are
      * relayed to the caller.
      *
-     * @implSpec
      * <p>The default implementation is equivalent to, for this {@code map}:
      * <pre> {@code
      * for (Map.Entry<K, V> entry : map.entrySet())
@@ -430,7 +427,6 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      * to {@code null}) associates it with the given value and returns
      * {@code null}, else returns the current value.
      *
-     * @implSpec
      * The default implementation is equivalent to, for this {@code
      * map}:
      *
@@ -477,7 +473,7 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      * Removes the entry for the specified key only if it is currently
      * mapped to the specified value.
      *
-     * @implSpec
+     * 
      * The default implementation is equivalent to, for this {@code map}:
      *
      * <pre> {@code
@@ -516,7 +512,7 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      * Replaces the entry for the specified key only if currently
      * mapped to the specified value.
      *
-     * @implSpec
+     * 
      * The default implementation is equivalent to, for this {@code map}:
      *
      * <pre> {@code
@@ -563,7 +559,7 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      * Replaces the entry for the specified key only if it is
      * currently mapped to some value.
      *
-     * @implSpec
+     * 
      * The default implementation is equivalent to, for this {@code map}:
      *
      * <pre> {@code
@@ -626,7 +622,7 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      *
      * <p>The mapping function should not modify this map during computation.
      *
-     * @implSpec
+     * 
      * The default implementation is equivalent to the following steps for this
      * {@code map}, then returning the current value or {@code null} if now
      * absent:
@@ -691,7 +687,7 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      *
      * <p>The remapping function should not modify this map during computation.
      *
-     * @implSpec
+     * 
      * The default implementation is equivalent to performing the following
      * steps for this {@code map}, then returning the current value or
      * {@code null} if now absent:
@@ -765,7 +761,7 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      *
      * <p>The remapping function should not modify this map during computation.
      *
-     * @implSpec
+     * 
      * The default implementation is equivalent to performing the following
      * steps for this {@code map}, then returning the current value or
      * {@code null} if absent:
@@ -846,7 +842,7 @@ public class ClassMap<T> implements Map<Class, T>, ReadWriteLockProperty, ReadWr
      *
      * <p>The remapping function should not modify this map during computation.
      *
-     * @implSpec
+     * 
      * The default implementation is equivalent to performing the following
      * steps for this {@code map}, then returning the current value or
      * {@code null} if absent:

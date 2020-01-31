@@ -2,6 +2,9 @@ package xyz.cofe.scn;
 
 /**
  * Событие изменения SCN объекта
+   @param <Owner> Тип владельца SCN
+   @param <SCN> Тип счетчика SCN
+   @param <CAUSE> Тип причины события
  * @author georgiy
  */
 public interface ScnEvent<Owner,SCN extends Comparable<?>,CAUSE> {
@@ -23,10 +26,17 @@ public interface ScnEvent<Owner,SCN extends Comparable<?>,CAUSE> {
      */
     SCN getCurScn();
 
+    /**
+     * Возвращает причину события ScnEvent
+     * @return причина или null
+     */
     default CAUSE cause(){ return null; }
 
     /**
      Создание экземпляра
+     @param <Owner> Тип владельца SCN
+     @param <SCN> Тип счетчика SCN
+     @param <CAUSE> Тип причины события
      @param owner владелец чей номер SCN изменился
      @param oldScn предыдущее значение SCN
      @param curScn Текущее значение SCN
@@ -53,6 +63,9 @@ public interface ScnEvent<Owner,SCN extends Comparable<?>,CAUSE> {
 
     /**
      Создание экземпляра
+     @param <Owner> Тип владельца SCN
+     @param <SCN> Тип счетчика SCN
+     @param <CAUSE> Тип причины события
      @param owner владелец чей номер SCN изменился
      @param oldScn предыдущее значение SCN
      @param curScn Текущее значение SCN

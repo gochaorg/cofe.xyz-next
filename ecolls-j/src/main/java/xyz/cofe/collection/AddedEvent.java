@@ -20,7 +20,7 @@ public interface AddedEvent<C, E> extends CollectionEvent<C, E> {
      * @param <E>        Тип элемента коллеции
      * @return уведомление
      */
-    static <C, K, E> AddedEvent<C, E> create(C coll, E element) {
+    static <C, E> AddedEvent<C, E> create(C coll, E element) {
         return new AddedEvent<C, E>() {
             @Override
             public C getSource() {

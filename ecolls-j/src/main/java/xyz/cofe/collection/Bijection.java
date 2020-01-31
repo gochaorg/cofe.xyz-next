@@ -43,7 +43,8 @@ import java.util.logging.Logger;
  * Каждый элемент x из X сопоставляется только один элемент y из Y, <br>
  * и соответсвенно есть обратное отображение:
  * Каждый элемент x из X сопоставляется только один элемент y из Y.
- * <table border='1' summary='Пример биекции'>
+ * <table border='1'>
+ *     <caption>Examples</caption>
  * <tr><td>X множество</td> <td>&larr; &rarr;</td> <td>Y множество</td></tr>
  * <tr><td>x<sub>1</sub></td> <td>&larr; &rarr;</td> <td>y<sub>a</sub></td></tr>
  * <tr><td>x<sub>2</sub></td> <td>&larr; &rarr;</td> <td>y<sub>b</sub></td></tr>
@@ -709,7 +710,6 @@ public class Bijection<X extends Comparable,Y extends Comparable>
         /**
          * Указывает поведение при null ссылке
          * @param yNull поведение
-         * @return self ссылка
          */
         public synchronized void setYNull(ResolveNull yNull) {
             this.yNull = yNull;

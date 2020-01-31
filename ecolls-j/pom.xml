@@ -7,13 +7,16 @@
     <parent>
         <groupId>xyz.cofe</groupId>
         <artifactId>next-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
         <relativePath>../next-parent</relativePath>
     </parent>
 
+    <name>ecolls</name>
+    <description>common lib for any platform</description>
+
     <artifactId>ecolls</artifactId>
     <groupId>xyz.cofe</groupId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -32,6 +35,19 @@
                 <version>3.8.1</version>
                 <configuration>
                     <release>8</release>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <show>protected</show>
+                    <failOnError>false</failOnError>
+                    <sourceFileExcludes>
+                        <sourceFileExclude>**/module-info.java</sourceFileExclude>
+                    </sourceFileExcludes>
                 </configuration>
             </plugin>
         </plugins>

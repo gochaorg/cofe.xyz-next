@@ -269,7 +269,7 @@ public class BaseNumbers implements Numbers<Number> {
      * <p>
      * Алгоритм выбора:
      * <ul>
-     *     <li>Числа (любое) не ограничено по точности ? {@link #unlimited(Number)}</li>
+     *     <li>Числа (любое) не ограничено по точности ? {@link #unlimited(Number)}
      *     <ul>
      *         <li>ДА - Числа (любое) дробное ? {@link #ratioNumber(Number)}
      *         <ul>

@@ -43,6 +43,9 @@ public interface Tuple5<A,B,C,D,E> {
      * Возвращает 5ку значений
      * @param a первый элемент
      * @param b второй элемент
+     * @param c 3й элемент
+     * @param d 4й элемент
+     * @param e 5й элемент
      * @param <A> тип первого элемента
      * @param <B> тип второго элемента
      * @param <C> тип 3го элемента
@@ -79,6 +82,7 @@ public interface Tuple5<A,B,C,D,E> {
      * Передает значения элементов в функцию
      * @param fn функция приемник
      * @return результат вызова функции
+     * @param <Z> тип результата
      */
     default <Z> Z apply( Fn5<A, B, C, D, E, Z> fn ){
         if(fn==null)throw new IllegalArgumentException("fn == null");

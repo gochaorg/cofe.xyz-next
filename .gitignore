@@ -7,3 +7,7 @@ ecolls-j/target/
 /*/target/
 */*iml
 /target/
+*.xml.versionsBavkup
+*/*.xml.versionsBavkup
+*/pom.xml.versionsBackup
+*/*/pom.xml.versionsBackup

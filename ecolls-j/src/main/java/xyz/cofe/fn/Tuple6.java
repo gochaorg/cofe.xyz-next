@@ -50,11 +50,16 @@ public interface Tuple6<A,B,C,D,E,F> {
      * Возвращает 6ку значений
      * @param a первый элемент
      * @param b второй элемент
+     * @param c 3й элемент
+     * @param d 4й элемент
+     * @param e 5й элемент
+     * @param f 6й элемент
      * @param <A> тип первого элемента
      * @param <B> тип второго элемента
      * @param <C> тип 3го элемента
      * @param <D> тип 4го элемента
      * @param <E> тип 5го элемента
+     * @param <F> тип 6го элемента
      * @return 6ка значений
      */
     static <A,B,C,D,E,F> Tuple6<A,B,C,D,E,F>
@@ -97,6 +102,7 @@ public interface Tuple6<A,B,C,D,E,F> {
      * Передает значения элементов в функцию
      * @param fn функция приемник
      * @return результат вызова функции
+     * @param <Z> тип результата
      */
     default <Z> Z apply( Fn6<A, B, C, D, E, F, Z> fn ){
         if(fn==null)throw new IllegalArgumentException("fn == null");

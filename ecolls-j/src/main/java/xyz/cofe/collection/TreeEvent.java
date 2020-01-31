@@ -144,7 +144,7 @@ public class TreeEvent<A extends Tree<A>> {
 
     /**
      * Событие замены дочернего элемента
-     * @param <A>
+     * @param <A> Тип узла
      */
     public static class Updated<A extends Tree<A>> extends TreeEvent<A> implements UpdatedEvent<A,Integer,A>
     {

@@ -19,7 +19,7 @@ public class CollectionEventPublisherImpl {
      * @param <EL> тип элемента коллекции
      * @param <L> тип подписчика
      * @param <E> тип события
-     * @return
+     * @return Помошник
      */
     @SuppressWarnings({ "unchecked", "Convert2MethodRef", "WeakerAccess" })
     public static <COL, EL, L extends CollectionListener<COL,EL>, E extends CollectionEvent<COL,EL>>
