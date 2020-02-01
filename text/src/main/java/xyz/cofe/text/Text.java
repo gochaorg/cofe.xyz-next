@@ -1181,12 +1181,45 @@ public class Text {
 
     //<editor-fold defaultstate="collapsed" desc="split()">
     /**
-     * Разделяет строку на подстроки, где в качестве разделитя указана строка. <table border="1" summary="Пример преобразований"> <tr
-     * style="font-weight:bold"> <td>Исходная строка</td><td>Разделитель</td><td>Результат</td> </tr> <tr>
-     * <td>"delim"</td><td>"delim"</td><td>""</td> </tr> <tr> <td>"delimabc"</td><td>"delim"</td><td>""<br>"abc"</td>
-     * </tr> <tr> <td>"abcdelimabc"</td><td>"delim"</td><td>"abc"<br>"abc"</td> </tr> <tr>
-     * <td>"abcdelim"</td><td>"delim"</td><td>"abc"<br>""</td> </tr> <tr> <td>"abc"</td><td>"delim"</td><td>"abc"</td>
-     * </tr> <tr> <td>"abc"</td><td>""</td><td>"abc"</td> </tr> </table>
+     * Разделяет строку на подстроки, где в качестве разделитя указана строка.
+     * <table border="1">
+     *     <caption>Пример преобразований</caption>
+     *     <tr style="font-weight:bold">
+     *         <td>Исходная строка</td>
+     *         <td>Разделитель</td>
+     *         <td>Результат</td>
+     *     </tr>
+     *     <tr>
+     *         <td>"delim"</td>
+     *         <td>"delim"</td>
+     *         <td>""</td>
+     *     </tr>
+     *     <tr>
+     *         <td>"delimabc"</td>
+     *         <td>"delim"</td>
+     *         <td>""<br>"abc"</td>
+     *     </tr>
+     *     <tr>
+     *         <td>"abcdelimabc"</td>
+     *         <td>"delim"</td>
+     *         <td>"abc"<br>"abc"</td>
+     *     </tr>
+     *     <tr>
+     *         <td>"abcdelim"</td>
+     *         <td>"delim"</td>
+     *         <td>"abc"<br>""</td>
+     *     </tr>
+     *     <tr>
+     *         <td>"abc"</td>
+     *         <td>"delim"</td>
+     *         <td>"abc"</td>
+     *     </tr>
+     *     <tr>
+     *         <td>"abc"</td>
+     *         <td>""</td>
+     *         <td>"abc"</td>
+     *     </tr>
+     * </table>
      *
      * @param src Исходня строка
      * @param splitter Разделитель
@@ -1907,7 +1940,8 @@ public class Text {
      * Кодирует текст в строковую констануту вида языка С.
      * <br> Экраниует символы: " \ \t \r \n \b \f <p>
      * Примеры:
-     * <table summary="Пример преобразований">
+     * <table border="1">
+     *     <caption>Пример преобразований</caption>
      * <tr><td>abc</td><td>"abc"</td></tr>
      *
      * <tr><td>abc "dfg" sss</td><td>"abc \"dfg\" sss"</td></tr>
@@ -1964,7 +1998,8 @@ public class Text {
     /**
      * Кодирует текст в строковую констануту вида языка С. <br>
      * Экраниует символы: " \ \t \r \n \b \f <p> Примеры:
-     * <table  summary="Пример преобразований">
+     * <table border="1">
+     *     <caption>Пример преобразований</caption>
      * <tr><td>abc</td><td>"abc"</td></tr>
      * <tr><td>abc "dfg" sss</td><td>"abc \"dfg\" sss"</td></tr>
      * <tr><td>abc\sss</td><td>"abc\\sss"</td></tr>
@@ -1975,43 +2010,6 @@ public class Text {
      */
     public static String encodeStringConstant(String srcText) {
         return encodeStringConstant(srcText, '"');
-//        if (srcText == null) {
-////            throw new IllegalArgumentException("srcText == null");
-//            return "null";
-//        }
-//
-//        StringBuilder txt = new StringBuilder();
-//        txt.append("\"");
-//        for (int i = 0; i < srcText.length(); i++) {
-//            char c = srcText.charAt(i);
-//            switch (c) {
-//                case '"':
-//                    txt.append("\\\"");
-//                    break;
-//                case '\\':
-//                    txt.append("\\\\");
-//                    break;
-//                case '\t':
-//                    txt.append("\\t");
-//                case '\r':
-//                    txt.append("\\r");
-//                    break;
-//                case '\n':
-//                    txt.append("\\n");
-//                    break;
-//                case '\b':
-//                    txt.append("\\b");
-//                    break;
-//                case '\f':
-//                    txt.append("\\f");
-//                    break;
-//                default:
-//                    txt.append(c);
-//            }
-//        }
-//        txt.append("\"");
-//
-//        return txt.toString();
     }
 
     /**
@@ -2049,6 +2047,9 @@ public class Text {
         int endIndex();
     }
 
+    /**
+     * Результат парсинга текстовой строки
+     */
     public static class SimpleParseResult implements ParseStringResult
     {
 
@@ -2312,7 +2313,8 @@ public class Text {
      * Форматирование числа
      * @param format Формат числа:
      * Пример форматов:
-     * <table summary="Примеры формата">
+     * <table>
+     *    <caption>Примеры формата</caption>
      * <tr>
      * <td>+00000000.000</td>
      * <td>12.23456</td>

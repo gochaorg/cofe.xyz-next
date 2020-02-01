@@ -98,7 +98,8 @@ import java.util.regex.Pattern;
  *
  * <br>
  * Пример форматов:
- * <table summary="Описание формата чисел">
+ * <table>
+ *     <caption>Описание формата чисел</caption>
  * <tr>
  * <td>+00000000.000</td>
  * <td>12.23456</td>

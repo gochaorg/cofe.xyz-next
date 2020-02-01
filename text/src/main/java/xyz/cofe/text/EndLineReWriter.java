@@ -33,11 +33,11 @@ import java.util.function.Function;
  *
  * Пример,
  * исходная строка: <br>
- * <font style="font-family:monospace">"linux<b style="color:blue">\n</b>Mac<b style="color:blue">\r</b>Windows<b style="color:blue">\r\n</b>Other<b style="color:blue">\n\r</b>..."</font> <br><br>
+ * <code>"linux<b style="color:blue">\n</b>Mac<b style="color:blue">\r</b>Windows<b style="color:blue">\r\n</b>Other<b style="color:blue">\n\r</b>..."</code> <br><br>
  *
  * Будет переведена как, если указана форма Linux (\n):<br>
  *
- * <font style="font-family:monospace">"linux<b style="color:green">\n</b>Mac<b  style="color:green">\n</b>Windows<b style="color:green">\n</b>Other<b style="color:green">\n</b>..."</font> <br>
+ * <code>"linux<b style="color:green">\n</b>Mac<b  style="color:green">\n</b>Windows<b style="color:green">\n</b>Other<b style="color:green">\n</b>..."</code> <br>
  *
  * @author gocha
  */

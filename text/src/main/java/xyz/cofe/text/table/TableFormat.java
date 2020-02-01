@@ -33,7 +33,8 @@ import java.util.logging.Logger;
 /**
  * Табличное форматирование текста.
  *
- * <p>
+ * <br><br>
+ *
  *     Таблица представляет из себя 4 логических блока данных:
  *     <ol>
  *         <li>
@@ -72,7 +73,6 @@ import java.util.logging.Logger;
  *     <br><br>
  *
  *     Для каждого вида форматирования: таблицы, строки, ячейки есть возможность указать бордюр {@link Border}.
- * </p>
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
  */
 public class TableFormat {
