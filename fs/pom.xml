@@ -7,11 +7,14 @@
     <parent>
         <artifactId>next-parent</artifactId>
         <groupId>xyz.cofe</groupId>
-        <version>1.0-SNAPSHOT</version>
-        <relativePath>../next-parent/pom.xml</relativePath>
+        <version>1.0</version>
+        <relativePath>../next-parent</relativePath>
     </parent>
 
     <artifactId>fs</artifactId>
+    <version>1.0</version>
+    <name>fs</name>
+    <description>simple file i/o for java 7+</description>
 
     <dependencies>
         <dependency>
@@ -22,7 +25,7 @@
         <dependency>
             <groupId>xyz.cofe</groupId>
             <artifactId>cbuffer</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 
@@ -34,6 +37,14 @@
                 <version>3.8.1</version>
                 <configuration>
                     <release>8</release>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <source>8</source>
                 </configuration>
             </plugin>
         </plugins>
