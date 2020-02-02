@@ -41,7 +41,7 @@ public class PageDataTest {
             this.out = out;
 
             closeables.append(
-                pd.onMap.listen( e->{
+                pd.onMapped.listen(e->{
                     Object[] arr = pd.getDirtyPages().stream().toArray();
 
                     log(
@@ -62,7 +62,7 @@ public class PageDataTest {
                 pd.onAllocExistsPage.listen( e->log("alloc exists page "+e) ),
                 pd.onFastDataSize.listen( e->log("page "+e.a()+" size "+e.b()) ),
                 pd.onAlloc.listen( e -> log("alloc "+e)),
-                pd.onSaveFastPage.listen( e -> log("save "+e) )
+                pd.onSavedFastPage.listen(e -> log("save "+e) )
             );
         }
 

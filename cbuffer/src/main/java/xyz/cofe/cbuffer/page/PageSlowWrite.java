@@ -2,6 +2,9 @@ package xyz.cofe.cbuffer.page;
 
 import xyz.cofe.cbuffer.ContentBuffer;
 
+/**
+ * Запись страницы в slow буфер
+ */
 public interface PageSlowWrite extends GetPageSize, PageBuffers {
     /**
      * Запись страницы в slow

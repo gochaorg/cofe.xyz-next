@@ -5,7 +5,7 @@ import xyz.cofe.cbuffer.ContentBuffer;
 import java.util.Arrays;
 
 /**
- * Чтение из fast буфера
+ * Чтение из fast буфера - т.е. кэша
  */
 public interface PageFastRead extends GetPageSize, PageBuffers, FastDataSize {
     /**

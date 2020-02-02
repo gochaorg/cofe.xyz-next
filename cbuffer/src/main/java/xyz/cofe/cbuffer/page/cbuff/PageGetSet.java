@@ -1,10 +1,9 @@
 package xyz.cofe.cbuffer.page.cbuff;
 
 import xyz.cofe.cbuffer.page.GetPageSize;
-import xyz.cofe.cbuffer.page.cbuff.RWPageData;
-import xyz.cofe.cbuffer.page.cbuff.ToPageAddress;
 
 import java.io.ByteArrayOutputStream;
+
 
 public interface PageGetSet extends RWPageData, ToPageAddress, GetPageSize {
     /**

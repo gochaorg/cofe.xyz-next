@@ -4,13 +4,18 @@ import xyz.cofe.cbuffer.ContentBuffer;
 
 import java.util.Arrays;
 
+/**
+ * Запись данных в fast страницы (кэш)
+ */
 public interface PageFastWrite extends PageFastRead, PageFastDirty, FastDataSize {
     /**
+     * Запись данных в fast страницы (кэш)
+     *
      * <ul>
      * <li>Запись страницы в fast.
      * <li>Страница помечается как измененная {@link #dirty(int)}
      * </ul>
-     * @param pageIndex индекс страницы
+     * @param pageIndex индекс кэш страницы
      * @param bytes данные
      */
     default void fastData(int pageIndex, byte[] bytes){

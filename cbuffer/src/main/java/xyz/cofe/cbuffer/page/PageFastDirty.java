@@ -1,7 +1,7 @@
 package xyz.cofe.cbuffer.page;
 
 /**
- * Информация о изменении fast страниц
+ * Информация о изменении fast страниц (кэша)
  */
 public interface PageFastDirty {
     /**
