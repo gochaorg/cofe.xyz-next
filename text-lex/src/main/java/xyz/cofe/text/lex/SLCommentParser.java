@@ -5,7 +5,7 @@ import static xyz.cofe.text.lex.LexerUtil.*;
 /**
  * Лексема - однострочный комментарий в стиле языка C.<br>
  * Пример: <br>
- * <font style="font-family:monospaced"><b>// и до конца строки</b></font>
+ * <span style="font-family:monospaced"><b>// и до конца строки</b></span>
  * @author gocha
  */
 public class SLCommentParser implements TokenParser

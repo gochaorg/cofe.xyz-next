@@ -6,23 +6,23 @@ package xyz.cofe.text.lex;
  * text ::= doubleQuote { escapeText | anyChar } doubleQuote
  *        | singleQuote { escapeText | anyChar } singleQuote
  *
- * doubleQuote ::= <font style='background-color:#bbbbbb; color:#000000'>"</font>
- * singleQuote ::= <font style='background-color:#bbbbbb; color:#000000'>'</font>
- * escapeChar  ::= <font style='background-color:#bbbbbb; color:#000000'>\</font>
+ * doubleQuote ::= <span style='background-color:#bbbbbb; color:#000000'>"</span>
+ * singleQuote ::= <span style='background-color:#bbbbbb; color:#000000'>'</span>
+ * escapeChar  ::= <span style='background-color:#bbbbbb; color:#000000'>\</span>
  * escapeText  ::= escapeChar
  *                 ( escapeChar
  *                 | singleQuote
  *                 | doubleQuote
- *                 | <font style='background-color:#bbbbbb; color:#000000'>n</font>
- *                 | <font style='background-color:#bbbbbb; color:#000000'>r</font>
- *                 | <font style='background-color:#bbbbbb; color:#000000'>t</font>
- *                 | <font style='background-color:#bbbbbb; color:#000000'>b</font>
- *                 | <font style='background-color:#bbbbbb; color:#000000'>f</font>
- *                 | <font style='background-color:#bbbbbb; color:#000000'>u</font> hexDigit
+ *                 | <span style='background-color:#bbbbbb; color:#000000'>n</span>
+ *                 | <span style='background-color:#bbbbbb; color:#000000'>r</span>
+ *                 | <span style='background-color:#bbbbbb; color:#000000'>t</span>
+ *                 | <span style='background-color:#bbbbbb; color:#000000'>b</span>
+ *                 | <span style='background-color:#bbbbbb; color:#000000'>f</span>
+ *                 | <span style='background-color:#bbbbbb; color:#000000'>u</span> hexDigit
  *                 )
- * hexDigit ::= <font style='background-color:#bbbbbb; color:#000000'>0..9</font>
- *            | <font style='background-color:#bbbbbb; color:#000000'>a..f</font>
- *            | <font style='background-color:#bbbbbb; color:#000000'>A..F</font>
+ * hexDigit ::= <span style='background-color:#bbbbbb; color:#000000'>0..9</span>
+ *            | <span style='background-color:#bbbbbb; color:#000000'>a..f</span>
+ *            | <span style='background-color:#bbbbbb; color:#000000'>A..F</span>
  * </pre>
  * @author gocha
  */

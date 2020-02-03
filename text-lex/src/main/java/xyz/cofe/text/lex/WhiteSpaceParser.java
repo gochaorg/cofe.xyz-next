@@ -2,7 +2,7 @@ package xyz.cofe.text.lex;
 
 /**
  * Лексемма - пробелный символ.<br>
- * Пробелами считаются символы: <font style="font-family:monospaced"><b>'\r' '\n' '\t' ' '</b><i>(пробел)</i></font>
+ * Пробелами считаются символы: <span style="font-family:monospaced"><b>'\r' '\n' '\t' ' '</b><i>(пробел)</i></span>
  * @author gocha
  */
 public class WhiteSpaceParser implements TokenParser
