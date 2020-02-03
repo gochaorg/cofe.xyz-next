@@ -75,14 +75,14 @@ import xyz.cofe.text.template.ast.*;
  * <b>Лексемы</b>
  * <i>Лексемы перечисле в порядке уменьшения приоритета</i>
  *
- * escape ::= <font style='background-color:#bbbbbb; color:#000000'>\$</font>  <span style="color: #666666"># интерпретирует как $</span>
- *          | <font style='background-color:#bbbbbb; color:#000000'>\\</font>  <span style="color: #666666"># интерпретирует как \</span>
- *          | <font style='background-color:#bbbbbb; color:#000000'>\${</font> <span style="color: #666666"># интерпретирует как ${</span>
+ * escape ::= <span style='background-color:#bbbbbb; color:#000000'>\$</span>  <span style="color: #666666"># интерпретирует как $</span>
+ *          | <span style='background-color:#bbbbbb; color:#000000'>\\</span>  <span style="color: #666666"># интерпретирует как \</span>
+ *          | <span style='background-color:#bbbbbb; color:#000000'>\${</span> <span style="color: #666666"># интерпретирует как ${</span>
  *          .
  *
- * codeBegin  ::= <font style='background-color:#bbbbbb; color:#000000'>${</font> .
- * blockBegin ::= <font style='background-color:#bbbbbb; color:#000000'>{</font> .
- * blockEnd   ::= <font style='background-color:#bbbbbb; color:#000000'>}</font> .
+ * codeBegin  ::= <span style='background-color:#bbbbbb; color:#000000'>${</span> .
+ * blockBegin ::= <span style='background-color:#bbbbbb; color:#000000'>{</span> .
+ * blockEnd   ::= <span style='background-color:#bbbbbb; color:#000000'>}</span> .
  *
  * anyChar <span style="color: #666666"># любой символ кроме выше указанных лексем</span>
  * </pre>
