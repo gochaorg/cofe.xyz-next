@@ -2,7 +2,13 @@ package xyz.cofe.text.parse;
 
 import java.util.function.Function;
 
-public interface CommonPointer<PointerType extends CommonPointer<PointerType,Item,Pos>,Item,Pos> extends Pointer {
+/**
+ * Указатель на некую последовательность токенов/лексем
+ * @param <SELF> Возвращаемый тип
+ * @param <Item> Тип элемента
+ * @param <Pos> Тип позиции
+ */
+public interface CommonPointer<SELF extends CommonPointer<SELF,Item,Pos>,Item,Pos> extends Pointer {
     /**
      * Возвращает текущий указатель в тексте
      * @return указатель
@@ -27,11 +33,12 @@ public interface CommonPointer<PointerType extends CommonPointer<PointerType,Ite
 
     /**
      * Просмотр одного символа с указанным смещением, относительно указателя
+     * @param offset смещение относительно которого происходит просомтр
      * @return символ
      */
     default Item lookup(int offset){
-        CommonPointer<PointerType,Item,Pos> self = this;
-        PointerType trgt = self.move(offset);
+        CommonPointer<SELF,Item,Pos> self = this;
+        SELF trgt = self.move(offset);
         if( trgt.eof() )return null;
         return trgt.lookup();
     };
@@ -51,5 +58,5 @@ public interface CommonPointer<PointerType extends CommonPointer<PointerType,Ite
      * @param offset смещение указателя
      * @return новый указатель
      */
-    PointerType move( int offset );
+    SELF move( int offset );
 }

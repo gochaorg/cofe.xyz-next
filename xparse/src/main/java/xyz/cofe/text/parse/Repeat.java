@@ -14,7 +14,8 @@ public class Repeat<P extends Pointer, T extends Tok<P>> implements Function<P, 
     /**
      * Конструктор
      *
-     * @param expression правило
+     * @param expression повторяемое правило
+     * @param builder функция которая строит токен
      */
     public Repeat( Function<P, T> expression, Fn3<P, P, Arr<? super T>, T> builder ){
         if( expression==null ) throw new IllegalArgumentException("expression==null");

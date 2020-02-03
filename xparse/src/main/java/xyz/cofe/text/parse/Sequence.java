@@ -16,6 +16,7 @@ public class Sequence<P extends Pointer, T extends Tok<P>> implements Function<P
     /**
      * Конструктор
      * @param expressions последовательность правил
+     * @param builder функция которая строит токен
      */
     public Sequence( Function<P,T>[] expressions, Fn3<P, P, Arr<T>, T> builder ){
         if( expressions==null ) throw new IllegalArgumentException("expressions==null");

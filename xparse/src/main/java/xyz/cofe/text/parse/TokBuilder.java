@@ -29,6 +29,7 @@ public class TokBuilder {
 
     /**
      * Альтернативный набор правил
+     * @param <T> тип токенов
      * @param expressions правила
      * @return парсер
      */

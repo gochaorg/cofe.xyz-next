@@ -18,7 +18,7 @@ public interface Template extends Function<Map,String> {
     /**
      * Парсинг шаблона.
      * @param tmpl Шаблон.
-     *             <p/>
+     *             <p>
      *             пример: <code>"some ${var}"</code>
      * @return функция генерации текста
      */
