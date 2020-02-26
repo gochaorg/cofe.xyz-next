@@ -33,6 +33,7 @@
         <module>text-out</module>
         <module>gui-swing-test</module>
 <!--        <module>sql</module>-->
+        <module>next-parent</module>
     </modules>
 
     <build>
