@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Значение
+ * Значение - кортэаж из одного элемента
  * @param <A> тип значения
  */
 public interface Tuple1<A> {
@@ -60,5 +60,15 @@ public interface Tuple1<A> {
     default <Z> Z apply( Function<A, Z> fn ){
         if(fn==null)throw new IllegalArgumentException("fn == null");
         return fn.apply(a());
+    }
+
+    /**
+     * Создает новый котреж добавляя текущее и указанное значение
+     * @param b значение
+     * @param <B> тип значения
+     * @return Кортэж
+     */
+    default <B> Tuple2<A,B> add(B b){
+        return Tuple2.of(a(),b);
     }
 }

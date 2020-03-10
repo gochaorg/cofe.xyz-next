@@ -11,3 +11,4 @@ ecolls-j/target/
 */*.xml.versionsBavkup
 */pom.xml.versionsBackup
 */*/pom.xml.versionsBackup
+*/*.iml

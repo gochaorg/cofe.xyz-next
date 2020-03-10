@@ -29,7 +29,9 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import xyz.cofe.collection.NodesExtracter;
+import xyz.cofe.iter.Eterable;
 import xyz.cofe.iter.TreeIterator;
+import xyz.cofe.iter.TreeStep;
 
 /**
  * Итератор по дереву каталогов

@@ -123,6 +123,7 @@ public class DirFollowBuilder
         if( sample!=null ){
             checkCycle = sample.checkCycle;
             followLinks = sample.followLinks;
+            errorBehavior = sample.errorBehavior;
         }
     }
 
@@ -214,6 +215,7 @@ public class DirFollowBuilder
     }
 
     public DirFollowBuilder errorBehavior(DirFollow.ErrorBehavior errorBehavior) {
+        setErrorBehavior(errorBehavior);
         return this;
     }
 

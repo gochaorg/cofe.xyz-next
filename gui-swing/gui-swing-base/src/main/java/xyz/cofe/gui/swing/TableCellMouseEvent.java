@@ -24,11 +24,11 @@
 
 package xyz.cofe.gui.swing;
 
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JTable;
 
 /**
  * Событие мыши для ячейки таблицы
@@ -124,7 +124,7 @@ public class TableCellMouseEvent extends MouseEvent {
      * @param button кнопка мыши
      */
     public TableCellMouseEvent(Component source, int id, long when, int modifiers, int x, int y, int clickCount,
-                              boolean popupTrigger, int button) {
+                               boolean popupTrigger, int button) {
         super(source, id, when, modifiers, x, y, clickCount, popupTrigger, button);
     }
 
@@ -140,7 +140,7 @@ public class TableCellMouseEvent extends MouseEvent {
      * @param popupTrigger передать события вверх по дереву компонентов
      */
     public TableCellMouseEvent(Component source, int id, long when, int modifiers, int x, int y, int clickCount,
-                          boolean popupTrigger) {
+                               boolean popupTrigger) {
         super(source, id, when, modifiers, x, y, clickCount, popupTrigger);
     }
 
@@ -159,7 +159,7 @@ public class TableCellMouseEvent extends MouseEvent {
      * @param button кнопка мыши
      */
     public TableCellMouseEvent(Component source, int id, long when, int modifiers, int x, int y, int xAbs, int yAbs,
-                          int clickCount, boolean popupTrigger, int button) {
+                               int clickCount, boolean popupTrigger, int button) {
         super(source, id, when, modifiers, x, y, xAbs, yAbs, clickCount, popupTrigger, button);
     }
 
@@ -167,7 +167,7 @@ public class TableCellMouseEvent extends MouseEvent {
      * Конструктор копирования
      * @param sample образец для копирования
      */
-    public TableCellMouseEvent( MouseEvent sample ){
+    public TableCellMouseEvent(MouseEvent sample ){
         super(sample.getComponent(), 
             sample.getID(), 
             sample.getWhen(), 
@@ -187,7 +187,7 @@ public class TableCellMouseEvent extends MouseEvent {
      * @param row строка
      * @param column колонка
      */
-    public TableCellMouseEvent( MouseEvent sample, JTable table, int row, int column ){
+    public TableCellMouseEvent(MouseEvent sample, JTable table, int row, int column ){
         super(sample.getComponent(), 
             sample.getID(), 
             sample.getWhen(), 

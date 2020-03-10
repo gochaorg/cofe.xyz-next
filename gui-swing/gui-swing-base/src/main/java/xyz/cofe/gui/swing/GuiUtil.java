@@ -23,15 +23,12 @@
  */
 package xyz.cofe.gui.swing;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.DisplayMode;
-import java.awt.Frame;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Window;
+import xyz.cofe.collection.NodesExtracter;
+import xyz.cofe.iter.Eterable;
+import xyz.cofe.iter.TreeStep;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -40,13 +37,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
-import javax.swing.KeyStroke;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import xyz.cofe.collection.NodesExtracter;
-import xyz.cofe.iter.Eterable;
-import xyz.cofe.iter.TreeStep;
 
 /**
  * Класс утилита для работы с пользовательским интерфейсом

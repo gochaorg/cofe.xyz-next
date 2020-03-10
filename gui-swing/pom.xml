@@ -17,6 +17,7 @@
 
     <modules>
         <module>gui-swing-j2d</module>
+        <module>gui-swing-all</module>
         <module>gui-swing-base</module>
         <module>gui-swing-resources</module>
     </modules>
@@ -35,7 +36,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>fs</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

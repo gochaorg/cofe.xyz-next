@@ -68,4 +68,15 @@ public interface Tuple3<A,B,C> {
         if(fn==null)throw new IllegalArgumentException("fn == null");
         return fn.apply(a(),b(),c());
     }
+
+
+    /**
+     * Создает новый котреж добавляя текущее и указанное значение
+     * @param d значение
+     * @param <D> тип значения
+     * @return Кортэж
+     */
+    default <D> Tuple4<A,B, C, D> add(D d){
+        return Tuple4.of(a(),b(),c(),d);
+    }
 }

@@ -24,39 +24,12 @@
 
 package xyz.cofe.gui.swing;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Point;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.HierarchyBoundsListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
-import java.awt.event.InputMethodEvent;
-import java.awt.event.InputMethodListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.event.TextEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
-import java.awt.event.WindowListener;
-import java.awt.event.WindowStateListener;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.text.JTextComponent;
+import javax.swing.tree.ExpandVetoException;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -66,69 +39,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractButton;
-import javax.swing.AbstractListModel;
-import javax.swing.AbstractSpinnerModel;
-import javax.swing.BoundedRangeModel;
-import javax.swing.ButtonModel;
-import javax.swing.CellEditor;
-import javax.swing.ComboBoxEditor;
-import javax.swing.DefaultBoundedRangeModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JFileChooser;
-import javax.swing.JInternalFrame;
-import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollBar;
-import javax.swing.JSlider;
-import javax.swing.JSpinner;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.JViewport;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
-import javax.swing.MenuSelectionManager;
-import javax.swing.SingleSelectionModel;
-import javax.swing.SpinnerModel;
-import javax.swing.Timer;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.event.InternalFrameEvent;
-import javax.swing.event.InternalFrameListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.MenuDragMouseEvent;
-import javax.swing.event.MenuDragMouseListener;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuKeyEvent;
-import javax.swing.event.MenuKeyListener;
-import javax.swing.event.MenuListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.event.TreeWillExpandListener;
-import javax.swing.text.JTextComponent;
-import javax.swing.tree.ExpandVetoException;
 
 /**
  * Упрощение создания подписчиков
@@ -1535,9 +1445,19 @@ public class SwingListener {
         if( textDocument==null )throw new IllegalArgumentException( "textDocument==null" );
         if( runn==null )throw new IllegalArgumentException( "runn==null" );
         
-        final DocumentListener dl = new DocumentAdapter(){
+        final DocumentListener dl = new DocumentListener() {
             @Override
-            protected void onTextChanged() {
+            public void insertUpdate(DocumentEvent e) {
+                runn.run();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                runn.run();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
                 runn.run();
             }
         };

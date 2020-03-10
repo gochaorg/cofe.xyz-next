@@ -921,29 +921,13 @@ public class File implements Comparable<File>
         );
     }
 
-//    /**
-//     * Возвращает итератор по дереву каталогов
-//     * @return строитель итератора
-//     */
-//    public FileTreeIterableBuilder tree(){
-//        return new FileTreeIterableBuilder(this);
-//    }
-//
-//    /**
-//     * Возвращает итератор по дереву каталогов
-//     * @return итератор по дереву
-//     */
-//    public Iterable<TreeStep<File>> treeit(){
-//        return tree().build();
-//    }
-//
-//    /**
-//     * Возвращает итератор по дереву каталогов
-//     * @return итератор по дереву
-//     */
-//    public Iterable<File> walk(){
-//        return tree().walk();
-//    }
+    /**
+     * Обход дерева каталогов
+     * @return создание алгоритма обхода
+     */
+    public FileTreeBuilder walk(){
+        return new FileTreeBuilder(this);
+    }
 
     //<editor-fold defaultstate="collapsed" desc="isDirectory(opts):boolean - Проверяет, является ли файл каталогом">
     /**

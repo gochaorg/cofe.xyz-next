@@ -118,6 +118,23 @@ public class DirFollow implements NodesExtracter<File, File>
     }
     //</editor-fold>
 
+    public DirFollow(){
+    }
+
+    protected DirFollow(DirFollow sample){
+        if( sample!=null ){
+            followLinks = sample.followLinks;
+            errorBehavior = sample.errorBehavior;
+            checkCycle = sample.checkCycle;
+            checkDir = sample.checkDir;
+        }
+    }
+
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    public DirFollow clone(){
+        return new DirFollow(this);
+    }
+
     //<editor-fold defaultstate="collapsed" desc="checkDir : boolean">
     protected volatile boolean checkDir = true;
 

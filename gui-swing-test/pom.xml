@@ -17,13 +17,13 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>gui-swing-base</artifactId>
-            <version>${project.version}</version>
+            <artifactId>gui-swing-all</artifactId>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>fs</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
         </dependency>
     </dependencies>
 
