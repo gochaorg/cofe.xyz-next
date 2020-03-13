@@ -44,4 +44,20 @@ public class TParseTest1 {
         Assert.assertTrue(ws.get().text()!=null);
         Assert.assertTrue(ws.get().text().equals("  "));
     }
+
+    @Test
+    public void tokens1(){
+        System.out.println(" tokens1 ");
+        System.out.println("=========");
+
+        Tokenizer.lexer("12 23 34", ws, digits).forEach( t -> System.out.println(t));
+        Assert.assertTrue(
+        Tokenizer.lexer("12 23 34", ws, digits).count()==5
+        );
+
+        List<? extends CToken> toks = Tokenizer.lexer("1 2 3",ws,digits).toList();
+        Assert.assertTrue(toks!=null);
+        Assert.assertTrue(toks.size()==5);
+        Assert.assertTrue(toks.get(1) instanceof WS);
+    }
 }

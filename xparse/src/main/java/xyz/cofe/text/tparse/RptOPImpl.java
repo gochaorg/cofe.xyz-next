@@ -69,7 +69,7 @@ public class RptOPImpl<P extends Pointer<?,?,P>, T extends Tok<P>> implements Rp
 
                     Optional<T> tokOpt = gr.apply(ptr);
                     if (tokOpt == null) throw new IllegalStateException("bug!");
-                    if (!tokOpt.isPresent()) return Optional.empty();
+                    if (!tokOpt.isPresent()) break;
 
                     T tok = tokOpt.get();
                     if (tok == null) throw new IllegalStateException("bug");
