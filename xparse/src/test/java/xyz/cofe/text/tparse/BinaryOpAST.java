@@ -40,8 +40,9 @@ public class BinaryOpAST extends ASTBase<BinaryOpAST> {
 
     @Override
     public String toString() {
-        return BinaryOpAST.class.getSimpleName()+
-            " "+operator.keywordTok().text()+
-            " left("+left+") right("+right+")";
+        return
+            "left("+left+")"+
+            " "+BinaryOpAST.class.getSimpleName()+" "+operator.keywordTok().text()+
+            " right("+right+")";
     }
 }

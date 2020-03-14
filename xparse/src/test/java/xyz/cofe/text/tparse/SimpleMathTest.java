@@ -2,10 +2,10 @@ package xyz.cofe.text.tparse;
 
 import org.junit.Assert;
 import org.junit.Test;
+import xyz.cofe.text.parse.an.Char;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.MissingFormatArgumentException;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -29,7 +29,7 @@ public class SimpleMathTest {
 
     public static final GR<CharPointer, NumberToken> number
         = floatNumber.another(integerNumber)
-        .map();
+        .map( t->(NumberToken)t );
     //endregion
     //region ws : gr
     public static class WS extends CToken {
@@ -86,14 +86,20 @@ public class SimpleMathTest {
         NumberToken.class, NumberAST::new
     );
 
-    public static final GR<LPointer<CToken>, KeywordAST> operator = atomic(
+    public static final GR<LPointer<CToken>, KeywordAST> sumOperator = atomic(
         CToken.class,
         tok -> Arrays.asList("+","-").contains(tok.text()),
         KeywordAST::new
     );
 
+    public static final GR<LPointer<CToken>, KeywordAST> mulOperator = atomic(
+        CToken.class,
+        tok -> Arrays.asList("*","/").contains(tok.text()),
+        KeywordAST::new
+    );
+
     public static final GR<LPointer<CToken>, BinaryOpAST> binOp1
-        = numb.next(operator).next(numb)
+        = numb.next(sumOperator).next(numb)
         .map(BinaryOpAST::new);
 
     public static GR<LPointer<CToken>, BinaryOpAST> binaryOp(
@@ -139,14 +145,41 @@ public class SimpleMathTest {
         };
     }
 
-    public static final GR<LPointer<CToken>,BinaryOpAST> sumOp
-        = binaryOp( numb, operator, numb );
+    public static final GR<LPointer<CToken>,KeywordAST> brOpen = atomic(
+        CToken.class, t->t.text().equals("("), KeywordAST::new
+    );
+
+    public static final GR<LPointer<CToken>,KeywordAST> brClose = atomic(
+        CToken.class, t->t.text().equals(")"), KeywordAST::new
+    );
+
+    public static final GR<LPointer<CToken>,AST> dummy = ptr -> Optional.empty();
+
+    public static final ProxyGR<LPointer<CToken>,AST> expression = new ProxyGR<>(dummy);
+
+    public static final GR<LPointer<CToken>,? super AST> brAtomValue
+        = brOpen.next(expression).next(brClose).map((b0, e, b1)->e);
+
+    public static final GR<LPointer<CToken>,AST> atomValue
+        = numb.another(brAtomValue).map( t -> (AST)t );
+
+    public static final GR<LPointer<CToken>,? extends AST> mulOp
+        = binaryOp( atomValue, mulOperator, atomValue ).another( atomValue ).map( t->(AST)t );
+
+    public static final GR<LPointer<CToken>,? extends AST> sumOp
+        = binaryOp( mulOp, sumOperator, mulOp ).another( mulOp ).map( t->(AST)t );
+
+    {
+        expression.setTarget(sumOp);
+    }
+
+    private static final Predicate<Character> isOperator = c -> c=='+' || c=='-' || c=='*' || c=='/' || c=='(' || c==')' ;
 
     @Test
     public void binaryOpTest1(){
         List<? extends CToken> toks =
             Tokenizer
-                .lexer("10 + 12 + 23", ws, number, Chars.test(c -> c=='+' ))
+                .lexer("10 + 12 + 23", ws, number, Chars.test(isOperator) )
                 .filter( t -> !(t instanceof WS))
                 .toList();
 
@@ -158,8 +191,21 @@ public class SimpleMathTest {
 
         System.out.println("binOp1");
         System.out.println( binOp1.apply(tptr) );
+    }
 
-        System.out.println("sumOp");
-        System.out.println( sumOp.apply(tptr) );
+    @Test
+    public void binaryOpTest2(){
+        List<? extends CToken> toks =
+            Tokenizer
+                .lexer("1 + 2 + 3", ws, number, Chars.test(isOperator) )
+                .filter( t -> !(t instanceof WS))
+                .toList();
+
+        toks.forEach(System.out::println);
+
+        LPointer<CToken> tptr = new LPointer(toks);
+
+        System.out.println("expression");
+        System.out.println( expression.apply(tptr) );
     }
 }
