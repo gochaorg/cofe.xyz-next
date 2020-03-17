@@ -3,10 +3,18 @@ package xyz.cofe.text.tparse;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Токен соответствующий последовательности символов
+ */
 public class CToken implements Tok<CharPointer> {
     private final CharPointer begin;
     private final CharPointer end;
 
+    /**
+     * Конструктор
+     * @param begin начальный символ
+     * @param end конечный символ
+     */
     public CToken(CharPointer begin, CharPointer end){
         if( begin==null )throw new IllegalArgumentException("begin == null");
         if( end==null )throw new IllegalArgumentException("end == null");
@@ -15,6 +23,11 @@ public class CToken implements Tok<CharPointer> {
         this.end = end;
     }
 
+    /**
+     * Конструктор
+     * @param begin начальный символ
+     * @param end конечный символ
+     */
     public CToken(CToken begin, CToken end){
         if( begin==null )throw new IllegalArgumentException("begin == null");
         if( end==null )throw new IllegalArgumentException("end == null");
@@ -25,6 +38,10 @@ public class CToken implements Tok<CharPointer> {
         if( this.begin.compareTo(this.end)>0 )throw new IllegalArgumentException("begin > end");
     }
 
+    /**
+     * Конструктор
+     * @param tokens последовательность символов
+     */
     public CToken(List<CToken> tokens){
         if( tokens==null )throw new IllegalArgumentException("tokens == null");
         if( tokens.isEmpty() )throw new IllegalArgumentException("tokens is empty");
@@ -47,16 +64,28 @@ public class CToken implements Tok<CharPointer> {
         if( this.begin.compareTo(this.end)==0 )throw new IllegalStateException("bug!");
     }
 
+    /**
+     * Возвращает начало токена
+     * @return указатель на начало (включительно)
+     */
     @Override
     public CharPointer begin() {
         return begin;
     }
 
+    /**
+     * Возвращает указатель на конец токена
+     * @return Указатель на конец токена (включительно)
+     */
     @Override
     public CharPointer end() {
         return end;
     }
 
+    /**
+     * Возвращает текст размещенный между начальным и конечный указателями
+     * @return текст
+     */
     public String text(){
         int len = end.position() - begin.position();
         if( len>0 ){

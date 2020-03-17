@@ -27,6 +27,7 @@ import java.util.function.Function;
  *     <ul>
  *         <li>Круглые скобки <b>()</b> - задают</li> группу правил
  *         <li>Фигурные скобки <b>{}</b> - задают, что содержание может повторяться 0 и более раз</li>
+ *         <li>Вертикальная черта <b>|</b> - задает альтернативное правило</li>
  *     </ul>
  * <p>
  * В коде java может быть представленно так:
@@ -48,7 +49,8 @@ public interface GR<P extends Pointer<?,?,P>, T extends Tok<P>> extends Function
      * Создает новое правило - последовательность правил:
      * текущего и последущего правила для анализа цепочкивходых символов.
      * <br>
-     *     Допустим текущее правило задает
+     *     Допустим текущее правило задает firstIdSymbol,
+     *     то для создания id создадим правило id = this.next( otherIdSymbol.repeat() )
      * @param then следующее правило
      * @param <U> тип лексемы
      * @return Последовательность правил
@@ -58,10 +60,22 @@ public interface GR<P extends Pointer<?,?,P>, T extends Tok<P>> extends Function
         return new Sq2OPImpl<>(this,then);
     }
 
+    /**
+     * Создает правило из текущего - которое говорит о повторе 1 и более раз
+     * @return Правило повтора
+     */
     default RptOP<P,T> repeat(){
         return new RptOPImpl<>(this,0,0,true);
     }
 
+    /**
+     * Правило альтрентивного выбора -
+     * т.е. когда входная последовательность символов может быть распознана текущим правилом или
+     * альтернативным
+     * @param rule алтернатиное правило
+     * @param <U> токен
+     * @return Альтернативное правило
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     default <U extends Tok<P>> AltOP<P,U> another(GR<P,? extends Tok<P>> rule) {
         if( rule==null )throw new IllegalArgumentException("rule == null");

@@ -1,24 +1,42 @@
 package xyz.cofe.text.tparse;
 
+import xyz.cofe.iter.Eterable;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * Реализация функции грамматики - альтернативного выбора
+ * @param <P> Указатель
+ * @param <T> Лексема/Токен
+ */
 public class AltOPImpl<P extends Pointer<?,?,P>, T extends Tok<P>> implements AltOP<P,T> {
     public AltOPImpl( GR<P,T> ... exps ){
         if( exps==null )throw new IllegalArgumentException("exps==null");
-        this.exps = Arrays.asList(exps);
+        this.exps = Eterable.of(exps);
     }
 
     public AltOPImpl( Iterable<GR<P,T>> exps ){
         if( exps==null )throw new IllegalArgumentException("exps==null");
-        this.exps = exps;
+        this.exps = Eterable.of(exps);
     }
 
-    private final Iterable<GR<P,T>> exps;
-    public Iterable<GR<P,T>> getExpressions(){ return exps; }
+    private final Eterable<GR<P,T>> exps;
 
+    /**
+     * Список выражений - алтернатив
+     * @return список выражений альтернатив
+     */
+    public Eterable<GR<P,T>> expressions(){ return exps; }
+
+    /**
+     * Указывает как отобразить распознаною последовательность на указанный токен
+     * @param map функция отображения
+     * @param <U> тип токена - результата
+     * @return функция грамматического правила
+     */
     @Override
     public <U extends Tok<P>> GR<P, U> map(Function<T, U> map) {
         if( map==null )throw new IllegalArgumentException("map==null");

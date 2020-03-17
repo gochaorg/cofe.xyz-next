@@ -5,9 +5,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * Правило повтора конструкции - т.е. соответ фигурным скобкам черте в грамматике BNF
+ * {@link GR}
+ * @param <P> Указатель
+ * @param <T> Лексема/Токен
+ */
 public class RptOPImpl<P extends Pointer<?,?,P>, T extends Tok<P>> implements RptOP<P,T> {
     private final GR<P,T> gr;
 
+    /**
+     * Конструктор
+     * @param gr правило - шаблон
+     * @param min минимальное кол-во повтора шаблона
+     * @param max максимальное кол-во повтора шаблона
+     * @param greedly жадный или нет алгоритм захвата
+     */
     public RptOPImpl(GR<P,T> gr, int min, int max, boolean greedly){
         if( gr==null )throw new IllegalArgumentException("gr==null");
         if( min>max )throw new IllegalArgumentException("min>max");
@@ -16,6 +29,8 @@ public class RptOPImpl<P extends Pointer<?,?,P>, T extends Tok<P>> implements Rp
         this.max = max;
         this.greedly = greedly;
     }
+
+    public GR<P,T> expression(){ return gr; }
 
     private final int min;
 
