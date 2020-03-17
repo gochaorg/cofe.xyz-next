@@ -9,7 +9,7 @@ public class SqNOPImpl<P extends Pointer<?,?,P>> {
         for( int i=0; i<expressions.length; i++ ){
             if( expressions[i]==null )throw new IllegalArgumentException("expression["+i+"]==null");
         }
-        this.expressions = List.of(expressions);
+        this.expressions = Arrays.asList(expressions);
     }
 
     final List<GR<P,? extends Tok<P>>> expressions;

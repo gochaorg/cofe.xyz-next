@@ -2,7 +2,6 @@ package xyz.cofe.text.tparse;
 
 import org.junit.Assert;
 import org.junit.Test;
-import xyz.cofe.text.parse.an.Char;
 
 import java.util.Arrays;
 import java.util.List;
