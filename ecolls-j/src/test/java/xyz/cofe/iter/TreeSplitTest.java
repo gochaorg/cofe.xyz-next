@@ -121,7 +121,7 @@ public class TreeSplitTest {
     @Test
     public void test01(){
         long t0 = System.nanoTime();
-        Node n = generate(null, 6, 8, null);
+        Node n = generate(null, 3, 3, null);
         long t1 = System.nanoTime();
 
         System.out.println("nodes "+n.getNodesCount());
