@@ -42,7 +42,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param node узел
      */
     default void append( A node ){
-        TreeImpl.append(this,node);
+        TreeImpl.append((A)this,node);
     }
 
     /**
@@ -50,7 +50,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param nodes дочерние узлы
      */
     default void appends( A ... nodes ){
-        TreeImpl.append(this,nodes);
+        TreeImpl.append((A)this,nodes);
     }
 
     /**
@@ -58,7 +58,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param nodes дочерние узлы
      */
     default void appends( Iterable<A> nodes ){
-        TreeImpl.append(this,nodes);
+        TreeImpl.append((A)this,nodes);
     }
 
     /**
@@ -67,7 +67,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param node узел
      */
     default void insert( int idx, A node ){
-        TreeImpl.insert(this,idx, node);
+        TreeImpl.insert((A)this,idx, node);
     }
 
     /**
@@ -116,11 +116,11 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
     }
 
     /**
-     * Удаляет дочерние узлы
-     * @param indexes индексы узлов
+     * Удаляет дочерний узел
+     * @param index индексы узлов
      */
-    default void remove( int indexes ){
-        TreeImpl.deleteByIndex(this, indexes);
+    default void remove( int index ){
+        TreeImpl.deleteByIndex(this, index);
     }
 
     /**

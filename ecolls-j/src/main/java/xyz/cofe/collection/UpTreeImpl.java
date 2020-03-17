@@ -63,7 +63,7 @@ public class UpTreeImpl {
     public static <A extends UpTree<A>> void postInsert(UpTree<A> ut, A node, List<Triple<Integer, A, A>> added) {
         if( ut==null ) throw new IllegalArgumentException("ut==null");
         if( node!=null ){
-            node.setParent(ut);
+            node.setParent((A)ut);
         }
         if( added!=null && added.size()==1 ){
             ut.treeNotify(new TreeEvent.Inserted<A>(ut, node, added.get(0).a()));

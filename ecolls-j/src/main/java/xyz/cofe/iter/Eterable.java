@@ -7,6 +7,7 @@ import xyz.cofe.fn.TripleConsumer;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -275,5 +276,22 @@ public interface Eterable<A> extends Iterable<A> {
             tot++;
         }
         return tot;
+    }
+
+    /**
+     * Свертка значений
+     * @param initial начальное значение
+     * @param reducer функция светки
+     * @param <R> Тип результата
+     * @return результат
+     */
+    default <R> R reduce(R initial, BiFunction<R,A,R> reducer){
+        if( initial==null )throw new IllegalArgumentException( "initial==null" );
+        if( reducer==null )throw new IllegalArgumentException( "reducer==null" );
+        Acum<R> result = new Acum<>(initial);
+        forEach( v -> {
+            result.set( reducer.apply(result.get(), v) );
+        });
+        return result.get();
     }
 }

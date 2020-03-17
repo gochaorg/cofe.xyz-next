@@ -1,6 +1,7 @@
 package xyz.cofe.collection;
 
 import xyz.cofe.fn.Triple;
+import xyz.cofe.iter.Eterable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,43 +12,32 @@ import java.util.List;
  */
 @SuppressWarnings("unchecked")
 public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, TreeNotify<A> {
-    default UpTree<? extends A> getParent(){ return UpTreeImpl.getParent(this); }
-    default void setParent(UpTree<A> parent){
+    default A getParent(){ return (A)UpTreeImpl.getParent(this); }
+    default void setParent(A parent){
         UpTreeImpl.setParent(this, parent);
     }
-    default boolean compareAndSetParent(UpTree parent, UpTree newparent){
+    default boolean compareAndSetParent(A parent, A newparent){
         return UpTreeImpl.compareAndSetParent(this, parent, newparent);
     }
 
     @Override
     default void append(A node) {
-        List<Triple<Integer,A,A>> added = TreeImpl.append(this,node);
+        List<Triple<Integer,A,A>> added = TreeImpl.append((A)this, node);
         UpTreeImpl.postInsert(this,node, added);
     }
 
-//    private void postInsert(A node, List<Triple<Integer, A, A>> added) {
-//        if( node!=null ){
-//            node.setParent(this);
-//        }
-//        if( added!=null && added.size()==1 ){
-//            treeNotify(new TreeEvent.Inserted<A>(this, node, added.get(0).a()));
-//        }else {
-//            treeNotify(new TreeEvent.Added<A>(this, node));
-//        }
-//    }
-
     @Override
     default void appends(A... nodes) {
-        TreeImpl.append(this,nodes, t -> {
-            if( t!=null )t.c().setParent(this);
+        TreeImpl.append((A)this,nodes, t -> {
+            if( t!=null )t.c().setParent((A)this);
             treeNotify(new TreeEvent.Inserted<A>(this, t.c(), t.a()));
         });
     }
 
     @Override
     default void appends(Iterable<A> nodes) {
-        TreeImpl.append(this,nodes, t -> {
-            if( t.c()!=null )t.c().setParent(this);
+        TreeImpl.append((A)this,nodes, t -> {
+            if( t.c()!=null )t.c().setParent((A)this);
             treeNotify(new TreeEvent.Inserted<A>(this, t.c(), t.a()));
         });
     }
@@ -61,7 +51,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     @Override
     default void inserts(int idx, A... nodes) {
         TreeImpl.insert(this,idx, nodes, t-> {
-            if( t.c()!=null )t.c().setParent(this);
+            if( t.c()!=null )t.c().setParent((A)this);
             treeNotify(new TreeEvent.Inserted<A>(this, t.c(), t.a()));
         });
     }
@@ -69,7 +59,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     @Override
     default void inserts(int idx, Iterable<A> nodes) {
         TreeImpl.insert(this,idx, nodes, t-> {
-            if( t.c()!=null )t.c().setParent(this);
+            if( t.c()!=null )t.c().setParent((A)this);
             treeNotify(new TreeEvent.Inserted<A>(this, t.c(), t.a()));
         });
     }
@@ -77,7 +67,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     @Override
     default void set(int idx, A node) {
         List<Triple<Integer,A,A>> updates = TreeImpl.set(this,idx, node);
-        if( node!=null )node.setParent(this);
+        if( node!=null )node.setParent((A)this);
         if( updates!=null ){
             updates.forEach( e -> treeNotify(new TreeEvent.Updated<A>(this, e.a(), e.b(), e.c())) );
         }
@@ -86,7 +76,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     @Override
     default void sets(int idx, A... nodes) {
         TreeImpl.set(this,idx, nodes, t-> {
-            if( t!=null )t.c().setParent(this);
+            if( t!=null )t.c().setParent((A)this);
             treeNotify( new TreeEvent.Updated<A>(this, t.a(), t.b(), t.c()) );
         });
     }
@@ -94,7 +84,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     @Override
     default void sets(int idx, Iterable<A> nodes) {
         TreeImpl.set(this,idx, nodes, t-> {
-            if( t!=null )t.c().setParent(this);
+            if( t!=null )t.c().setParent((A)this);
             treeNotify( new TreeEvent.Updated<A>(this, t.a(), t.b(), t.c()) );
         });
     }
@@ -130,7 +120,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     @Override
     default void remove(int indexes) {
         TreeImpl.deleteByIndex(this, new int[]{indexes}, t-> {
-            if( t!=null )t.b().compareAndSetParent(this,null);
+            if( t!=null )t.b().compareAndSetParent((A)this,null);
             treeNotify(new TreeEvent.Removed<A>(this, t.b()));
         });
     }
@@ -138,7 +128,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     @Override
     default void removes(int... indexes) {
         TreeImpl.deleteByIndex(this, indexes,t-> {
-            if( t!=null )t.b().compareAndSetParent(this,null);
+            if( t!=null )t.b().compareAndSetParent((A)this,null);
             treeNotify(new TreeEvent.Removed<A>(this, t.b()));
         });
     }
@@ -146,7 +136,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     @Override
     default void removes(Iterable<Integer> indexes) {
         TreeImpl.deleteByIndex(this, indexes,t-> {
-            if( t!=null )t.b().compareAndSetParent(this,null);
+            if( t!=null )t.b().compareAndSetParent((A)this,null);
             treeNotify(new TreeEvent.Removed<A>(this, t.b()));
         });
     }
@@ -159,7 +149,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     @Override
     default void deletes(A... nodes) {
         TreeImpl.deleteByValue(this, nodes, t-> {
-            if( t!=null )t.b().compareAndSetParent(this,null);
+            if( t!=null )t.b().compareAndSetParent((A)this,null);
             treeNotify(new TreeEvent.Removed<A>(this, t.b()));
         });
     }
@@ -167,14 +157,14 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     @Override
     default void deletes(Iterable<A> nodes) {
         TreeImpl.deleteByValue(this, nodes, t-> {
-            if( t!=null )t.b().compareAndSetParent(this,null);
+            if( t!=null )t.b().compareAndSetParent((A)this,null);
             treeNotify(new TreeEvent.Removed<A>(this, t.b()));
         });
     }
 
     /**
      * Возвращает индекс узла в списке дочерних узлов по отношению к родителю
-     * @return индекс
+     * @return индекс или -1
      */
     default int getSibIndex(){
         return UpTreeImpl.sibIndex(this);

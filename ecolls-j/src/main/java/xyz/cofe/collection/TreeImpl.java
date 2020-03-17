@@ -124,13 +124,13 @@ public class TreeImpl {
         }
     }
 
-    public static <A extends Tree<A>> List<Triple<Integer,A,A>> append(Tree<A> tree, A ... nodes){
+    public static <A extends Tree<A>> List<Triple<Integer,A,A>> append(A tree, A ... nodes){
         List<Triple<Integer,A,A>> addList = new ArrayList<>();
         append(tree,nodes,e -> addList.add(e));
         return addList;
     }
 
-    public static <A extends Tree<A>> void append(Tree<A> tree, A[] nodes, Consumer<Triple<Integer,A,A>> added){
+    public static <A extends Tree<A>> void append(A tree, A[] nodes, Consumer<Triple<Integer,A,A>> added){
         if( tree == null )throw new IllegalArgumentException( "tree == null" );
         if( nodes == null )throw new IllegalArgumentException( "nodes == null" );
 
@@ -145,11 +145,11 @@ public class TreeImpl {
         }
     }
 
-    public static <A extends Tree<A>> void append(Tree<A> tree, Iterable<A> nodes){
+    public static <A extends Tree<A>> void append(A tree, Iterable<A> nodes){
         append(tree,nodes,null);
     }
 
-    public static <A extends Tree<A>> void append(Tree<A> tree, Iterable<A> nodes, Consumer<Triple<Integer,A,A>> added){
+    public static <A extends Tree<A>> void append(A tree, Iterable<A> nodes, Consumer<Triple<Integer,A,A>> added){
         if( tree == null )throw new IllegalArgumentException( "tree == null" );
         if( nodes == null )throw new IllegalArgumentException( "nodes == null" );
 

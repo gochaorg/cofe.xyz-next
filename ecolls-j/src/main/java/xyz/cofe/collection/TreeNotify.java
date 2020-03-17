@@ -42,7 +42,7 @@ public interface TreeNotify<A extends Tree<A>> {
      * @param <EV> тип события
      * @return отписка от уведомлений
      */
-    default <EV extends TreeEvent> AutoCloseable listen( Class<EV> eventClass, Consumer<EV> listener ){
+    default <EV extends TreeEvent<A>> AutoCloseable listen( Class<EV> eventClass, Consumer<EV> listener ){
         if( eventClass==null ) throw new IllegalArgumentException("eventClass==null");
         if( listener==null ) throw new IllegalArgumentException("listener==null");
         return TreeNotifyImpl.listeners(this).addListener( ev -> {
