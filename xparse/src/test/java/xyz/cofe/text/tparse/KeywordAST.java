@@ -8,7 +8,7 @@ public class KeywordAST extends ASTBase<KeywordAST> {
         }
     }
 
-    public KeywordAST(LPointer<CToken> begin, CToken keywordTok) {
+    public KeywordAST(TPointer begin, CToken keywordTok) {
         if(begin==null)throw new IllegalArgumentException("begin==null");
         if( keywordTok==null )throw new IllegalArgumentException("keywordTok==null");
         this.begin = begin;

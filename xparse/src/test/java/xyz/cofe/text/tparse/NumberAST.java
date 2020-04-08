@@ -8,7 +8,7 @@ public class NumberAST extends ASTBase<NumberAST> {
         }
     }
 
-    public NumberAST(LPointer<CToken> begin, NumberToken numberToken) {
+    public NumberAST(TPointer begin, NumberToken numberToken) {
         if(begin==null)throw new IllegalArgumentException("begin==null");
         if( numberToken==null )throw new IllegalArgumentException("numberToken==null");
         this.begin = begin;

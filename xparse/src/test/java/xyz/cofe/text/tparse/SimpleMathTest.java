@@ -58,7 +58,7 @@ public class SimpleMathTest {
     }
 
     public static <T extends CToken, A extends AST>
-        GR<LPointer<CToken>,A> atomic(Class<T> target, BiFunction<LPointer<CToken>,T,A> map ){
+        GR<TPointer,A> atomic(Class<T> target, BiFunction<TPointer,T,A> map ){
         if( target==null )throw new IllegalArgumentException("target == null");
         return ptr -> {
             CToken t = ptr.lookup(0).orElseGet( null );
@@ -70,7 +70,7 @@ public class SimpleMathTest {
     }
 
     public static <T extends CToken, A extends AST>
-        GR<LPointer<CToken>,A> atomic(Class<T> target, Predicate<T> filter, BiFunction<LPointer<CToken>, T, A> map ){
+        GR<TPointer,A> atomic(Class<T> target, Predicate<T> filter, BiFunction<TPointer, T, A> map ){
         if( target==null )throw new IllegalArgumentException("target == null");
         return ptr -> {
             CToken t = ptr.lookup(0).orElse( null );
@@ -81,30 +81,30 @@ public class SimpleMathTest {
         };
     }
 
-    public static final GR<LPointer<CToken>, NumberAST> numb = atomic(
+    public static final GR<TPointer, NumberAST> numb = atomic(
         NumberToken.class, NumberAST::new
     );
 
-    public static final GR<LPointer<CToken>, KeywordAST> sumOperator = atomic(
+    public static final GR<TPointer, KeywordAST> sumOperator = atomic(
         CToken.class,
         tok -> Arrays.asList("+","-").contains(tok.text()),
         KeywordAST::new
     );
 
-    public static final GR<LPointer<CToken>, KeywordAST> mulOperator = atomic(
+    public static final GR<TPointer, KeywordAST> mulOperator = atomic(
         CToken.class,
         tok -> Arrays.asList("*","/").contains(tok.text()),
         KeywordAST::new
     );
 
-    public static final GR<LPointer<CToken>, BinaryOpAST> binOp1
+    public static final GR<TPointer, BinaryOpAST> binOp1
         = numb.next(sumOperator).next(numb)
         .map(BinaryOpAST::new);
 
-    public static GR<LPointer<CToken>, BinaryOpAST> binaryOp(
-        GR<LPointer<CToken>,? extends AST> grLeft,
-        GR<LPointer<CToken>,? extends KeywordAST> operator,
-        GR<LPointer<CToken>,? extends AST> grRight
+    public static GR<TPointer, BinaryOpAST> binaryOp(
+        GR<TPointer,? extends AST> grLeft,
+        GR<TPointer,? extends KeywordAST> operator,
+        GR<TPointer,? extends AST> grRight
     ) {
         if( grLeft==null )throw new IllegalArgumentException( "grLeft==null" );
         if( operator==null )throw new IllegalArgumentException( "operator==null" );
@@ -113,7 +113,7 @@ public class SimpleMathTest {
         return ptr -> {
             if( ptr==null || ptr.eof() )return Optional.empty();
 
-            //LPointer<CToken> beginPtr = ptr;
+            //TPointer beginPtr = ptr;
 
             Optional<? extends AST> left = grLeft.apply(ptr);
             if( !left.isPresent() )return Optional.empty();
@@ -144,28 +144,28 @@ public class SimpleMathTest {
         };
     }
 
-    public static final GR<LPointer<CToken>,KeywordAST> brOpen = atomic(
+    public static final GR<TPointer,KeywordAST> brOpen = atomic(
         CToken.class, t->t.text().equals("("), KeywordAST::new
     );
 
-    public static final GR<LPointer<CToken>,KeywordAST> brClose = atomic(
+    public static final GR<TPointer,KeywordAST> brClose = atomic(
         CToken.class, t->t.text().equals(")"), KeywordAST::new
     );
 
-    public static final GR<LPointer<CToken>,AST> dummy = ptr -> Optional.empty();
+    public static final GR<TPointer,AST> dummy = ptr -> Optional.empty();
 
-    public static final ProxyGR<LPointer<CToken>,AST> expression = new ProxyGR<>(dummy);
+    public static final ProxyGR<TPointer,AST> expression = new ProxyGR<>(dummy);
 
-    public static final GR<LPointer<CToken>,? super AST> brAtomValue
+    public static final GR<TPointer,? super AST> brAtomValue
         = brOpen.next(expression).next(brClose).map((b0, e, b1)->e);
 
-    public static final GR<LPointer<CToken>,AST> atomValue
+    public static final GR<TPointer,AST> atomValue
         = numb.another(brAtomValue).map( t -> (AST)t );
 
-    public static final GR<LPointer<CToken>,? extends AST> mulOp
+    public static final GR<TPointer,? extends AST> mulOp
         = binaryOp( atomValue, mulOperator, atomValue ).another( atomValue ).map( t->(AST)t );
 
-    public static final GR<LPointer<CToken>,? extends AST> sumOp
+    public static final GR<TPointer,? extends AST> sumOp
         = binaryOp( mulOp, sumOperator, mulOp ).another( mulOp ).map( t->(AST)t );
 
     {
@@ -184,7 +184,7 @@ public class SimpleMathTest {
 
         toks.forEach(System.out::println);
 
-        LPointer<CToken> tptr = new LPointer(toks);
+        TPointer tptr = new TPointer(toks);
         Optional<NumberAST> r = numb.apply(tptr);
         Assert.assertTrue(r!=null && r.isPresent() );
 
@@ -202,7 +202,7 @@ public class SimpleMathTest {
 
         toks.forEach(System.out::println);
 
-        LPointer<CToken> tptr = new LPointer(toks);
+        TPointer tptr = new TPointer(toks);
 
         System.out.println("expression");
         System.out.println( expression.apply(tptr) );

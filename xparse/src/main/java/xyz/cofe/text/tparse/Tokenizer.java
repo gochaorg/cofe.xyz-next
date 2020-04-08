@@ -58,6 +58,23 @@ public class Tokenizer<P extends Pointer<?,?,P>, T extends Tok<P>> implements Et
     /**
      * Создает лексический анализатор
      * @param source исходный текст
+     * @param from с какой позиции (от 0 и больше) в исходном тексте начать анализ
+     * @param rules грамматические правила
+     * @return Итератор по токенам
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static Tokenizer<CharPointer, CToken> lexer(String source, int from, Iterable<GR<CharPointer,? extends CToken>> rules ){
+        if( source==null )throw new IllegalArgumentException("source == null");
+        if( rules==null )throw new IllegalArgumentException("rules == null");
+        if( from<0 )throw new IllegalArgumentException( "from<0" );
+
+        CharPointer cptr = new CharPointer(source, from);
+        return new Tokenizer(cptr, rules);
+    }
+
+    /**
+     * Создает лексический анализатор
+     * @param source исходный текст
      * @param rules грамматические правила
      * @return Итератор по токенам
      */
@@ -67,6 +84,23 @@ public class Tokenizer<P extends Pointer<?,?,P>, T extends Tok<P>> implements Et
         if( rules==null )throw new IllegalArgumentException("rules == null");
 
         CharPointer cptr = new CharPointer(source);
+        return new Tokenizer(cptr,  Arrays.asList(rules));
+    }
+
+    /**
+     * Создает лексический анализатор
+     * @param source исходный текст
+     * @param from с какой позиции (от 0 и больше) в исходном тексте начать анализ
+     * @param rules грамматические правила
+     * @return Итератор по токенам
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static Tokenizer<CharPointer,? extends CToken> lexer( String source, int from, GR<CharPointer,? extends CToken> ... rules ){
+        if( source==null )throw new IllegalArgumentException("source == null");
+        if( rules==null )throw new IllegalArgumentException("rules == null");
+        if( from<0 )throw new IllegalArgumentException( "from<0" );
+
+        CharPointer cptr = new CharPointer(source, from);
         return new Tokenizer(cptr,  Arrays.asList(rules));
     }
 }

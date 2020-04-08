@@ -10,7 +10,7 @@ public abstract class ASTBase<SELF extends ASTBase<SELF>> implements AST {
             this.end = sample.end;
         }
     }
-    public ASTBase(LPointer<CToken> begin, LPointer<CToken> end){
+    public ASTBase(TPointer begin, TPointer end){
         if( begin==null )throw new IllegalArgumentException("begin==null");
         if( end==null )throw new IllegalArgumentException("end==null");
         this.begin = begin;
@@ -26,13 +26,13 @@ public abstract class ASTBase<SELF extends ASTBase<SELF>> implements AST {
         return c;
     }
 
-    protected LPointer<CToken> begin;
-    @Override public LPointer<CToken> begin() {
+    protected TPointer begin;
+    @Override public TPointer begin() {
         return begin;
     }
 
-    protected LPointer<CToken> end;
-    @Override public LPointer<CToken> end() {
+    protected TPointer end;
+    @Override public TPointer end() {
         return end;
     }
 }

@@ -81,6 +81,6 @@ public interface GR<P extends Pointer<?,?,P>, T extends Tok<P>> extends Function
         if( rule==null )throw new IllegalArgumentException("rule == null");
 
         @SuppressWarnings("rawtypes") GR self = this;
-        return new AltOPImpl<>( self, rule );
+        return new AltOPImpl( self, rule );
     }
 }

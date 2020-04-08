@@ -43,4 +43,25 @@ public interface AltOP<P extends Pointer<?,?,P>, T extends Tok<P>> {
     default GR<P,T> map() {
         return map(x->x);
     }
+
+    /**
+     * Указывает дополнительную альтернативу
+     * @param another2 правило
+     * @param <PA> тип указателя
+     * @param <TA> тип токена
+     * @return правило вывода
+     */
+    default <PA extends Pointer<?,?,PA>, TA extends Tok<PA>> AltOP<PA,TA> another( GR<PA,TA> another2 ){
+        if( another2==null )throw new IllegalArgumentException( "another2==null" );
+        List lst = expressions().toList();
+
+        GR[] grs = new GR[lst.size()+1];
+        for( int i=0; i<lst.size(); i++ ){
+            grs[i] = (GR)lst.get(i);
+        }
+        grs[grs.length-1] = another2;
+
+        AltOPImpl alt = new AltOPImpl(grs);
+        return alt;
+    }
 }

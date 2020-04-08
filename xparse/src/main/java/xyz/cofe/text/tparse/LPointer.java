@@ -7,13 +7,13 @@ import java.util.Optional;
  * Указатель на список токенов/лексем
  * @param <T> Тип токена/лексемы
  */
-public class LPointer<T> implements Pointer<T,Integer,LPointer<T>> {
+public abstract class LPointer<T,SELF extends LPointer<T,SELF>> implements Pointer<T,Integer,SELF> {
     /**
      * Конструктор
      * @param tokens список токенов/лексем
      * @param pos налальное смещение (индекс) в списке
      */
-    public LPointer(List<T> tokens, int pos){
+    public LPointer(List<? extends T> tokens, int pos){
         if( tokens==null )throw new IllegalArgumentException("tokens==null");
         this.position = pos;
         this.tokens = tokens;
@@ -23,7 +23,7 @@ public class LPointer<T> implements Pointer<T,Integer,LPointer<T>> {
      * Конструктор
      * @param tokens список токенов/лексем
      */
-    public LPointer(List<T> tokens){
+    public LPointer(List<? extends T> tokens){
         if( tokens==null )throw new IllegalArgumentException("tokens==null");
         this.position = 0;
         this.tokens = tokens;
@@ -33,7 +33,7 @@ public class LPointer<T> implements Pointer<T,Integer,LPointer<T>> {
      * Конструктор копирования
      * @param sample образец для копирвоания
      */
-    protected LPointer(LPointer<T> sample){
+    protected LPointer(LPointer<T,SELF> sample){
         if( sample==null )throw new IllegalArgumentException("sample == null");
         this.position = sample.position;
         this.tokens = sample.tokens;
@@ -43,17 +43,17 @@ public class LPointer<T> implements Pointer<T,Integer,LPointer<T>> {
      * Клонирование
      * @return клон
      */
-    public LPointer<T> clone(){
+    public abstract SELF clone(); /*{
         return new LPointer<>(this);
-    }
+    }*/
 
-    private final List<T> tokens;
+    protected final List<? extends T> tokens;
 
     /**
      * Возвращает список токенов
      * @return список токенов/лексем
      */
-    public List<T> tokens(){ return tokens; }
+    public List<? extends T> tokens(){ return tokens; }
 
     @Override
     public boolean eof() {
@@ -62,7 +62,7 @@ public class LPointer<T> implements Pointer<T,Integer,LPointer<T>> {
         return false;
     }
 
-    private int position;
+    protected int position;
 
     /**
      * Получение значения текущего указателя
@@ -79,9 +79,9 @@ public class LPointer<T> implements Pointer<T,Integer,LPointer<T>> {
      * @return Новый указатель
      */
     @Override
-    public LPointer<T> move(Integer offset) {
+    public SELF move(Integer offset) {
         if( offset==null )throw new IllegalArgumentException("offset==null");
-        LPointer<T> c = clone();
+        SELF c = clone();
         c.position = c.position + offset;
         return c;
     }
@@ -100,7 +100,7 @@ public class LPointer<T> implements Pointer<T,Integer,LPointer<T>> {
     }
 
     @Override
-    public int compareTo(LPointer<T> o) {
+    public int compareTo(SELF o) {
         if( o==null )return 0;
         if( o==this )return 0;
         if( o.tokens!=tokens )return 0;
