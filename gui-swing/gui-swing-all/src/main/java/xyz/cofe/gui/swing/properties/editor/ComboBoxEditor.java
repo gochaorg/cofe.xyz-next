@@ -44,7 +44,6 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import xyz.cofe.collection.Pointer;
-import xyz.cofe.gui.swing.BasicAction;
 import xyz.cofe.gui.swing.properties.Icons;
 import xyz.cofe.gui.swing.properties.Property;
 import xyz.cofe.gui.swing.properties.PropertyValue;

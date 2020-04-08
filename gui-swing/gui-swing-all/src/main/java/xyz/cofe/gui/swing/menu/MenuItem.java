@@ -37,7 +37,7 @@ import java.util.function.Predicate;
 import javax.swing.Action;
 
 import xyz.cofe.collection.NodesExtracter;
-import xyz.cofe.gui.swing.BasicAction;
+import xyz.cofe.gui.swing.al.BasicAction;
 import xyz.cofe.iter.Eterable;
 
 /**

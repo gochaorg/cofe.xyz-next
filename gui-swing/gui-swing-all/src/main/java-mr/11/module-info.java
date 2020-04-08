@@ -10,12 +10,12 @@ open module xyz.cofe.gui.swing.all {
     requires xyz.cofe.text.out;
     requires xyz.cofe.text.lex;
     requires xyz.cofe.j2d;
+    requires xyz.cofe.gui.swing.base;
+    requires xyz.cofe.gui.swing.str;
 
     requires balloontip;
 
-    exports xyz.cofe.gui.swing;
     exports xyz.cofe.gui.swing.text;
-    exports xyz.cofe.gui.swing.text.str;
     exports xyz.cofe.gui.swing.menu;
     exports xyz.cofe.gui.swing.bean;
     exports xyz.cofe.gui.swing.border;

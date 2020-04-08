@@ -68,7 +68,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import xyz.cofe.ecolls.ListenersHelper;
-import xyz.cofe.gui.swing.CloseableTabHeader;
+import xyz.cofe.gui.swing.al.CloseableTabHeader;
 import xyz.cofe.iter.Eterable;
 
 

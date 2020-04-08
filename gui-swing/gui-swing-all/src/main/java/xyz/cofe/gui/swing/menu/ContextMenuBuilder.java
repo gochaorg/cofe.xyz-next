@@ -25,7 +25,7 @@
 package xyz.cofe.gui.swing.menu;
 
 
-import xyz.cofe.gui.swing.*;
+import xyz.cofe.gui.swing.al.BasicAction;
 
 import java.util.function.Function;
 import java.util.function.Predicate;

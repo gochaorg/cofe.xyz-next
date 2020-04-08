@@ -76,7 +76,7 @@ import xyz.cofe.ecolls.Closeables;
 import xyz.cofe.fn.Fn2;
 import xyz.cofe.ecolls.ListenersHelper;
 import xyz.cofe.fn.Pair;
-import xyz.cofe.gui.swing.BasicAction;
+import xyz.cofe.gui.swing.al.BasicAction;
 import xyz.cofe.gui.swing.cell.TCRenderer;
 import xyz.cofe.gui.swing.properties.Icons;
 import xyz.cofe.gui.swing.properties.PropertyDB;

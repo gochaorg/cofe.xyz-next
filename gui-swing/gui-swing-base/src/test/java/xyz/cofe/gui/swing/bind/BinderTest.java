@@ -1,11 +1,11 @@
 package xyz.cofe.gui.swing.bind;
 
 import org.junit.Test;
+import xyz.cofe.gui.swing.Binder;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.function.Consumer;
 
 public class BinderTest {
     public static class Bean1 {

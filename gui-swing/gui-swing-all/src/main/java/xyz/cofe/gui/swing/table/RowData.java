@@ -37,7 +37,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import xyz.cofe.ecolls.Predicates;
-import xyz.cofe.gui.swing.DocumentAdapter;
+import xyz.cofe.gui.swing.al.DocumentAdapter;
 import xyz.cofe.text.Text;
 
 /**

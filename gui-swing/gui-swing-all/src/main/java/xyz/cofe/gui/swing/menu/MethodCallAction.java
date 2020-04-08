@@ -1,9 +1,9 @@
 package xyz.cofe.gui.swing.menu;
 
-import xyz.cofe.gui.swing.BasicAction;
-import xyz.cofe.gui.swing.FocusFinder;
-import xyz.cofe.gui.swing.GetTarget;
-import xyz.cofe.gui.swing.ShortcutManager;
+import xyz.cofe.gui.swing.al.BasicAction;
+import xyz.cofe.gui.swing.al.FocusFinder;
+import xyz.cofe.gui.swing.al.GetTarget;
+import xyz.cofe.gui.swing.al.ShortcutManager;
 
 import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
@@ -20,9 +20,9 @@ import java.util.logging.Logger;
  * Метод может не содержать параметер, тогда он будет просто вызван,
  * Либо принимать в качетсве аргумента объект UI который содержит фокус ввода.
  * @author nt.gocha@gmail.com
- * @see xyz.cofe.gui.swing.ShortcutManager
+ * @see ShortcutManager
  * @see BasicAction#getTarget()
- * @see xyz.cofe.gui.swing.FocusFinder
+ * @see FocusFinder
  */
 public class MethodCallAction
     extends BasicAction
