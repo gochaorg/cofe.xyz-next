@@ -21,6 +21,7 @@
         <module>gui-swing-base</module>
         <module>gui-swing-resources</module>
         <module>gui-swing-str</module>
+        <module>gui-swing-color</module>
     </modules>
 
     <dependencies>

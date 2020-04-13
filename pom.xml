@@ -34,7 +34,6 @@
         <module>gui-swing-test</module>
 <!--        <module>sql</module>-->
         <module>next-parent</module>
-        <module>gui-swing-str</module>
     </modules>
 
     <build>
