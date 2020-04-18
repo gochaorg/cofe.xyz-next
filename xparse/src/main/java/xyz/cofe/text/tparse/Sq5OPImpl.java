@@ -49,9 +49,9 @@ public class Sq5OPImpl<
 
                     T1 t0 = (T1)toks.get(0);
                     T2 t1 = (T2)toks.get(1);
-                    T3 t2 = (T3)toks.get(1);
-                    T4 t3 = (T4)toks.get(1);
-                    T5 t4 = (T5)toks.get(1);
+                    T3 t2 = (T3)toks.get(2);
+                    T4 t3 = (T4)toks.get(3);
+                    T5 t4 = (T5)toks.get(4);
 
                     return Optional.of( map.apply(t0,t1,t2,t3,t4) );
                 }

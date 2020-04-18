@@ -7,8 +7,18 @@ import java.util.Optional;
  * Токен соответствующий последовательности символов
  */
 public class CToken implements Tok<CharPointer> {
-    private final CharPointer begin;
-    private final CharPointer end;
+    private CharPointer begin;
+    private CharPointer end;
+
+    /**
+     * Конструктор копирования
+     * @param sample образец для копирования
+     */
+    public CToken(CToken sample){
+        if( sample==null )throw new IllegalArgumentException("sample==null");
+        this.begin = sample.begin;
+        this.end = sample.end;
+    }
 
     /**
      * Конструктор
@@ -65,12 +75,34 @@ public class CToken implements Tok<CharPointer> {
     }
 
     /**
+     * Клонирование
+     * @return клон
+     */
+    public CToken clone(){
+        return new CToken(this);
+    }
+
+    /**
      * Возвращает начало токена
      * @return указатель на начало (включительно)
      */
     @Override
     public CharPointer begin() {
         return begin;
+    }
+
+    /**
+     * Клонирует токен с указанием нового начала/конца токена
+     * @return указатель на начало (включительно)
+     */
+    public CToken location(CharPointer begin,CharPointer end) {
+        if( begin==null )throw new IllegalArgumentException("begin == null");
+        if( end==null )throw new IllegalArgumentException("end == null");
+        if( begin.compareTo(end)>0 )throw new IllegalArgumentException("begin > end");
+        CToken t = clone();
+        t.begin = begin;
+        t.end = end;
+        return t;
     }
 
     /**
