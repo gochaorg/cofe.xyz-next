@@ -35,8 +35,8 @@ import xyz.cofe.collection.ClassMap;
 import xyz.cofe.fn.Fn1;
 import xyz.cofe.fn.Fn2;
 import xyz.cofe.fn.Fn3;
-import xyz.cofe.gui.swing.table.Column;
-import xyz.cofe.gui.swing.table.IsRowEditable;
+import xyz.cofe.gui.swing.tmodel.Column;
+import xyz.cofe.gui.swing.tmodel.IsRowEditable;
 
 /**
  * Колонка с данными узла TreeTableNode, возвращает данные TreeTableNodeValue

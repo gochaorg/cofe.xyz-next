@@ -40,7 +40,7 @@ import xyz.cofe.collection.NodesExtracter;
 import xyz.cofe.fn.Fn1;
 import xyz.cofe.fn.Fn2;
 import xyz.cofe.fn.Fn3;
-import xyz.cofe.gui.swing.table.Column;
+import xyz.cofe.gui.swing.tmodel.Column;
 
 /**
  * Помошник по работе с TreeTable

@@ -29,8 +29,8 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import xyz.cofe.fn.Pair;
-import xyz.cofe.gui.swing.table.RowData;
-import xyz.cofe.gui.swing.table.SortRowTM;
+import xyz.cofe.gui.swing.tmodel.RowData;
+import xyz.cofe.gui.swing.tmodel.SortRowTM;
 
 /**
  * Модель дерева-таблицы с поддержкой сортировки, в настоящий момент не используется

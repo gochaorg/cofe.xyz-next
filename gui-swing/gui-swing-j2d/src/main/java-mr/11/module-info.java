@@ -24,8 +24,8 @@ open module xyz.cofe.j2d {
 //    exports xyz.cofe.gui.swing.properties;
 //    exports xyz.cofe.gui.swing.properties.editor;
 //    exports xyz.cofe.gui.swing.table;
-//    exports xyz.cofe.gui.swing.table.de;
-//    exports xyz.cofe.gui.swing.table.impl;
+//    exports xyz.cofe.gui.swing.ptable.de;
+//    exports xyz.cofe.gui.swing.tmodel.impl;
 //    exports xyz.cofe.gui.swing.tree;
 //    exports xyz.cofe.gui.swing.typeconv.impl;
     exports xyz.cofe.j2d;

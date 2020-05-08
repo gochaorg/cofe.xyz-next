@@ -12,6 +12,8 @@ open module xyz.cofe.gui.swing.all {
     requires xyz.cofe.j2d;
     requires xyz.cofe.gui.swing.base;
     requires xyz.cofe.gui.swing.str;
+    requires transitive xyz.cofe.gui.swing.tmodel;
+    requires transitive xyz.cofe.gui.swing.color;
 
     requires balloontip;
 
@@ -20,12 +22,10 @@ open module xyz.cofe.gui.swing.all {
     exports xyz.cofe.gui.swing.bean;
     exports xyz.cofe.gui.swing.border;
     exports xyz.cofe.gui.swing.cell;
-    exports xyz.cofe.gui.swing.color;
     exports xyz.cofe.gui.swing.properties;
     exports xyz.cofe.gui.swing.properties.editor;
     exports xyz.cofe.gui.swing.table;
-    exports xyz.cofe.gui.swing.table.de;
-    exports xyz.cofe.gui.swing.table.impl;
+    exports xyz.cofe.gui.swing.ptable.de;
     exports xyz.cofe.gui.swing.tree;
     exports xyz.cofe.gui.swing.typeconv.impl;
 

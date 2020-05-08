@@ -1,6 +1,6 @@
 package xyz.cofe.gui.swing.tree;
 
-import xyz.cofe.gui.swing.table.Column;
+import xyz.cofe.gui.swing.tmodel.Column;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;

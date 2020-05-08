@@ -24,9 +24,7 @@
 
 package xyz.cofe.gui.swing.tree;
 
-import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Predicate;
@@ -34,8 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import xyz.cofe.ecolls.Closeables;
-import xyz.cofe.gui.swing.table.FilterRowTM;
-import xyz.cofe.gui.swing.table.RowData;
+import xyz.cofe.gui.swing.tmodel.FilterRowTM;
+import xyz.cofe.gui.swing.tmodel.RowData;
 import xyz.cofe.iter.TreeStep;
 
 /**

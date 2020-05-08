@@ -25,8 +25,6 @@
 package xyz.cofe.gui.swing.tree;
 
 
-import java.io.Closeable;
-import java.util.List;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -37,11 +35,11 @@ import javax.swing.event.TableModelListener;
 import xyz.cofe.collection.Tree;
 import xyz.cofe.collection.TreeEvent;
 import xyz.cofe.ecolls.Closeables;
-import xyz.cofe.gui.swing.table.Column;
-import xyz.cofe.gui.swing.table.Columns;
-import xyz.cofe.gui.swing.table.EventSupport;
-import xyz.cofe.gui.swing.table.GetReaderForRow;
-import xyz.cofe.gui.swing.table.IsRowEditable;
+import xyz.cofe.gui.swing.tmodel.Column;
+import xyz.cofe.gui.swing.tmodel.Columns;
+import xyz.cofe.gui.swing.tmodel.EventSupport;
+import xyz.cofe.gui.swing.tmodel.GetReaderForRow;
+import xyz.cofe.gui.swing.tmodel.IsRowEditable;
 
 /**
  * Модель дерева, которое отображет все узлы вне зависимости от их состояния раскрытия

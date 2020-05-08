@@ -24,7 +24,6 @@
 
 package xyz.cofe.gui.swing.tree;
 
-import java.io.Closeable;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,10 +32,9 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import xyz.cofe.ecolls.Closeables;
-import xyz.cofe.gui.swing.table.Columns;
-import xyz.cofe.gui.swing.table.EventSupport;
-import xyz.cofe.gui.swing.table.FilterRowTM;
-import xyz.cofe.gui.swing.table.TableModelEventDelegator;
+import xyz.cofe.gui.swing.tmodel.Columns;
+import xyz.cofe.gui.swing.tmodel.EventSupport;
+import xyz.cofe.gui.swing.tmodel.FilterRowTM;
 
 /**
  * Модель таблицы - древо

@@ -31,7 +31,6 @@ import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -50,11 +49,9 @@ import xyz.cofe.gui.swing.GuiUtil;
 import xyz.cofe.gui.swing.cell.CellContext;
 import xyz.cofe.gui.swing.cell.CellFormat;
 import xyz.cofe.gui.swing.cell.TCRenderer;
-import xyz.cofe.gui.swing.cell.TreeNodeCellRender;
-import xyz.cofe.gui.swing.table.Column;
-import xyz.cofe.gui.swing.table.Columns;
+import xyz.cofe.gui.swing.tmodel.Column;
+import xyz.cofe.gui.swing.tmodel.Columns;
 import xyz.cofe.gui.swing.table.Table;
-import xyz.cofe.gui.swing.table.TableEvent;
 import xyz.cofe.j2d.RectangleFn;
 
 // TODO: При первом отображении проверять: rootVisible==false && rootExpand exists  = то => expand

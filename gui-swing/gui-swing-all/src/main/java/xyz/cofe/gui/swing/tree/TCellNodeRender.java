@@ -34,8 +34,6 @@ import xyz.cofe.gui.swing.cell.CellContext;
 import xyz.cofe.gui.swing.cell.CellRender;
 import xyz.cofe.gui.swing.cell.TCRenderer;
 import xyz.cofe.gui.swing.cell.TableCellContext;
-import xyz.cofe.gui.swing.cell.TreeNodeCellRender;
-import xyz.cofe.gui.swing.cell.TreeNodeContext;
 
 /**
  * Рендер ячейки TableCell с поддержкой TreeTable
