@@ -39,4 +39,9 @@ public class TPointer extends LPointer<CToken,TPointer> {
     public TPointer clone(){
         return new TPointer(this);
     }
+
+    @Override
+    public String toString(){
+        return "t.ptr "+position+" => "+lookup(0)+", "+lookup(1);
+    }
 }

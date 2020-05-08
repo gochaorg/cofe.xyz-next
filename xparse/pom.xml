@@ -12,7 +12,7 @@
     </parent>
 
     <artifactId>xparse</artifactId>
-    <version>1.2</version>
+    <version>1.4</version>
 
     <name>xparse</name>
     <description>parsing build tools</description>
