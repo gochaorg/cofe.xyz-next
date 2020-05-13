@@ -37,15 +37,31 @@ public class Sq5OPImpl<
     public <U extends Tok<P>> GR<P, U> map(Fn5<T1, T2, T3, T4, T5, U> map) {
         if( map==null )throw new IllegalArgumentException("map == null");
         return new GR<P, U>() {
+            private String name;
+
+            @Override
+            public GR<P, U> name( String name ){
+                this.name = name;
+                return this;
+            }
+            @Override public String name(){ return name; }
+
+            @Override
+            public String toString(){
+                if( name!=null )return name;
+                return super.toString();
+            }
+
             private final SqNOPImpl<P> sq = new SqNOPImpl<P>(first,second,third,fourth,fifth);
 
             @Override
             public Optional<U> apply(P ptr) {
                 if( ptr==null )throw new IllegalArgumentException("ptr==null");
-                Optional<List<? extends Tok<P>>> m = sq.match(ptr);
+                Optional<List<? extends Tok<P>>> m = sq.name(name).match(ptr);
                 if( m.isPresent() ){
                     List<? extends Tok<P>> toks = m.get();
-                    if( toks.size()<2 )throw new IllegalStateException("bug");
+                    if( toks.size()<5 )
+                        throw new ImplementError("tokens count < 5");
 
                     T1 t0 = (T1)toks.get(0);
                     T2 t1 = (T2)toks.get(1);
@@ -53,7 +69,12 @@ public class Sq5OPImpl<
                     T4 t3 = (T4)toks.get(3);
                     T5 t4 = (T5)toks.get(4);
 
-                    return Optional.of( map.apply(t0,t1,t2,t3,t4) );
+                    U t = map.apply(t0,t1,t2,t3,t4);
+                    if( t==null )throw new MapResultError("return null");
+                    if( t.end().position() != t4.end().position() )
+                        throw new MapResultError("pointer order");
+
+                    return Optional.of( t );
                 }
                 return Optional.empty();
             }

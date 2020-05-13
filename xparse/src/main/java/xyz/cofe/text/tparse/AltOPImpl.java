@@ -41,6 +41,22 @@ public class AltOPImpl<P extends Pointer<?,?,P>, T extends Tok<P>> implements Al
     public <U extends Tok<P>> GR<P, U> map(Function<T, U> map) {
         if( map==null )throw new IllegalArgumentException("map==null");
         return new GR<P, U>() {
+            private String name;
+
+            @Override
+            public GR<P, U> name( String name ){
+                this.name = name;
+                return this;
+            }
+
+            @Override public String name(){ return name; }
+
+            @Override
+            public String toString(){
+                if( name!=null )return name;
+                return super.toString();
+            }
+
             @Override
             public Optional<U> apply(P ptr) {
                 if(ptr==null)throw new IllegalArgumentException("ptr==null");
@@ -60,11 +76,11 @@ public class AltOPImpl<P extends Pointer<?,?,P>, T extends Tok<P>> implements Al
                     }
 
                     P p = found.get().end();
-                    if( p==null )throw new IllegalStateException("token return null on end");
+                    if( p==null )throw new MapResultError("token return null on end");
 
                     //noinspection rawtypes,unchecked
                     if( ((Pointer)ptr).compareTo(((P)p))>=0 ){
-                        throw new IllegalStateException("bug of parser, end pointer as begin");
+                        throw new MapResultError("bug of parser, end pointer as begin");
                     }
 
                     break;

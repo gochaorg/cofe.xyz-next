@@ -52,10 +52,10 @@ public class TokensIterator<P extends Pointer<?,?,P>, T extends Tok<P>> implemen
         if( pointer.eof() )return null;
         for( GR<P,? extends T> r :rules ){
             Optional<? extends T> ot = r.apply(pointer);
-            if( ot==null )throw new IllegalStateException("bug");
+            if( ot==null )throw new MapResultError("return null");
 
             if( !ot.isPresent() )continue;
-            if( ot.get()==null )throw new IllegalStateException("bug");
+            if( ot.get()==null )throw new MapResultError("return null");
 
             return ot.get();
         }

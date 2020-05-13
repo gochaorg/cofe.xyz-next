@@ -20,20 +20,40 @@ public class Sq2OPImpl<P extends Pointer<?,?,P>, T1 extends Tok<P>, T2 extends T
     public <U extends Tok<P>> GR<P, U> map(Fn2<T1, T2, U> map) {
         if( map==null )throw new IllegalArgumentException("map == null");
         return new GR<P, U>() {
+            private String name;
+
+            @Override
+            public GR<P, U> name( String name ){
+                this.name = name;
+                return this;
+            }
+            @Override public String name(){ return name; }
+
+            @Override
+            public String toString(){
+                if( name!=null )return name;
+                return super.toString();
+            }
+
             private final SqNOPImpl<P> sq = new SqNOPImpl<P>(first,second);
 
             @Override
             public Optional<U> apply(P ptr) {
                 if( ptr==null )throw new IllegalArgumentException("ptr==null");
-                Optional<List<? extends Tok<P>>> m = sq.match(ptr);
+                Optional<List<? extends Tok<P>>> m = sq.name(name).match(ptr);
                 if( m.isPresent() ){
                     List<? extends Tok<P>> toks = m.get();
-                    if( toks.size()<2 )throw new IllegalStateException("bug");
+                    if( toks.size()<2 )throw new ImplementError("tokens count < 2");
 
                     T1 t0 = (T1)toks.get(0);
                     T2 t1 = (T2)toks.get(1);
 
-                    return Optional.of( map.apply(t0,t1) );
+                    U t = map.apply(t0,t1);
+                    if( t==null )throw new MapResultError("return null");
+                    if( t.end().position() != t1.end().position() )
+                        throw new MapResultError("pointer order");
+
+                    return Optional.of( t );
                 }
                 return Optional.empty();
             }

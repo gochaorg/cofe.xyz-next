@@ -28,6 +28,22 @@ public interface AltOP<P extends Pointer<?,?,P>, T extends Tok<P>> {
     default <U extends Tok<P>> GR<P,U> map(Function<T,U> map) {
         if( map==null )throw new IllegalArgumentException("map==null");
         return new GR<P, U>() {
+            private String name;
+
+            @Override
+            public GR<P, U> name( String name ){
+                this.name = name;
+                return this;
+            }
+
+            @Override public String name(){ return name; }
+
+            @Override
+            public String toString(){
+                if( name!=null )return name;
+                return super.toString();
+            }
+
             @Override
             public Optional<U> apply(P ptr) {
                 if(ptr==null)throw new IllegalArgumentException("ptr==null");

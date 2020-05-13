@@ -72,6 +72,21 @@ public class RptOPImpl<P extends Pointer<?,?,P>, T extends Tok<P>> implements Rp
     public <U extends Tok<P>> GR<P, U> map(Function<List<T>, U> map) {
         if( map==null )throw new IllegalArgumentException("map==null");
         return new GR<P, U>() {
+            private String name;
+
+            @Override
+            public GR<P, U> name( String name ){
+                this.name = name;
+                return this;
+            }
+            @Override public String name(){ return name; }
+
+            @Override
+            public String toString(){
+                if( name!=null )return name;
+                return super.toString();
+            }
+
             @Override
             public Optional<U> apply(P ptr) {
                 if( ptr==null )throw new IllegalArgumentException("ptr==null");
@@ -83,16 +98,16 @@ public class RptOPImpl<P extends Pointer<?,?,P>, T extends Tok<P>> implements Rp
                     if(ptr.eof())break;
 
                     Optional<T> tokOpt = gr.apply(ptr);
-                    if (tokOpt == null) throw new IllegalStateException("bug!");
+                    if (tokOpt == null) throw new MapResultError("return null");
                     if (!tokOpt.isPresent()) break;
 
                     T tok = tokOpt.get();
-                    if (tok == null) throw new IllegalStateException("bug");
-                    if (tok.end() == null) throw new IllegalStateException("bug");
+                    if (tok == null) throw new MapResultError("return null");
+                    if (tok.end() == null) throw new MapResultError("return null");
 
                     P next = tok.end();
-                    if (next == null) throw new IllegalStateException("bug");
-                    if (ptr.compareTo(next) >= 0) throw new IllegalStateException("bug");
+                    if (next == null) throw new MapResultError("return null");
+                    if (ptr.compareTo(next) >= 0) throw new MapResultError("pointer order");
 
                     matched.add(tok);
 
@@ -112,7 +127,7 @@ public class RptOPImpl<P extends Pointer<?,?,P>, T extends Tok<P>> implements Rp
                 if( min>0 && matched.size()<min )return Optional.empty();
 
                 U result = map.apply( matched );
-                if( result==null )throw new IllegalStateException("bug");
+                if( result==null )throw new MapResultError("return null");
 
                 return Optional.of(result);
             }

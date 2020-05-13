@@ -71,7 +71,7 @@ public class CToken implements Tok<CharPointer> {
         }
         this.begin = b;
         this.end = e;
-        if( this.begin.compareTo(this.end)==0 )throw new IllegalStateException("bug!");
+        if( this.begin.compareTo(this.end)==0 )throw new ImplementError("end pointer same begin");
     }
 
     /**
@@ -124,7 +124,7 @@ public class CToken implements Tok<CharPointer> {
             StringBuilder sb = new StringBuilder();
             for( int i=0; i<len; i++ ){
                 Optional<Character> c = begin.lookup(i);
-                if( c==null || !c.isPresent() )throw new IllegalStateException("bug");
+                if( c==null || !c.isPresent() )throw new MapResultError("return null");
                 sb.append( c.get() );
             }
             return sb.toString();

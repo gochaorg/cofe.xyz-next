@@ -49,6 +49,6 @@ public class DigitsToken extends CToken {
                 return i;
             }
         }
-        throw new IllegalStateException("bug");
+        throw new MapResultError("input char "+text().charAt(di)+" not char of digits "+digits);
     }
 }

@@ -16,6 +16,22 @@ public class Chars {
     public static GR<CharPointer,CToken> test(Predicate<Character> filter){
         if( filter==null )throw new IllegalArgumentException("filter == null");
         return new GR<CharPointer, CToken>() {
+            private String name;
+
+            @Override
+            public GR<CharPointer, CToken> name( String name ){
+                this.name = name;
+                return this;
+            }
+
+            @Override public String name(){ return name; }
+
+            @Override
+            public String toString(){
+                if( name!=null )return name;
+                return super.toString();
+            }
+
             @Override
             public Optional<CToken> apply(CharPointer ptr) {
                 if( ptr==null )throw new IllegalArgumentException("ptr==null");
@@ -34,12 +50,29 @@ public class Chars {
     /**
      * Создает грамматическое правило из предиката
      * @param filter предикат
+     * @param map Отображение совпавших символов на объект/класс
      * @return правило
      */
     public static <U extends CToken> GR<CharPointer,U> test( Predicate<Character> filter, Function<CharPointer,U> map ){
         if( filter==null )throw new IllegalArgumentException("filter == null");
         if( map==null )throw new IllegalArgumentException( "map==null" );
         return new GR<CharPointer, U>() {
+            private String name;
+
+            @Override
+            public GR<CharPointer, U> name( String name ){
+                this.name = name;
+                return this;
+            }
+
+            @Override public String name(){ return name; }
+
+            @Override
+            public String toString(){
+                if( name!=null )return name;
+                return super.toString();
+            }
+
             @Override
             public Optional<U> apply(CharPointer ptr) {
                 if( ptr==null )throw new IllegalArgumentException("ptr==null");

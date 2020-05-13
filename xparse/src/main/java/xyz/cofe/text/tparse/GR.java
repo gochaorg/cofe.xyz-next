@@ -25,7 +25,7 @@ import java.util.function.Function;
  * <br>
  *     Где:
  *     <ul>
- *         <li>Круглые скобки <b>()</b> - задают</li> группу правил
+ *         <li>Круглые скобки <b>()</b> - задают группу правил</li>
  *         <li>Фигурные скобки <b>{}</b> - задают, что содержание может повторяться 0 и более раз</li>
  *         <li>Вертикальная черта <b>|</b> - задает альтернативное правило</li>
  *     </ul>
@@ -83,4 +83,19 @@ public interface GR<P extends Pointer<?,?,P>, T extends Tok<P>> extends Function
         @SuppressWarnings("rawtypes") GR self = this;
         return new AltOPImpl( self, rule );
     }
+
+    /**
+     * Указывает имя правила.
+     * Желательно это правило переопределить, по умолчанию используется медленная реализация {@link GRNameImpl}
+     * @param name имя
+     * @return self ссылка
+     */
+    default GR<P,T> name( String name ){ GRNameImpl.name(this, name ); return this; }
+
+    /**
+     * Возвращает имя правила.
+     * Желательно это правило переопределить, по умолчанию используется медленная реализация {@link GRNameImpl}
+     * @return имя или null
+     */
+    default String name(){ return GRNameImpl.name(this); }
 }

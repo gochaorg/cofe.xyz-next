@@ -22,20 +22,20 @@ public class SqNOPImpl<P extends Pointer<?,?,P>> {
             if (ptr.eof()) break;
 
             GR<P, ? extends Tok<P>> exp = expression;
-            if (exp == null) throw new IllegalStateException("bug!!");
+            if (exp == null) throw new ImplementError("null expr match");
 
             Optional<? extends Tok<P>> tok = exp.apply(ptr);
             //noinspection OptionalAssignedToNull
-            if (tok == null) throw new IllegalStateException("bug!!");
+            if (tok == null) throw new MapResultError("return null");
             if (!tok.isPresent()) break;
 
             //noinspection ConstantConditions
-            if (tok.get() == null) throw new IllegalStateException("bug!!");
+            if (tok.get() == null) throw new MapResultError("return null");
 
             P next = tok.get().end();
-            if (next == null) throw new IllegalStateException("bug!!");
+            if (next == null) throw new MapResultError("return null");
             if (ptr.compareTo(next) >= 0) {
-                throw new IllegalStateException("bug!!");
+                throw new ImplementError("pointer order");
             }
 
             matched.add(tok.get());
@@ -47,5 +47,20 @@ public class SqNOPImpl<P extends Pointer<?,?,P>> {
         }
 
         return Optional.empty();
+    }
+
+    private String name;
+
+    public SqNOPImpl<P> name( String name ){
+        this.name = name;
+        return this;
+    }
+
+    public String name(){ return name; }
+
+    @Override
+    public String toString(){
+        if( name!=null )return name;
+        return super.toString();
     }
 }

@@ -29,4 +29,19 @@ public class ProxyGR<P extends Pointer<?,?,P>, T extends Tok<P>> implements GR<P
         //noinspection OptionalIsPresent
         return res.isPresent() ? Optional.of(res.get()) : Optional.empty();
     }
+
+    private String name;
+
+    @Override
+    public ProxyGR<P, T> name( String name ){
+        this.name = name;
+        return this;
+    }
+    @Override public String name(){ return name; }
+
+    @Override
+    public String toString(){
+        if( name!=null )return name;
+        return super.toString();
+    }
 }
