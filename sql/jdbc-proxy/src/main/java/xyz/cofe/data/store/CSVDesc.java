@@ -24,8 +24,7 @@
 
 package xyz.cofe.data.store;
 
-
-import xyz.cofe.collection.list.IndexEventList;
+import xyz.cofe.collection.BasicEventList;
 
 import javax.swing.event.SwingPropertyChangeSupport;
 import java.beans.PropertyChangeEvent;
@@ -378,14 +377,14 @@ public class CSVDesc {
     /**
      * Перечень фиксированных колонок
      */
-    protected List<FixedColumn> fixedColumns = new IndexEventList<FixedColumn>();
+    protected List<FixedColumn> fixedColumns = new BasicEventList<>();
     
     /**
      * Указывает перечень фиксированных колонок
      * @return Перечень фикс. колонок
      */
     public List<FixedColumn> getFixedColumns() {
-        if( fixedColumns==null )fixedColumns = new IndexEventList<FixedColumn>();
+        if( fixedColumns==null )fixedColumns = new BasicEventList<FixedColumn>();
         return fixedColumns;
     }
     

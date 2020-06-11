@@ -13,6 +13,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="text-out" />
     <orderEntry type="module" module-name="basic-template" />
+    <orderEntry type="module" module-name="simple-types" />
     <orderEntry type="library" name="Maven: xyz.cofe:ecolls:1.3" level="project" />
     <orderEntry type="module" module-name="xml-utl" />
     <orderEntry type="module" module-name="text" />

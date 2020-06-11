@@ -36,14 +36,14 @@ public interface DataEventSender {
      * @param weak Добавить как weak ссылку
      * @return Отписка
      */
-    Closeable addDataEventListener( DataEventListener ls, boolean weak );
+    AutoCloseable addDataEventListener( DataEventListener ls, boolean weak );
     
     /**
      * Добавляет подписчика
      * @param ls Подписчик
      * @return Отписка
      */
-    Closeable addDataEventListener( DataEventListener ls );
+    AutoCloseable addDataEventListener( DataEventListener ls );
     
     /**
      * Удаление подписчика

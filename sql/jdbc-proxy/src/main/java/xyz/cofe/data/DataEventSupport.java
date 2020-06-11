@@ -24,8 +24,8 @@
 
 package xyz.cofe.data;
 
-import xyz.cofe.collection.Func2;
-import xyz.cofe.common.ListenersHelper;
+import xyz.cofe.ecolls.ListenersHelper;
+import xyz.cofe.fn.Fn2;
 
 import java.io.Closeable;
 import java.util.logging.Level;
@@ -119,23 +119,19 @@ public class DataEventSupport implements DataEventSender
     //<editor-fold defaultstate="collapsed" desc="helper">
     protected final ListenersHelper<DataEventListener, DataEvent> helper
         = new ListenersHelper<DataEventListener, DataEvent>(
-            new Func2<Object, DataEventListener, DataEvent>(){
-                @Override
-                public Object apply(DataEventListener ls, DataEvent e) {
-                    ls.dataEvent(e);
-                    return null;
-                }
+            (DataEventListener ls, DataEvent e) -> {
+                ls.dataEvent(e);
             }
         );
     //</editor-fold>
 
     @Override
-    public Closeable addDataEventListener(DataEventListener ls, boolean weak) {
+    public AutoCloseable addDataEventListener(DataEventListener ls, boolean weak) {
         return helper.addListener(ls, weak);
     }
 
     @Override
-    public Closeable addDataEventListener(DataEventListener ls) {
+    public AutoCloseable addDataEventListener(DataEventListener ls) {
         return helper.addListener(ls);
     }
 

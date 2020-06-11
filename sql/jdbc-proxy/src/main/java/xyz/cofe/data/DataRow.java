@@ -24,7 +24,7 @@
 
 package xyz.cofe.data;
 
-import xyz.cofe.collection.Func0;
+import xyz.cofe.fn.Fn0;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -532,7 +532,7 @@ public class DataRow implements Closeable, Serializable
                 
                 boolean allowNull = true;
                 boolean allowSubType = true;
-                Func0 fgen = null;
+                Fn0 fgen = null;
                 Class dtype = dcol.getDataType();
                 
                 if( dcol instanceof DataColumn ){

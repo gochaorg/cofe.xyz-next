@@ -25,8 +25,7 @@
 package xyz.cofe.data.store;
 
 
-import xyz.cofe.collection.BasicPair;
-import xyz.cofe.collection.Pair;
+import xyz.cofe.fn.Pair;
 import xyz.cofe.text.Text;
 
 import java.util.ArrayList;
@@ -89,9 +88,9 @@ public class CSVUtil {
         int dStart = line.indexOf(delim, beginIndex);
         if( dStart<0 )return null;
         
-        return new BasicPair<String, Integer>(
-            line.substring(beginIndex, dStart+delimLen), 
-            dStart+delimLen);
+        return Pair.of(
+            line.substring(beginIndex, dStart + delimLen),
+            dStart + delimLen);
     }
     
     /**
@@ -158,7 +157,7 @@ public class CSVUtil {
             ptr += CHR.length();
         }
         
-        return new BasicPair<String, Integer>(sb.toString(), nextPTR);
+        return Pair.of(sb.toString(), nextPTR);
     }
     
     /**
@@ -265,7 +264,7 @@ public class CSVUtil {
                 if( res==null ){
                     break;
                 }else{
-                    ptr = res.B();
+                    ptr = res.b();
                 }
             }
             
@@ -278,8 +277,8 @@ public class CSVUtil {
                         if( res==null ){
                             stopRead = true;
                         }else{
-                            ptr = res.B();
-                            cellData.add( res.A() );
+                            ptr = res.b();
+                            cellData.add( res.a() );
                             co++;
                         }
                     }
@@ -315,8 +314,8 @@ public class CSVUtil {
                             if( res==null ){
                                 stopRead = true;
                             }else{
-                                ptr = res.B();
-                                cellData.add( res.A() );
+                                ptr = res.b();
+                                cellData.add( res.a() );
                                 co++;
                             }
                         }else{
@@ -446,14 +445,14 @@ public class CSVUtil {
             int cellValueEnd = begin + len;
             if( strWidth<cellValueEnd )strWidth = cellValueEnd;
             
-            cellValues.add( new BasicPair<Integer,String>( begin, cellValue ) );
+            cellValues.add( Pair.of( begin, cellValue ) );
         }
         
         StringBuilder sb = new StringBuilder();
         sb.append(Text.repeat(" ", strWidth));
         
         for( Pair<Integer,String> cellVal : cellValues ){
-            sb.replace(cellVal.A(), cellVal.A()+cellVal.B().length(), cellVal.B());
+            sb.replace(cellVal.a(), cellVal.a()+cellVal.b().length(), cellVal.b());
         }
         
         return sb.toString();

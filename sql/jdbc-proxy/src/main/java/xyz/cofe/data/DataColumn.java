@@ -24,7 +24,7 @@
 
 package xyz.cofe.data;
 
-import xyz.cofe.collection.Func0;
+import xyz.cofe.fn.Fn0;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -190,13 +190,13 @@ public class DataColumn {
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="generator : Func0">
-    public Func0 generator;
+    public Fn0 generator;
     
-    public Func0 getGenerator() {
+    public Fn0 getGenerator() {
         return generator;
     }
     
-    public DataColumn generator( Func0 gen ){
+    public DataColumn generator( Fn0 gen ){
         DataColumn mc = clone();
         mc.generator = gen;
         return mc;

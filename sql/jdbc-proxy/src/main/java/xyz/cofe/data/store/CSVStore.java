@@ -28,10 +28,10 @@ import xyz.cofe.collection.graph.Path;
 import xyz.cofe.data.DataColumn;
 import xyz.cofe.data.DataRow;
 import xyz.cofe.data.DataTable;
-import xyz.cofe.text.Output;
+import xyz.cofe.simpletypes.SimpleTypes;
+import xyz.cofe.text.out.Output;
 import xyz.cofe.typeconv.ExtendedCastGraph;
 import xyz.cofe.typeconv.TypeCastGraph;
-import xyz.cofe.types.SimpleTypes;
 
 import java.io.Writer;
 import java.util.ArrayList;

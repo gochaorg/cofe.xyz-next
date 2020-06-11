@@ -23,6 +23,7 @@
     <orderEntry type="module" module-name="text" />
     <orderEntry type="module" module-name="iofun" />
     <orderEntry type="module" module-name="basic-template" />
+    <orderEntry type="module" module-name="simple-types" />
     <orderEntry type="module" module-name="types" />
     <orderEntry type="module" module-name="types-spi" />
     <orderEntry type="module" module-name="fs" />

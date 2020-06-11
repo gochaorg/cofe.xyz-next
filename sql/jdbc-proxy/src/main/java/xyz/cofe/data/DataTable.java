@@ -31,6 +31,12 @@ import xyz.cofe.collection.set.EventSet;
 import xyz.cofe.collection.set.SyncEventSet;
 import xyz.cofe.common.CloseableSet;
 import xyz.cofe.common.Reciver;
+import xyz.cofe.ecolls.Closeables;
+import xyz.cofe.fn.Fn0;
+import xyz.cofe.fn.Fn1;
+import xyz.cofe.fn.Fn3;
+import xyz.cofe.fn.TripleConsumer;
+import xyz.cofe.iter.Eterable;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -38,6 +44,9 @@ import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -225,7 +234,7 @@ public class DataTable
      * @param weak true - добавить как weak ссылку
      * @return Отписка
      */
-    public Closeable addDataEventListener(DataEventListener ls, boolean weak) {
+    public AutoCloseable addDataEventListener(DataEventListener ls, boolean weak) {
         return listeners.addDataEventListener(ls, weak);
     }
     
@@ -234,7 +243,7 @@ public class DataTable
      * @param ls Подписчик
      * @return Отписка
      */
-    public Closeable addDataEventListener(DataEventListener ls) {
+    public AutoCloseable addDataEventListener(DataEventListener ls) {
         return listeners.addDataEventListener(ls);
     }
     
@@ -324,7 +333,7 @@ public class DataTable
      * @return результат выполения кода
      * @see #fireEventQueue() 
      */
-    public Object lockRun( Func0 run ){
+    public Object lockRun( Fn0 run ){
         if( run==null )throw new IllegalArgumentException("run == null");
         try{
             eventLockLevel.incrementAndGet();
@@ -382,9 +391,9 @@ public class DataTable
      * @param run внутренний код
      * @return Результат выполнения
      */
-    protected Object lockRunInternal( final Func1<Object,InternalRun> run ){
+    protected Object lockRunInternal( final Fn1<InternalRun,Object> run ){
         if( run==null )throw new IllegalArgumentException("run == null");
-        return lockRun(new Func0() {
+        return lockRun(new Fn0() {
             @Override
             public Object apply() {
                 InternalRun irun = createInternalRun();
@@ -402,7 +411,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от события
      */
-    public <T extends DataEvent> Closeable listen( final Class<T> evnType, boolean weakRef, final Reciver<T> listener ){
+    public <T extends DataEvent> AutoCloseable listen( final Class<T> evnType, boolean weakRef, final Consumer<T> listener ){
         if( evnType==null )throw new IllegalArgumentException("evnType == null");
         if( listener==null )throw new IllegalArgumentException("listener == null");
         return addDataEventListener(new DataEventListener() {
@@ -410,7 +419,7 @@ public class DataTable
             public void dataEvent( DataEvent ev) {
                 if( ev==null )return;
                 if( evnType.isAssignableFrom(ev.getClass()) ){
-                    listener.recive((T)ev);
+                    listener.accept((T)ev);
                 }
             }
         }, weakRef);
@@ -423,7 +432,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public <T extends DataEvent> Closeable listen( final Class<T> evnType, final Reciver<T> listener ){
+    public <T extends DataEvent> AutoCloseable listen( final Class<T> evnType, final Consumer<T> listener ){
         if( evnType==null )throw new IllegalArgumentException("evnType == null");
         if( listener==null )throw new IllegalArgumentException("listener == null");
         return listen(evnType, false, listener);
@@ -435,7 +444,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onColumnAdded( boolean weak, Reciver<DataColumnAdded> listener ){
+    public AutoCloseable onColumnAdded( boolean weak, Consumer<DataColumnAdded> listener ){
         return listen(DataColumnAdded.class, weak, listener);
     }
     
@@ -444,7 +453,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onColumnAdded( Reciver<DataColumnAdded> listener ){
+    public AutoCloseable onColumnAdded( Consumer<DataColumnAdded> listener ){
         return listen(DataColumnAdded.class, listener);
     }
     
@@ -454,7 +463,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onColumnRemoved( boolean weak, Reciver<DataColumnAdded> listener ){
+    public AutoCloseable onColumnRemoved( boolean weak, Consumer<DataColumnAdded> listener ){
         return listen(DataColumnAdded.class, weak, listener);
     }
     
@@ -463,7 +472,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onColumnRemoved( Reciver<DataColumnRemoved> listener ){
+    public AutoCloseable onColumnRemoved( Consumer<DataColumnRemoved> listener ){
         return listen(DataColumnRemoved.class, listener);
     }
     
@@ -473,7 +482,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onRowDeleted( boolean weak, Reciver<DataRowDeleted> listener ){
+    public AutoCloseable onRowDeleted( boolean weak, Consumer<DataRowDeleted> listener ){
         return listen(DataRowDeleted.class, weak, listener);
     }
     
@@ -482,7 +491,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onRowDeleted( Reciver<DataRowDeleted> listener ){
+    public AutoCloseable onRowDeleted( Consumer<DataRowDeleted> listener ){
         return listen(DataRowDeleted.class, listener);
     }
     
@@ -492,7 +501,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onRowUndeleted( boolean weak, Reciver<DataRowUndeleted> listener ){
+    public AutoCloseable onRowUndeleted( boolean weak, Consumer<DataRowUndeleted> listener ){
         return listen(DataRowUndeleted.class, weak, listener);
     }
     
@@ -501,7 +510,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onRowUndeleted( Reciver<DataRowUndeleted> listener ){
+    public AutoCloseable onRowUndeleted( Consumer<DataRowUndeleted> listener ){
         return listen(DataRowUndeleted.class, listener);
     }
     
@@ -511,7 +520,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onRowErased( boolean weak, Reciver<DataRowErased> listener ){
+    public AutoCloseable onRowErased( boolean weak, Consumer<DataRowErased> listener ){
         return listen(DataRowErased.class, weak, listener);
     }
     
@@ -520,7 +529,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onRowErased( Reciver<DataRowErased> listener ){
+    public AutoCloseable onRowErased( Consumer<DataRowErased> listener ){
         return listen(DataRowErased.class, listener);
     }
     
@@ -530,7 +539,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onDataTableDropped( boolean weak, Reciver<DataTableDropped> listener ){
+    public AutoCloseable onDataTableDropped( boolean weak, Consumer<DataTableDropped> listener ){
         return listen(DataTableDropped.class, listener);
     }
     
@@ -539,7 +548,7 @@ public class DataTable
      * @param listener Подписчик
      * @return Отписка от получения событий
      */
-    public Closeable onDataTableDropped( Reciver<DataTableDropped> listener ){
+    public AutoCloseable onDataTableDropped( Consumer<DataTableDropped> listener ){
         return listen(DataTableDropped.class, listener);
     }
     //</editor-fold>
@@ -549,7 +558,7 @@ public class DataTable
     /**
      * Подписчики обсуживающие ограничения таблицы
      */
-    private transient final CloseableSet constraintsListeners = new CloseableSet();
+    private transient final Closeables constraintsListeners = new Closeables();
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="initConstraints()">
@@ -568,22 +577,37 @@ public class DataTable
      * @param cset Отписка (может быть null)
      * @param elist Список строк
      */
-    private void listenForNotNullValue( CloseableSet cset, EventList<DataRow> elist ){
-        Closeable cl =
-            elist.onAdding(new Reciver<DataRow>() {
-                @Override
-                public void recive(DataRow dr) {
-                    if( dr==null )throw new IllegalStateException("null rows not allowed");
-                    synchronized(dr){
-                        synchronized( DataTable.this){
-                            RuntimeException err = checkNullableValue(dr,true);
-                            if( err!=null )throw err;
-                        }
+    private void listenForNotNullValue( Closeables cset, EventList<DataRow> elist ){
+//        Closeable cl =
+//            elist.onAdding(new Reciver<DataRow>() {
+//                @Override
+//                public void recive(DataRow dr) {
+//                    if( dr==null )throw new IllegalStateException("null rows not allowed");
+//                    synchronized(dr){
+//                        synchronized( DataTable.this){
+//                            RuntimeException err = checkNullableValue(dr,true);
+//                            if( err!=null )throw err;
+//                        }
+//                    }
+//                }
+//            });
+
+        TripleConsumer<Integer,DataRow,DataRow> ls = (idx,old,cur) -> {
+            if( cur!=null ){
+                synchronized(cur){
+                    synchronized( DataTable.this){
+                        RuntimeException err = checkNullableValue(cur,true);
+                        if( err!=null )throw err;
                     }
                 }
-            });
+            }
+        };
+
+        AutoCloseable cl1 = elist.onInserted(ls);
+        AutoCloseable cl2 = elist.onUpdated(ls);
         
-        if( cset!=null )cset.add(cl);
+        if( cset!=null )cset.add(cl1);
+        if( cset!=null )cset.add(cl2);
     }
     
     /**
@@ -600,7 +624,7 @@ public class DataTable
             if( dc.isAllowNull() )continue;
             
             Object value = dr.get(ci);
-            Func0 fgen = dc.getGenerator();
+            Fn0 fgen = dc.getGenerator();
             
             if( value==null ){
                 if( fgen!=null ){
@@ -628,20 +652,33 @@ public class DataTable
      * @param cset Отписка (может быть null)
      * @param elist Список строк
      */
-    private void listenForValueType( CloseableSet cset, EventList<DataRow> elist ){
-        Closeable cl =
-            elist.onAdding(new Reciver<DataRow>() {
-                @Override
-                public void recive(DataRow dr) {
-                    if( dr==null )throw new IllegalStateException("null rows not allowed");
-                    synchronized(dr){
-                        RuntimeException err = checkValueType(dr);
-                        if( err!=null )throw err;
-                    }
+    private void listenForValueType( Closeables cset, EventList<DataRow> elist ){
+//        Closeable cl =
+//            elist.onAdding(new Reciver<DataRow>() {
+//                @Override
+//                public void recive(DataRow dr) {
+//                    if( dr==null )throw new IllegalStateException("null rows not allowed");
+//                    synchronized(dr){
+//                        RuntimeException err = checkValueType(dr);
+//                        if( err!=null )throw err;
+//                    }
+//                }
+//            });
+
+        TripleConsumer<Integer,DataRow,DataRow> ls = (idx,old,cur) -> {
+            if( cur!=null ){
+                synchronized( cur ){
+                    RuntimeException err = checkValueType(cur);
+                    if( err != null ) throw err;
                 }
-            });
-        
-        if( cset!=null )cset.add(cl);
+            }
+        };
+
+        AutoCloseable cl1 = elist.onInserted(ls);
+        AutoCloseable cl2 = elist.onUpdated(ls);
+
+        if( cset!=null )cset.add(cl1);
+        if( cset!=null )cset.add(cl2);
     }
     
     /**
@@ -711,9 +748,9 @@ public class DataTable
      * <p>
      * при удалении из рабочего набора строки, удаляет ее так же из (getInsertedRows)
      */
-    public class WorkedRowsOnDeletedTacking implements Func3<Object, Integer, DataRow, DataRow> {
+    public class WorkedRowsOnDeletedTacking implements TripleConsumer<Integer, DataRow, DataRow> {
         @Override
-        public Object apply(Integer idx, DataRow oldrow, DataRow nullRow) {
+        public void accept(Integer idx, DataRow oldrow, DataRow nullRow) {
             /*if( oldrow!=null ){
                 getDeletedRows().add(oldrow);
             }*/
@@ -732,7 +769,6 @@ public class DataTable
 
             addDataEvent(new DataRowDeleted(DataTable.this, oldrow, idx));
             fireEventQueue();
-            return null;
         }
     }
     
@@ -743,9 +779,9 @@ public class DataTable
      * <p>
      * при удалении из рабочего набора строки, удаляет ее так же из (getInsertedRows)
      */
-    public class WorkedRowsOnUpdateInsertTracking implements Func3<Object, Integer, DataRow, DataRow> {
+    public class WorkedRowsOnUpdateInsertTracking implements TripleConsumer<Integer, DataRow, DataRow> {
         @Override
-        public Object apply(Integer idx, DataRow oldrow, DataRow newrow) {
+        public void accept(Integer idx, DataRow oldrow, DataRow newrow) {
             if( oldrow!=null ){
                 if( getInsertedRows().contains(oldrow) ){
                     // INSERTED => ERASE
@@ -762,7 +798,6 @@ public class DataTable
                 addDataEvent(new DataRowInserted(DataTable.this, newrow, idx));
             }
             fireEventQueue();
-            return null;
         }
     }
     
@@ -776,12 +811,12 @@ public class DataTable
      * @see #getInsertedRows() 
      */
     private void initRowChangeTracking(){
-        Closeable cl =
+        AutoCloseable cl =
             getWorkedRows().onDeleted(new WorkedRowsOnDeletedTacking());
         
         rowTrackingListeners.add(cl);
         
-        Func3 fUpdateInsertTracker = new WorkedRowsOnUpdateInsertTracking();
+        TripleConsumer fUpdateInsertTracker = new WorkedRowsOnUpdateInsertTracking();
         
         cl = getWorkedRows().onInserted(fUpdateInsertTracker);
         rowTrackingListeners.add(cl);
@@ -790,7 +825,7 @@ public class DataTable
         rowTrackingListeners.add(cl);
     }
         
-    private final CloseableSet rowTrackingListeners = new CloseableSet();
+    private final Closeables rowTrackingListeners = new Closeables();
     
     /**
      * Указывает отслеживать изменения
@@ -808,12 +843,14 @@ public class DataTable
      * @param track true - Отслеживать
      */
     public void setTrackChanges(boolean track){
-        rowTrackingListeners.closeAll();
+        rowTrackingListeners.close();
         if( track ){
             initRowChangeTracking();
         }
     }
     //</editor-fold>
+
+    private final ReentrantReadWriteLock sync = new ReentrantReadWriteLock();
     
     //<editor-fold defaultstate="collapsed" desc="scn:long">
     private final AtomicLong scn = new AtomicLong(0L);
@@ -846,7 +883,7 @@ public class DataTable
         if( columns!=null )return columns;
         synchronized(this){
             if( columns!=null )return columns;
-            columns = new SyncEventList( new ArrayList<DataColumn>(), this )/*{
+            columns = new BasicEventList<>( new ArrayList<DataColumn>(), sync)/*{
                 @Override
                 protected void fireQueueEvents() {
                     int dcall = dropCallLevel.get();
@@ -871,7 +908,7 @@ public class DataTable
      */
     public DataColumn[] getColumns(){
         //final AtomicReference<DataColumn[]> ref = new AtomicReference<>();
-        return (DataColumn[])lockRun(new Func0() {
+        return (DataColumn[])lockRun(new Fn0() {
             @Override
             public Object apply() {
                 ArrayList<DataColumn> l = new ArrayList<>();
@@ -965,9 +1002,9 @@ public class DataTable
      * <p>
      * Операции с колонками можно производить когда таблица не содержит данных
      */
-    public class ReadonlyColumnsConstraint implements Func3<Object, Integer, DataColumn, DataColumn> {
+    public class ReadonlyColumnsConstraint implements TripleConsumer<Integer, DataColumn, DataColumn> {
         @Override
-        public Object apply( Integer arg1, DataColumn arg2, DataColumn arg3) {
+        public void accept( Integer arg1, DataColumn arg2, DataColumn arg3) {
 
             boolean hasData = getWorkedRows().size() > 0;
             boolean hasInsData = getInsertedRows().size() > 0;
@@ -976,8 +1013,6 @@ public class DataTable
             if( hasData || hasDelData || hasInsData ){
                 throw new IllegalStateException("can't modify columns< while table contains data");
             }
-
-            return null;
         }
     }
     
@@ -986,10 +1021,13 @@ public class DataTable
      * @param cset Подписанты
      * @param columns Структура
      */
-    private void initReadonlyColumns( CloseableSet cset, EventList<DataColumn> columns ){
+    private void initReadonlyColumns( Closeables cset, EventList<DataColumn> columns ){
         if( columns==null )throw new IllegalArgumentException("columns == null");
-        Closeable cl =
-            columns.onChanging(new ReadonlyColumnsConstraint());
+
+        ReadonlyColumnsConstraint readonlyColumnsConstraint = new ReadonlyColumnsConstraint();
+
+        AutoCloseable cl =
+            columns.onChanged(readonlyColumnsConstraint);
         
         if( cset!=null )cset.add(cl);
     }
@@ -1001,7 +1039,7 @@ public class DataTable
      */
     public int getRowsCount() {
         //synchronized(this){
-        return (int)(Integer)lockRun( new Func0(){
+        return (int)(Integer)lockRun( new Fn0(){
             @Override public Object apply(){
                 return getWorkedRows().size();
             }});
@@ -1021,7 +1059,7 @@ public class DataTable
         //    return getWorkedRows().get(row);
         //}
         if( row<0 )throw new IllegalArgumentException("row < 0");
-        return (DataRow)lockRun(new Func0() {
+        return (DataRow)lockRun(new Fn0() {
             @Override
             public Object apply() {
                 if( row>=getWorkedRows().size() )throw new IllegalArgumentException("row("+row+") >= getRowsCount("+getWorkedRows().size()+")");
@@ -1040,7 +1078,7 @@ public class DataTable
      * @return индекс или -1
      */
     public int indexOf( final DataRow mrow ){
-        return (int)(Integer)lockRun( new Func0(){ @Override public Object apply(){
+        return (int)(Integer)lockRun( new Fn0(){ @Override public Object apply(){
             indexOf_lastIsInDeleted = false;
             if( mrow==null )return -1;
             
@@ -1108,7 +1146,7 @@ public class DataTable
         Object sync = this;
         synchronized(sync){
             if( workedRows!=null )return workedRows;
-            workedRows = new SyncEventList( new ArrayList(), sync );
+            workedRows = new BasicEventList<DataRow>( new ArrayList<>(), this.sync );
             listenForDisableNullRows( null, workedRows );
             //listenForIndexCache(null, workedRows);
             return workedRows;
@@ -1120,7 +1158,7 @@ public class DataTable
      * @return итератор
      */
     public Iterator<DataRow> getRowsIterator(){
-        return (Iterator<DataRow>)lockRun(new Func0() {
+        return (Iterator<DataRow>)lockRun(new Fn0() {
             @Override
             public Object apply() {
                 return getWorkedRows().iterator();
@@ -1133,7 +1171,7 @@ public class DataTable
      * @return итератор
      */
     public Iterable<DataRow> getRowsIterable(){
-        return (Iterable<DataRow>)lockRun(new Func0() {
+        return (Iterable<DataRow>)lockRun(new Fn0() {
             @Override
             public Object apply() {
                 return getWorkedRows();
@@ -1146,13 +1184,13 @@ public class DataTable
      * @param states Указывает по строкам с каким состоянием производить поиск
      * @return Итератор
      */
-    public Iterable<DataRow> getRowsIterable(final DataRowState... states){
-        return (Iterable<DataRow>)lockRun(new Func0() {
+    public Eterable<DataRow> getRowsIterable(final DataRowState... states){
+        return (Eterable<DataRow>)lockRun(new Fn0() {
             @Override
             public Object apply() {
                 Predicate<DataRow> filter = new Predicate<DataRow>() {
                     @Override
-                    public boolean validate(DataRow dr) {
+                    public boolean test(DataRow dr) {
                         DataRowState st = dr.getState();
                         for( DataRowState fst : states ){
                             if( Objects.equals(st, fst) )return true;
@@ -1161,7 +1199,8 @@ public class DataTable
                     }
                 };
                 
-                return Iterators.predicate(DataTable.this.getRowsIterableAll(), filter);
+                //return Iterators.predicate(DataTable.this.getRowsIterableAll(), filter);
+                return DataTable.this.getRowsIterableAll().filter(filter);
             }
         });
     }
@@ -1172,12 +1211,12 @@ public class DataTable
      * @return состояние строк
      */
     public List<DataRow> rowsList(final DataRowState... states){
-        return (List<DataRow>)lockRun(new Func0() {
+        return (List<DataRow>)lockRun(new Fn0() {
             @Override
             public Object apply() {
                 Predicate<DataRow> filter = new Predicate<DataRow>() {
                     @Override
-                    public boolean validate(DataRow dr) {
+                    public boolean test(DataRow dr) {
                         DataRowState st = dr.getState();
                         for( DataRowState fst : states ){
                             if( Objects.equals(st, fst) )return true;
@@ -1187,7 +1226,7 @@ public class DataTable
                 };
                 
                 ArrayList<DataRow> list = new ArrayList<>();
-                for( DataRow dr : Iterators.predicate(DataTable.this.getRowsIterableAll(), filter) ){
+                for( DataRow dr : DataTable.this.getRowsIterableAll().filter(filter) ){
                     list.add( dr );
                 }
                 return list;
@@ -1196,16 +1235,17 @@ public class DataTable
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="allRows : Iterable<DataRow>">
-    private transient Iterable<DataRow> allRows;
+    private transient Eterable<DataRow> allRows;
     
     /**
      * Возвращает все строки включая удаленные
      * @return строки
      */
-    public Iterable<DataRow> getRowsIterableAll(){
+    public Eterable<DataRow> getRowsIterableAll(){
         synchronized(this){
             if( allRows!=null )return allRows;
-            allRows = Iterators.sequence(getWorkedRows(), getDeletedRows());
+            //allRows = Iterators.sequence(getWorkedRows(), getDeletedRows());
+            allRows = Eterable.of(getWorkedRows()).union(getDeletedRows());
             return allRows;
         }
     }
@@ -1214,11 +1254,10 @@ public class DataTable
     /**
      * Запрещает вставлять null ссылки в качестве строк
      */
-    public class NullRowsDisabler implements Func3<Object, Integer, DataRow, DataRow> {
+    public class NullRowsDisabler implements TripleConsumer<Integer, DataRow, DataRow> {
         @Override
-        public Object apply(Integer idx, DataRow old, DataRow cur) {
+        public void accept(Integer idx, DataRow old, DataRow cur) {
             if( cur==null )throw new IllegalArgumentException("can't insert null row");
-            return null;
         }
     }
     /**
@@ -1226,12 +1265,14 @@ public class DataTable
      * @param cset Отписка (может быть null)
      * @param elist Список строк
      */
-    private void listenForDisableNullRows( CloseableSet cset, EventList<DataRow> elist ){
+    private void listenForDisableNullRows( Closeables cset, EventList<DataRow> elist ){
         NullRowsDisabler nldis = new NullRowsDisabler();
-        Closeable cl = elist.onInserting(nldis);
+        // must before
+        AutoCloseable cl = elist.onInserted(nldis);
         if( cset!=null )cset.add(cl);
-        
-        cl = elist.onUpdating(nldis);
+
+        // must before
+        cl = elist.onUpdated(nldis);
         if( cset!=null )cset.add(cl);
     }
     //</editor-fold>

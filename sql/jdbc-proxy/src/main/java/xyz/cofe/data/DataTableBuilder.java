@@ -24,8 +24,8 @@
 
 package xyz.cofe.data;
 
-import xyz.cofe.collection.Func1;
 import xyz.cofe.data.store.TableBuilder;
+import xyz.cofe.fn.Fn1;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -162,7 +162,7 @@ public class DataTableBuilder implements TableBuilder {
     @Override
     public synchronized void unchangedRow(final DataRow row) {
         //getDataTable().getWorkedRows().add(row);
-        getDataTable().lockRunInternal(new Func1<Object, DataTable.InternalRun>() {
+        getDataTable().lockRunInternal(new Fn1<DataTable.InternalRun, Object>() {
             @Override
             public Object apply(DataTable.InternalRun irun) {
                 irun.getWorkedRows().add(row);
@@ -174,7 +174,7 @@ public class DataTableBuilder implements TableBuilder {
     @Override
     public synchronized void changedRow(final DataRow row) {
         //getDataTable().getWorkedRows().add(row);
-        getDataTable().lockRunInternal(new Func1<Object, DataTable.InternalRun>() {
+        getDataTable().lockRunInternal(new Fn1<DataTable.InternalRun,Object>() {
             @Override
             public Object apply(DataTable.InternalRun irun) {
                 irun.getWorkedRows().add(row);
@@ -188,7 +188,7 @@ public class DataTableBuilder implements TableBuilder {
         //getDataTable().getWorkedRows().add(row);
         //getDataTable().getInsertedRows().add(row);
         
-        getDataTable().lockRunInternal(new Func1<Object, DataTable.InternalRun>() {
+        getDataTable().lockRunInternal(new Fn1<DataTable.InternalRun, Object>() {
             @Override
             public Object apply(DataTable.InternalRun irun) {
                 irun.getWorkedRows().add(row);
@@ -202,7 +202,7 @@ public class DataTableBuilder implements TableBuilder {
     public synchronized void deletedRow(final DataRow row) {
         //getDataTable().getDeletedRows().add(row);
         
-        getDataTable().lockRunInternal(new Func1<Object, DataTable.InternalRun>() {
+        getDataTable().lockRunInternal(new Fn1<DataTable.InternalRun, Object>() {
             @Override
             public Object apply(DataTable.InternalRun irun) {
                 irun.getDeletedRows().add(row);

@@ -24,8 +24,8 @@
 
 package xyz.cofe.data;
 
-import xyz.cofe.collection.Func1;
-import xyz.cofe.common.CloseableSet;
+import xyz.cofe.ecolls.Closeables;
+import xyz.cofe.fn.Fn1;
 import xyz.cofe.sql.JdbcColumn;
 
 import java.util.WeakHashMap;
@@ -260,7 +260,7 @@ public class DataTableInserting {
         }
     }
     
-    protected final CloseableSet tableListeners = new CloseableSet();
+    protected final Closeables tableListeners = new Closeables();
     
     /**
      * Указывает таблицу в которую производится вставка
@@ -268,7 +268,7 @@ public class DataTableInserting {
      */
     public void setTable(DataTable table) {
         synchronized(this){
-            tableListeners.closeAll();
+            tableListeners.close();
             this.table = table;
             if( this.table!=null ){
                 this.values = new Object[this.table.getColumnsCount()];
@@ -412,7 +412,7 @@ public class DataTableInserting {
             }
         });*/
         
-        dt.lockRunInternal(new Func1<Object, DataTable.InternalRun>() {
+        dt.lockRunInternal(new Fn1<DataTable.InternalRun, Object>() {
             @Override
             public Object apply(DataTable.InternalRun irun) {
                 irun.nextScn();                
