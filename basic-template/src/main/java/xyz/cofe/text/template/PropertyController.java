@@ -2,6 +2,7 @@ package xyz.cofe.text.template;
 
 import xyz.cofe.fn.Pair;
 import xyz.cofe.iter.Eterable;
+import xyz.cofe.simpletypes.SimpleTypes;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

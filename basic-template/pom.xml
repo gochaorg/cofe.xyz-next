@@ -12,7 +12,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>basic-template</artifactId>
-    <version>1.0</version>
+    <!-- uploaded -->
+    <!-- <version>1.0</version> -->
+
+    <!-- uploaded -->
+    <version>1.1</version>
 
     <name>basic-template</name>
     <description>string templates</description>
@@ -36,6 +40,11 @@
         <dependency>
             <groupId>xyz.cofe</groupId>
             <artifactId>text-lex</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>xyz.cofe</groupId>
+            <artifactId>simple-types</artifactId>
             <version>1.0</version>
         </dependency>
     </dependencies>

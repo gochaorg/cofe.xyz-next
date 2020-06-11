@@ -1,5 +1,6 @@
 open module xyz.cofe.text.template.basic {
     requires java.base;
+    requires xyz.cofe.simpletypes;
     requires transitive java.logging;
     requires transitive java.desktop;
     requires transitive java.scripting;
