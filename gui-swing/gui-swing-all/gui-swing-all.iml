@@ -6,7 +6,6 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/main/java-mr/11" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -37,7 +36,7 @@
     <orderEntry type="module" module-name="gui-swing-base" />
     <orderEntry type="module" module-name="gui-swing-str" />
     <orderEntry type="module" module-name="gui-swing-color" />
-    <orderEntry type="library" name="Maven: xyz.cofe:gui-swing-tmodel:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="gui-swing-tmodel" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.12" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
   </component>

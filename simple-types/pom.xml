@@ -13,7 +13,7 @@
     <description>Работа с примитивными типами JAVA</description>
     <artifactId>simple-types</artifactId>
     <name>${project.artifactId}</name>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <build>
         <plugins>

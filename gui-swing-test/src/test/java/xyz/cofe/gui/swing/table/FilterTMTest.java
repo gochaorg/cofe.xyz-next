@@ -37,6 +37,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import xyz.cofe.gui.swing.GuiUtil;
 import xyz.cofe.gui.swing.text.UITextWriter;
+import xyz.cofe.gui.swing.tmodel.Column;
+import xyz.cofe.gui.swing.tmodel.FilterRowTM;
+import xyz.cofe.gui.swing.tmodel.ListTM;
+import xyz.cofe.gui.swing.tmodel.RowData;
 import xyz.cofe.text.Text;
 import xyz.cofe.text.out.Output;
 
@@ -66,7 +70,7 @@ public class FilterTMTest
         return a.equals(b);
     }
 
-    ListTM listTM = new ListTM();
+    ListTM listTM = new ListTM<>();
     FilterRowTM filterTM = new FilterRowTM();
     JTable table = new JTable();
     Output log;

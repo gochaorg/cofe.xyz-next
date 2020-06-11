@@ -20,7 +20,7 @@ open module xyz.cofe.gui.swing.all {
     exports xyz.cofe.gui.swing.text;
     exports xyz.cofe.gui.swing.menu;
     exports xyz.cofe.gui.swing.bean;
-    exports xyz.cofe.gui.swing.border;
+    //exports xyz.cofe.gui.swing.border;
     exports xyz.cofe.gui.swing.cell;
     exports xyz.cofe.gui.swing.properties;
     exports xyz.cofe.gui.swing.properties.editor;
