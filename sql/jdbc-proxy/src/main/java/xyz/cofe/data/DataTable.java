@@ -1,0 +1,1678 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2017 user.
+ *
+ * Данная лицензия разрешает, безвозмездно, лицам, получившим копию данного программного
+ * обеспечения и сопутствующей документации (в дальнейшем именуемыми "Программное Обеспечение"), 
+ * использовать Программное Обеспечение без ограничений, включая неограниченное право на 
+ * использование, копирование, изменение, объединение, публикацию, распространение, сублицензирование 
+ * и/или продажу копий Программного Обеспечения, также как и лицам, которым предоставляется 
+ * данное Программное Обеспечение, при соблюдении следующих условий:
+ *
+ * Вышеупомянутый копирайт и данные условия должны быть включены во все копии 
+ * или значимые части данного Программного Обеспечения.
+ *
+ * ДАННОЕ ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ ПРЕДОСТАВЛЯЕТСЯ «КАК ЕСТЬ», БЕЗ ЛЮБОГО ВИДА ГАРАНТИЙ, 
+ * ЯВНО ВЫРАЖЕННЫХ ИЛИ ПОДРАЗУМЕВАЕМЫХ, ВКЛЮЧАЯ, НО НЕ ОГРАНИЧИВАЯСЬ ГАРАНТИЯМИ ТОВАРНОЙ ПРИГОДНОСТИ, 
+ * СООТВЕТСТВИЯ ПО ЕГО КОНКРЕТНОМУ НАЗНАЧЕНИЮ И НЕНАРУШЕНИЯ ПРАВ. НИ В КАКОМ СЛУЧАЕ АВТОРЫ 
+ * ИЛИ ПРАВООБЛАДАТЕЛИ НЕ НЕСУТ ОТВЕТСТВЕННОСТИ ПО ИСКАМ О ВОЗМЕЩЕНИИ УЩЕРБА, УБЫТКОВ 
+ * ИЛИ ДРУГИХ ТРЕБОВАНИЙ ПО ДЕЙСТВУЮЩИМ КОНТРАКТАМ, ДЕЛИКТАМ ИЛИ ИНОМУ, ВОЗНИКШИМ ИЗ, ИМЕЮЩИМ 
+ * ПРИЧИНОЙ ИЛИ СВЯЗАННЫМ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ ИЛИ ИСПОЛЬЗОВАНИЕМ ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ 
+ * ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
+ */
+
+package xyz.cofe.data;
+
+import xyz.cofe.collection.*;
+import xyz.cofe.collection.list.EventList;
+import xyz.cofe.collection.list.SyncEventList;
+import xyz.cofe.collection.set.EventSet;
+import xyz.cofe.collection.set.SyncEventSet;
+import xyz.cofe.common.CloseableSet;
+import xyz.cofe.common.Reciver;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Таблица с данными.
+ * 
+ * <p>
+ * Каждая строка таблицы может находится в нескольких состояниях: <br>
+ * Fixed, Updated - содержится в коллекции рабочих строк (getWorkedRows()) <br>
+ * Inserted - содержится в коллекции рабочих строк и коллекции новых строк (getWorkedRows())
+ * @author Kamnev Georgiy
+ * @see DataRow
+ */
+public class DataTable 
+{
+    //<editor-fold defaultstate="collapsed" desc="log Функции">
+    private transient static final Logger logger = Logger.getLogger(DataTable.class.getName());
+
+    private static Level logLevel(){ return logger.getLevel(); }
+    
+    private static boolean isLogSevere(){ 
+        Level logLevel = logger.getLevel();
+        return logLevel==null ? true : logLevel.intValue() <= Level.SEVERE.intValue();
+    }
+    
+    private static boolean isLogWarning(){
+        Level logLevel = logger.getLevel(); 
+        return logLevel==null  ? true : logLevel.intValue() <= Level.WARNING.intValue();
+    }
+    
+    private static boolean isLogInfo(){ 
+        Level logLevel = logger.getLevel();
+        return logLevel==null  ? true : logLevel.intValue() <= Level.INFO.intValue();
+    }
+    
+    private static boolean isLogFine(){
+        Level logLevel = logger.getLevel();
+        return logLevel==null  ? true : logLevel.intValue() <= Level.FINE.intValue();
+    }
+    
+    private static boolean isLogFiner(){
+        Level logLevel = logger.getLevel();
+        return logLevel==null  ? true : logLevel.intValue() <= Level.FINER.intValue();
+    }
+    
+    private static boolean isLogFinest(){ 
+        Level logLevel = logger.getLevel();
+        return logLevel==null  ? true : logLevel.intValue() <= Level.FINEST.intValue();
+    }
+
+    private static void logFine(String message,Object ... args){
+        logger.log(Level.FINE, message, args);
+    }
+    
+    private static void logFiner(String message,Object ... args){
+        logger.log(Level.FINER, message, args);
+    }
+    
+    private static void logFinest(String message,Object ... args){
+        logger.log(Level.FINEST, message, args);
+    }
+    
+    private static void logInfo(String message,Object ... args){
+        logger.log(Level.INFO, message, args);
+    }
+
+    private static void logWarning(String message,Object ... args){
+        logger.log(Level.WARNING, message, args);
+    }
+    
+    private static void logSevere(String message,Object ... args){
+        logger.log(Level.SEVERE, message, args);
+    }
+
+    private static void logException(Throwable ex){
+        logger.log(Level.SEVERE, null, ex);
+    }
+
+    private static void logEntering(String method,Object ... params){
+        logger.entering(DataTable.class.getName(), method, params);
+    }
+    
+    private static void logExiting(String method){
+        logger.exiting(DataTable.class.getName(), method);
+    }
+    
+    private static void logExiting(String method, Object result){
+        logger.exiting(DataTable.class.getName(), method, result);
+    }
+    //</editor-fold>
+    
+    /**
+     * Конструктор по умолчанию
+     */
+    public DataTable(){
+        initConstraints();
+        initRowChangeTracking();
+    }
+    
+    /**
+     * Конструктор
+     * @param columns Описания колонок таблицы
+     */
+    public DataTable( DataColumn[] columns ){
+        this(columns, null);
+    }    
+    
+    /**
+     * Конструктор
+     * @param columns Описания колонок таблицы
+     * @param initialData Начальные данные
+     */
+    public DataTable( DataColumn[] columns, Iterable<Object[]> initialData ){
+        if( columns==null )throw new IllegalArgumentException("columns==null");
+        for( int ci=0; ci<columns.length; ci++ ){
+            DataColumn mc = columns[ci];
+            if( mc==null )throw new IllegalArgumentException("columns["+ci+"]==null");
+            
+            getColumnsEventList().add(mc);
+        }
+        
+        if( initialData!=null ){
+            int ri = -1;
+            for( Object[] data : initialData ){
+                ri++;
+                if( data==null )throw new IllegalArgumentException("initialData["+ri+"]==null");
+                
+                DataRow mrow = new DataRow(this, data);
+                getWorkedRows().add(mrow);
+            }
+        }
+        
+        initConstraints();
+        initRowChangeTracking();
+    }
+    
+    /**
+     * Конструктор де сериализации
+     * @param columns Набор колонок
+     * @param rows Фиксированные/Модифицированные строки
+     * @param inserted Добавленные, но не фиксированные строки
+     * @param deleted Удаленные, но не фиксированные строки
+     */
+    public DataTable( DataColumn[] columns, Iterable<DataRow> rows, Iterable<DataRow> inserted, Iterable<DataRow> deleted){
+        if( columns==null )throw new IllegalArgumentException("columns==null");
+        
+        for( int ci=0; ci<columns.length; ci++ ){
+            DataColumn mc = columns[ci];
+            if( mc==null )throw new IllegalArgumentException("columns["+ci+"]==null");
+            
+            getColumnsEventList().add(mc);
+        }
+        
+        if( rows!=null ){
+            for( DataRow mrow : rows ){
+                if( mrow==null )continue;
+                getWorkedRows().add(mrow);
+            }
+        }
+        
+        if( inserted!=null ){
+            for( DataRow mrow : inserted ){
+                if( mrow==null )continue;
+                getInsertedRows().add(mrow);
+            }
+        }
+        
+        if( deleted!=null ){
+            for( DataRow mrow : deleted ){
+                if( mrow==null )continue;
+                getDeletedRows().add(mrow);
+            }
+        }
+        
+        initConstraints();
+        initRowChangeTracking();
+    }
+    
+    //<editor-fold defaultstate="collapsed" desc="data events support">
+    protected transient final DataEventSupport listeners = new DataEventSupport();
+    
+    /**
+     * Добавляет подписчика на события
+     * @param ls Подписчик
+     * @param weak true - добавить как weak ссылку
+     * @return Отписка
+     */
+    public Closeable addDataEventListener(DataEventListener ls, boolean weak) {
+        return listeners.addDataEventListener(ls, weak);
+    }
+    
+    /**
+     * Добавляет подписчика на события
+     * @param ls Подписчик
+     * @return Отписка
+     */
+    public Closeable addDataEventListener(DataEventListener ls) {
+        return listeners.addDataEventListener(ls);
+    }
+    
+    /**
+     * Удаляет подписчика
+     * @param ls подписчик
+     */
+    public void removeDataEventListener(DataEventListener ls) {
+        listeners.removeDataEventListener(ls);
+    }
+    
+    /**
+     * Проверка наличия подписчика
+     * @param ls подписчик
+     * @return true подписан
+     */
+    public boolean hasDataEventListener(DataEventListener ls) {
+        return listeners.hasDataEventListener(ls);
+    }
+    
+    /**
+     * Возвращает список подписчиков
+     * @return подписчики
+     */
+    public DataEventListener[] getDataEventListeners() {
+        return listeners.getDataEventListeners();
+    }
+    
+    /**
+     * Уведомляет подписчиков о событии
+     * @param event событие
+     */
+    public void fireEvent( DataEvent event) {
+        listeners.fireDataEvent(event);
+        scn.incrementAndGet();
+    }
+    
+    protected final LinkedBlockingQueue<DataEvent> eventQueue
+        = new LinkedBlockingQueue<>();
+    
+    /**
+     * Добавляет событие в очередь
+     * @param ev событие
+     */
+    public void addDataEvent( DataEvent ev){
+        if( ev!=null )eventQueue.add(ev);
+        scn.incrementAndGet();        
+    }
+    
+    /**
+     * Рассылает события из очереди подписчикам
+     */
+    public void fireEventQueue(){
+        int ll = eventLockLevel.get();
+        if( ll>0 )return;
+        while( true ){
+            DataEvent e = eventQueue.poll();
+            if( e==null )break;
+            
+            listeners.fireDataEvent(e);
+        }
+    }
+    
+    protected final transient AtomicInteger eventLockLevel = new AtomicInteger(0);
+    
+    /**
+     * Выполнение кода в режиме блокировки таблицы и последующим уведомлением о событии
+     * @param run код
+     * @see #fireEventQueue() 
+     */
+    public void lockRun( Runnable run ){
+        if( run==null )throw new IllegalArgumentException("run == null");
+        try{
+            eventLockLevel.incrementAndGet();
+            synchronized(this){
+                run.run();
+            }
+        }finally{
+            eventLockLevel.decrementAndGet();
+            fireEventQueue();
+        }
+    }
+    
+    /**
+     * Выполнение кода в режиме блокировки таблицы и последующим уведомлением о событии
+     * @param run код
+     * @return результат выполения кода
+     * @see #fireEventQueue() 
+     */
+    public Object lockRun( Func0 run ){
+        if( run==null )throw new IllegalArgumentException("run == null");
+        try{
+            eventLockLevel.incrementAndGet();
+            Object o = null;
+            synchronized(this){
+                o = run.apply();
+            }
+            return o;
+        }finally{
+            eventLockLevel.decrementAndGet();
+            fireEventQueue();
+        }
+    }
+    
+    /**
+     * Выполенеие внутреннего кода
+     */
+    public interface InternalRun {
+        public List<DataRow> getWorkedRows();
+        public Set<DataRow> getInsertedRows();
+        public Set<DataRow> getDeletedRows();
+        public long nextScn();
+    }
+    
+    /**
+     * Создаение объекта для доступа к внутренним объектам
+     * @return доступ к внутренним объектам
+     */
+    protected InternalRun createInternalRun(){
+        return new InternalRun() {
+            @Override
+            public List<DataRow> getWorkedRows() {
+                return DataTable.this.getWorkedRows();
+            }
+
+            @Override
+            public Set<DataRow> getInsertedRows() {
+                return DataTable.this.getInsertedRows();
+            }
+
+            @Override
+            public Set<DataRow> getDeletedRows() {
+                return DataTable.this.getDeletedRows();
+            }
+
+            @Override
+            public long nextScn() {
+                return DataTable.this.nextScn();
+            }
+        };
+    }
+    
+    /**
+     * Выполнение внутреннего кода
+     * @param run внутренний код
+     * @return Результат выполнения
+     */
+    protected Object lockRunInternal( final Func1<Object,InternalRun> run ){
+        if( run==null )throw new IllegalArgumentException("run == null");
+        return lockRun(new Func0() {
+            @Override
+            public Object apply() {
+                InternalRun irun = createInternalRun();
+                Object result = run.apply(irun);
+                return result;
+            }
+        });
+    }
+    
+    /**
+     * Подписка на события определенного типа
+     * @param <T> Тип события
+     * @param evnType Тип события
+     * @param weakRef Добавить подписчика как weak ссылку
+     * @param listener Подписчик
+     * @return Отписка от события
+     */
+    public <T extends DataEvent> Closeable listen( final Class<T> evnType, boolean weakRef, final Reciver<T> listener ){
+        if( evnType==null )throw new IllegalArgumentException("evnType == null");
+        if( listener==null )throw new IllegalArgumentException("listener == null");
+        return addDataEventListener(new DataEventListener() {
+            @Override
+            public void dataEvent( DataEvent ev) {
+                if( ev==null )return;
+                if( evnType.isAssignableFrom(ev.getClass()) ){
+                    listener.recive((T)ev);
+                }
+            }
+        }, weakRef);
+    }
+    
+    /**
+     * Подписка на события определенного типа
+     * @param <T> Тип события
+     * @param evnType Тип события
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public <T extends DataEvent> Closeable listen( final Class<T> evnType, final Reciver<T> listener ){
+        if( evnType==null )throw new IllegalArgumentException("evnType == null");
+        if( listener==null )throw new IllegalArgumentException("listener == null");
+        return listen(evnType, false, listener);
+    }
+    
+    /**
+     * Добавление на событие добавления колонки
+     * @param weak Добавить подписчика как weak ссылку
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onColumnAdded( boolean weak, Reciver<DataColumnAdded> listener ){
+        return listen(DataColumnAdded.class, weak, listener);
+    }
+    
+    /**
+     * Добавление на событие добавления колонки
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onColumnAdded( Reciver<DataColumnAdded> listener ){
+        return listen(DataColumnAdded.class, listener);
+    }
+    
+    /**
+     * Добавление на событие - колонка удалена
+     * @param weak Добавить подписчика как weak ссылку
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onColumnRemoved( boolean weak, Reciver<DataColumnAdded> listener ){
+        return listen(DataColumnAdded.class, weak, listener);
+    }
+    
+    /**
+     * Добавление на событие - колонка удалена
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onColumnRemoved( Reciver<DataColumnRemoved> listener ){
+        return listen(DataColumnRemoved.class, listener);
+    }
+    
+    /**
+     * Добавление на событие: строка почена под удаление
+     * @param weak Добавить подписчика как weak ссылку
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onRowDeleted( boolean weak, Reciver<DataRowDeleted> listener ){
+        return listen(DataRowDeleted.class, weak, listener);
+    }
+    
+    /**
+     * Добавление на событие: строка почена под удаление
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onRowDeleted( Reciver<DataRowDeleted> listener ){
+        return listen(DataRowDeleted.class, listener);
+    }
+    
+    /**
+     * Добавление на событие отката удаляения строки
+     * @param weak Добавить подписчика как weak ссылку
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onRowUndeleted( boolean weak, Reciver<DataRowUndeleted> listener ){
+        return listen(DataRowUndeleted.class, weak, listener);
+    }
+    
+    /**
+     * Добавление на событие отката удаляения строки
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onRowUndeleted( Reciver<DataRowUndeleted> listener ){
+        return listen(DataRowUndeleted.class, listener);
+    }
+    
+    /**
+     * Добавление на событие окончательного удаляения строки
+     * @param weak Добавить подписчика как weak ссылку
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onRowErased( boolean weak, Reciver<DataRowErased> listener ){
+        return listen(DataRowErased.class, weak, listener);
+    }
+    
+    /**
+     * Добавление на событие окончательного удаляения строки
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onRowErased( Reciver<DataRowErased> listener ){
+        return listen(DataRowErased.class, listener);
+    }
+    
+    /**
+     * Добавление на событие полного удаления таблицы, включая структуры
+     * @param weak Добавить подписчика как weak ссылку
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onDataTableDropped( boolean weak, Reciver<DataTableDropped> listener ){
+        return listen(DataTableDropped.class, listener);
+    }
+    
+    /**
+     * Добавление на событие полного удаления таблицы, включая структуры
+     * @param listener Подписчик
+     * @return Отписка от получения событий
+     */
+    public Closeable onDataTableDropped( Reciver<DataTableDropped> listener ){
+        return listen(DataTableDropped.class, listener);
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Ограничения">
+    //<editor-fold defaultstate="collapsed" desc="constraintsListeners">
+    /**
+     * Подписчики обсуживающие ограничения таблицы
+     */
+    private transient final CloseableSet constraintsListeners = new CloseableSet();
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="initConstraints()">
+    /**
+     * Инициализация ограничений
+     */
+    private void initConstraints(){
+        listenForNotNullValue(constraintsListeners, getWorkedRows());
+        listenForValueType(constraintsListeners, getWorkedRows());
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="listenForNotNullValue()">
+    /**
+     * Проверка что добавляемая/обновляемая строка содержит необходиммые данные
+     * @param cset Отписка (может быть null)
+     * @param elist Список строк
+     */
+    private void listenForNotNullValue( CloseableSet cset, EventList<DataRow> elist ){
+        Closeable cl =
+            elist.onAdding(new Reciver<DataRow>() {
+                @Override
+                public void recive(DataRow dr) {
+                    if( dr==null )throw new IllegalStateException("null rows not allowed");
+                    synchronized(dr){
+                        synchronized( DataTable.this){
+                            RuntimeException err = checkNullableValue(dr,true);
+                            if( err!=null )throw err;
+                        }
+                    }
+                }
+            });
+        
+        if( cset!=null )cset.add(cl);
+    }
+    
+    /**
+     * Осуществляет проверку, что строка содержит необходимые данные, 
+     * то есть выполняется соответсвующее условие колонки isAllowNull().
+     * @param dr строка
+     * @param initNull Инициализировать null значения, если есть соот возможность
+     * @return null - если условие isAllowNull() выполненно для всех колонок или описание ошибки
+     */
+    private RuntimeException checkNullableValue( DataRow dr, boolean initNull ){
+        int ci = -1;
+        for( DataColumn dc : getColumnsEventList() ){
+            ci++;
+            if( dc.isAllowNull() )continue;
+            
+            Object value = dr.get(ci);
+            Func0 fgen = dc.getGenerator();
+            
+            if( value==null ){
+                if( fgen!=null ){
+                    Object nval = fgen.apply();
+                    if( nval==null ){
+                        return new NullPointerException("column (index="+ci+" name="+dc.getName()+") not allow null value");
+                    }else{
+                        RuntimeException typeErr = checkValueType(nval, dc, ci);
+                        if( typeErr!=null )return typeErr;
+                        
+                        value = nval;                        
+                        dr.set(ci, value);
+                    }
+                }
+                
+                return new NullPointerException("column (index="+ci+" name="+dc.getName()+") not allow null value");
+            }
+        }
+        return null;
+    }
+    //</editor-fold>
+    
+    /**
+     * Проверка что добавляемая/обновляемая строка содержит данные необходимого типа
+     * @param cset Отписка (может быть null)
+     * @param elist Список строк
+     */
+    private void listenForValueType( CloseableSet cset, EventList<DataRow> elist ){
+        Closeable cl =
+            elist.onAdding(new Reciver<DataRow>() {
+                @Override
+                public void recive(DataRow dr) {
+                    if( dr==null )throw new IllegalStateException("null rows not allowed");
+                    synchronized(dr){
+                        RuntimeException err = checkValueType(dr);
+                        if( err!=null )throw err;
+                    }
+                }
+            });
+        
+        if( cset!=null )cset.add(cl);
+    }
+    
+    /**
+     * Осуществляет проверку, что строка содержит тип данных соответ колонке, 
+     * то есть выполняется соответсвующее условие колонки getDataType() и isAllowSubTypes().
+     * @param dr строка
+     * @return null - если условие getDataType() и isAllowSubTypes() выполненно для всех колонок или описание ошибки
+     */
+    private RuntimeException checkValueType( DataRow dr ){
+        int ci = -1;
+        for( DataColumn dc : getColumnsEventList() ){
+            ci++;
+
+            Object value = dr.get(ci);
+            if( value==null ){
+                continue;
+            }
+            
+            RuntimeException err = checkValueType(value, dc, ci);
+            if( err!=null )return err;
+        }
+        return null;
+    }
+    
+    /**
+     * Осуществляет проверку, что значение содержит тип данных соответ колонке, 
+     * то есть выполняется соответсвующее условие колонки getDataType() и isAllowSubTypes().
+     * @param value значение
+     * @param dc колонка
+     * @param ci индекс колонки
+     * @return null - если условие getDataType() и isAllowSubTypes() выполненно для всех колонок или описание ошибки
+     */
+    private RuntimeException checkValueType( Object value, DataColumn dc, int ci ){
+        Class dtype = dc.getDataType();
+            
+        boolean allowSubType = true;
+        allowSubType = dc.isAllowSubTypes();
+
+        if( value!=null && dtype!=null ){
+            if( allowSubType ){
+                boolean assignable = dtype.isAssignableFrom(value.getClass());
+                if( !assignable ){
+                    return new ClassCastException(
+                        "column(ci="+ci+" name="+dc.getName()+")"
+                        + " value type("+value.getClass()+") not assignable from "+dtype);
+                }
+            }else{
+                boolean assignable = dtype.equals(value.getClass());
+                if( !assignable ){
+                    return new ClassCastException(
+                        "column(ci="+ci+" name="+dc.getName()+")"+
+                        " value type("+value.getClass()+") not equals to "+dtype
+                    );
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="initRowChangeTracking()">
+    /**
+     * Слушает изменения рабочего набора и 
+     * при добавлении новой строки в WorkedRows отмечает ее как новую (getInsertedRows().add()) 
+     * 
+     * <p>
+     * при удалении из рабочего набора строки, удаляет ее так же из (getInsertedRows)
+     */
+    public class WorkedRowsOnDeletedTacking implements Func3<Object, Integer, DataRow, DataRow> {
+        @Override
+        public Object apply(Integer idx, DataRow oldrow, DataRow nullRow) {
+            /*if( oldrow!=null ){
+                getDeletedRows().add(oldrow);
+            }*/
+
+            if( oldrow!=null ){
+                if( getInsertedRows().contains(oldrow) ){
+                    // INSERTED => ERASE
+                    getInsertedRows().remove(oldrow);
+                    addDataEvent(new DataRowErased(DataTable.this, oldrow, idx));
+                }else{
+                    // FIXED => DELETED
+                    getDeletedRows().add(oldrow);
+                    addDataEvent(new DataRowDeleted(DataTable.this, oldrow, idx));
+                }
+            }
+
+            addDataEvent(new DataRowDeleted(DataTable.this, oldrow, idx));
+            fireEventQueue();
+            return null;
+        }
+    }
+    
+    /**
+     * Слушает изменения рабочего набора и 
+     * при добавлении новой строки в WorkedRows отмечает ее как новую (getInsertedRows().add()) 
+     * 
+     * <p>
+     * при удалении из рабочего набора строки, удаляет ее так же из (getInsertedRows)
+     */
+    public class WorkedRowsOnUpdateInsertTracking implements Func3<Object, Integer, DataRow, DataRow> {
+        @Override
+        public Object apply(Integer idx, DataRow oldrow, DataRow newrow) {
+            if( oldrow!=null ){
+                if( getInsertedRows().contains(oldrow) ){
+                    // INSERTED => ERASE
+                    getInsertedRows().remove(oldrow);
+                    addDataEvent(new DataRowErased(DataTable.this, oldrow, idx));
+                }else{
+                    // FIXED => DELETED
+                    getDeletedRows().add(oldrow);
+                    addDataEvent(new DataRowDeleted(DataTable.this, oldrow, idx));
+                }
+            }
+            if( newrow!=null ){
+                getInsertedRows().add(newrow);
+                addDataEvent(new DataRowInserted(DataTable.this, newrow, idx));
+            }
+            fireEventQueue();
+            return null;
+        }
+    }
+    
+    /**
+     * Инициализация отслеживания изменений.
+     * 
+     * <p>
+     * Добавляет трекеры на рабочий набор строк, которые ставят/снимают отметки в наборе Inserted
+     * 
+     * @see #getWorkedRows() 
+     * @see #getInsertedRows() 
+     */
+    private void initRowChangeTracking(){
+        Closeable cl =
+            getWorkedRows().onDeleted(new WorkedRowsOnDeletedTacking());
+        
+        rowTrackingListeners.add(cl);
+        
+        Func3 fUpdateInsertTracker = new WorkedRowsOnUpdateInsertTracking();
+        
+        cl = getWorkedRows().onInserted(fUpdateInsertTracker);
+        rowTrackingListeners.add(cl);
+        
+        cl = getWorkedRows().onUpdated(fUpdateInsertTracker);
+        rowTrackingListeners.add(cl);
+    }
+        
+    private final CloseableSet rowTrackingListeners = new CloseableSet();
+    
+    /**
+     * Указывает отслеживать изменения
+     * @return true - отслеживание включенно
+     */
+    public boolean isTrackChanges(){
+        synchronized(this){
+            Object[] clarr = rowTrackingListeners.getCloseables();
+            return clarr!=null ? clarr.length > 0 : false;
+        }
+    }
+    
+    /**
+     * Указывает отслеживать изменения
+     * @param track true - Отслеживать
+     */
+    public void setTrackChanges(boolean track){
+        rowTrackingListeners.closeAll();
+        if( track ){
+            initRowChangeTracking();
+        }
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="scn:long">
+    private final AtomicLong scn = new AtomicLong(0L);
+    
+    /**
+     * Возвращает еткущий номер изенений
+     * @return текущий номер изменений
+     */
+    public long getScn(){
+        return scn.get();
+    }
+    
+    /**
+     * Указывает текущий номер изменений
+     * @return текущий номер изменений
+     */
+    protected long nextScn(){
+        return scn.incrementAndGet();
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="columns">
+    private volatile EventList<DataColumn> columns;
+    
+    /**
+     * Структура таблицы - колонки
+     * @return колонки таблицы
+     */
+    private EventList<DataColumn> getColumnsEventList(){
+        if( columns!=null )return columns;
+        synchronized(this){
+            if( columns!=null )return columns;
+            columns = new SyncEventList( new ArrayList<DataColumn>(), this )/*{
+                @Override
+                protected void fireQueueEvents() {
+                    int dcall = dropCallLevel.get();
+                    //synchronized( DataTable.this ){
+                        if( dcall>0 ){
+                            eventQueue.clear();
+                            return;
+                        }
+                    //}
+                    
+                    super.fireQueueEvents();
+                }
+            }*/;
+            initReadonlyColumns(null, columns);
+            return columns;
+        }
+    }
+    
+    /**
+     * Возвращает массив колонок
+     * @return колонки таблицы
+     */
+    public DataColumn[] getColumns(){
+        //final AtomicReference<DataColumn[]> ref = new AtomicReference<>();
+        return (DataColumn[])lockRun(new Func0() {
+            @Override
+            public Object apply() {
+                ArrayList<DataColumn> l = new ArrayList<>();
+                for( DataColumn dc : getColumnsEventList() ){
+                    l.add(dc.clone());
+                }
+                return l.toArray(new DataColumn[]{});
+            }
+        });
+    }
+    
+    /**
+     * Возвращает кол-во колонок в таблице
+     * @return кол-во колонок
+     */
+    public int getColumnsCount(){
+        return getColumnsEventList().size();
+    }
+    
+    /**
+     * Возвращает колонку по ее индексу
+     * @param cidx индекс
+     * @return колонка
+     */
+    public DataColumn getColumn( int cidx ){
+        if( cidx<0 )throw new IllegalArgumentException("cidx<0");
+        EventList<DataColumn> dclist = getColumnsEventList();
+        if( cidx>=dclist.size() ){
+            throw new IllegalArgumentException("cidx>="+dclist.size());
+        }
+        return dclist.get(cidx);
+    }
+    
+    /**
+     * Добавляет колонку к таблице
+     * @param dc колонка
+     */
+    public void addColumn( final DataColumn dc ){
+        if( dc==null )throw new IllegalArgumentException("dc == null");
+        lockRun(new Runnable() {
+            @Override
+            public void run() {
+                getColumnsEventList().add(dc);
+            }
+        });
+    }
+    
+    /**
+     * Удаляет колонку из таблицы
+     * @param dc колонка
+     */
+    public void removeColumn( final DataColumn dc ){
+        if( dc==null )throw new IllegalArgumentException("dc == null");
+        lockRun(new Runnable() {
+            @Override
+            public void run() {
+                getColumnsEventList().remove(dc);
+            }
+        });
+    }
+    
+    /**
+     * Удаляет колонку по ее индексу
+     * @param colIdx индекс колонки
+     */
+    public void removeColumnByIndex( final int colIdx ){
+        //if( colIdx==null )throw new IllegalArgumentException("dc == null");
+        lockRun(new Runnable() {
+            @Override
+            public void run() {
+                getColumnsEventList().remove(colIdx);
+            }
+        });
+    }
+    
+    /**
+     * Удаляет все колонки
+     */
+    public void dropColumns(){
+        lockRun(new Runnable() {
+            @Override
+            public void run() {
+                getColumnsEventList().clear();
+            }
+        });
+    }
+    
+    /**
+     * Ограничение на операции с колонками.
+     * 
+     * <p>
+     * Операции с колонками можно производить когда таблица не содержит данных
+     */
+    public class ReadonlyColumnsConstraint implements Func3<Object, Integer, DataColumn, DataColumn> {
+        @Override
+        public Object apply( Integer arg1, DataColumn arg2, DataColumn arg3) {
+
+            boolean hasData = getWorkedRows().size() > 0;
+            boolean hasInsData = getInsertedRows().size() > 0;
+            boolean hasDelData = getDeletedRows().size() > 0;
+
+            if( hasData || hasDelData || hasInsData ){
+                throw new IllegalStateException("can't modify columns< while table contains data");
+            }
+
+            return null;
+        }
+    }
+    
+    /**
+     * Добавление ограничения, что структуру таблицы можно менять, только когда она пустая
+     * @param cset Подписанты
+     * @param columns Структура
+     */
+    private void initReadonlyColumns( CloseableSet cset, EventList<DataColumn> columns ){
+        if( columns==null )throw new IllegalArgumentException("columns == null");
+        Closeable cl =
+            columns.onChanging(new ReadonlyColumnsConstraint());
+        
+        if( cset!=null )cset.add(cl);
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="rowsCount">
+    /**
+     * Возвращает кол-во строк в рабочем наборе
+     * @return кол-во строк в рабочем наборе
+     */
+    public int getRowsCount() {
+        //synchronized(this){
+        return (int)(Integer)lockRun( new Func0(){
+            @Override public Object apply(){
+                return getWorkedRows().size();
+            }});
+        //}
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="row(idx):DataRow">
+    /**
+     * Возвращает строку по индексу из рабочего набора
+     * @param row индекс строки
+     * @return строка
+     */
+    public DataRow getRow(final int row) {
+        //synchronized(this){
+        //    if( row<0 )throw new IllegalArgumentException("row < 0");
+        //    if( row>=getWorkedRows().size() )throw new IllegalArgumentException("row("+row+") >= rowsCount("+getWorkedRows().size()+")");
+        //    return getWorkedRows().get(row);
+        //}
+        if( row<0 )throw new IllegalArgumentException("row < 0");
+        return (DataRow)lockRun(new Func0() {
+            @Override
+            public Object apply() {
+                if( row>=getWorkedRows().size() )throw new IllegalArgumentException("row("+row+") >= getRowsCount("+getWorkedRows().size()+")");
+                return getWorkedRows().get(row);
+            }
+        });
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="indexOf(row):int">
+    private final WeakHashMap<DataRow,Integer> rowIndexCache = new WeakHashMap<>();
+    private transient boolean indexOf_lastIsInDeleted = false;
+    
+    /**
+     * Возвращает индекст строки в таблице
+     * @param mrow строка
+     * @return индекс или -1
+     */
+    public int indexOf( final DataRow mrow ){
+        return (int)(Integer)lockRun( new Func0(){ @Override public Object apply(){
+            indexOf_lastIsInDeleted = false;
+            if( mrow==null )return -1;
+            
+            Integer cachedRI = rowIndexCache.get(mrow);
+            if( cachedRI!=null ){
+                boolean cacheMiss = false;
+                
+                int wrSize = getWorkedRows().size();
+                if( cachedRI<0 ){
+                    logWarning("cached rowIndex({0}) < 0", cachedRI);
+                    rowIndexCache.remove(mrow);
+                    cacheMiss = true;
+                }
+                
+                if( !cacheMiss && cachedRI>=wrSize ){
+                    logFiner("cached rowIndex({0}) >= workedRows.size({1})", cachedRI, wrSize);
+                    rowIndexCache.remove(mrow);
+                    cacheMiss = true;
+                }
+                
+                if( !cacheMiss ){
+                    Object oRow = getWorkedRows().get(cachedRI);
+                    if( !Objects.equals(oRow, mrow) ){
+                        logFiner("cached row({0}) miss", cachedRI);
+                        cacheMiss = true;
+                    }
+                }
+                
+                if( !cacheMiss ){
+                    logFinest("return cached index={0} for {1}", cachedRI, mrow);
+                    return cachedRI;
+                }
+            }
+            
+            if( getDeletedRows().contains(mrow) ){
+                logFinest("return index={0} from deletedRows", -1);
+                indexOf_lastIsInDeleted = true;
+                return -2;
+            }
+            
+            int idx = getWorkedRows().indexOf(mrow);
+            if( idx>=0 ){
+                rowIndexCache.put(mrow, idx);
+                logFiner("cache rowIndex = {0}",idx );
+                return idx;
+            }
+            
+            return -1;
+        }});
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="workedRows : EventList<DataRow>">
+    private EventList<DataRow> workedRows;
+    
+    /**
+     * Рабочий набор строк, содержит:
+     * <ul>
+     * <li>не изменные строки (fixed)
+     * <li>изменные строки (updated)
+     * <li>добавленные строки (inserted)
+     * </ul>
+     * @return Рабочий набор строк
+     */
+    private EventList<DataRow> getWorkedRows(){
+        Object sync = this;
+        synchronized(sync){
+            if( workedRows!=null )return workedRows;
+            workedRows = new SyncEventList( new ArrayList(), sync );
+            listenForDisableNullRows( null, workedRows );
+            //listenForIndexCache(null, workedRows);
+            return workedRows;
+        }
+    }
+    
+    /**
+     * Итератор по рабочему набору строк
+     * @return итератор
+     */
+    public Iterator<DataRow> getRowsIterator(){
+        return (Iterator<DataRow>)lockRun(new Func0() {
+            @Override
+            public Object apply() {
+                return getWorkedRows().iterator();
+            }
+        });
+    }
+    
+    /**
+     * Итератор по рабочему набору строк
+     * @return итератор
+     */
+    public Iterable<DataRow> getRowsIterable(){
+        return (Iterable<DataRow>)lockRun(new Func0() {
+            @Override
+            public Object apply() {
+                return getWorkedRows();
+            }
+        });
+    }
+    
+    /**
+     * Итератор по строкам
+     * @param states Указывает по строкам с каким состоянием производить поиск
+     * @return Итератор
+     */
+    public Iterable<DataRow> getRowsIterable(final DataRowState... states){
+        return (Iterable<DataRow>)lockRun(new Func0() {
+            @Override
+            public Object apply() {
+                Predicate<DataRow> filter = new Predicate<DataRow>() {
+                    @Override
+                    public boolean validate(DataRow dr) {
+                        DataRowState st = dr.getState();
+                        for( DataRowState fst : states ){
+                            if( Objects.equals(st, fst) )return true;
+                        }
+                        return false;
+                    }
+                };
+                
+                return Iterators.predicate(DataTable.this.getRowsIterableAll(), filter);
+            }
+        });
+    }
+    
+    /**
+     * Возвращает строки ввиде списка
+     * @param states строки с указаным состоянием будут возвращены
+     * @return состояние строк
+     */
+    public List<DataRow> rowsList(final DataRowState... states){
+        return (List<DataRow>)lockRun(new Func0() {
+            @Override
+            public Object apply() {
+                Predicate<DataRow> filter = new Predicate<DataRow>() {
+                    @Override
+                    public boolean validate(DataRow dr) {
+                        DataRowState st = dr.getState();
+                        for( DataRowState fst : states ){
+                            if( Objects.equals(st, fst) )return true;
+                        }
+                        return false;
+                    }
+                };
+                
+                ArrayList<DataRow> list = new ArrayList<>();
+                for( DataRow dr : Iterators.predicate(DataTable.this.getRowsIterableAll(), filter) ){
+                    list.add( dr );
+                }
+                return list;
+            }
+        });
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="allRows : Iterable<DataRow>">
+    private transient Iterable<DataRow> allRows;
+    
+    /**
+     * Возвращает все строки включая удаленные
+     * @return строки
+     */
+    public Iterable<DataRow> getRowsIterableAll(){
+        synchronized(this){
+            if( allRows!=null )return allRows;
+            allRows = Iterators.sequence(getWorkedRows(), getDeletedRows());
+            return allRows;
+        }
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="listenForDisableNullRows()">
+    /**
+     * Запрещает вставлять null ссылки в качестве строк
+     */
+    public class NullRowsDisabler implements Func3<Object, Integer, DataRow, DataRow> {
+        @Override
+        public Object apply(Integer idx, DataRow old, DataRow cur) {
+            if( cur==null )throw new IllegalArgumentException("can't insert null row");
+            return null;
+        }
+    }
+    /**
+     * Запрет вставки null ссылок в список строк
+     * @param cset Отписка (может быть null)
+     * @param elist Список строк
+     */
+    private void listenForDisableNullRows( CloseableSet cset, EventList<DataRow> elist ){
+        NullRowsDisabler nldis = new NullRowsDisabler();
+        Closeable cl = elist.onInserting(nldis);
+        if( cset!=null )cset.add(cl);
+        
+        cl = elist.onUpdating(nldis);
+        if( cset!=null )cset.add(cl);
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="deletedRows : EventSet<DataRow>">
+    private EventSet<DataRow> deletedRows;
+    
+    /**
+     * Набор удаленных строк
+     * @return набор удаленных строк
+     */
+    private EventSet<DataRow> getDeletedRows(){
+        synchronized(this){
+            if( deletedRows!=null )return deletedRows;
+            deletedRows = new SyncEventSet<DataRow>(new LinkedHashSet<DataRow>(), this){
+                @Override
+                protected void fireQueueEvents() {
+                    //synchronized( DataTable.this ){
+                        if( dropCallLevel.get()>0 ){
+                            eventQueue.clear();
+                            return;
+                        }
+                    //}
+                    super.fireQueueEvents();
+                }
+            };
+            return deletedRows;
+        }
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="insertedRows : EventSet<DataRow>">
+    private EventSet<DataRow> insertedRows;
+    
+    /**
+     * Набор добавленных строк
+     * @return добавоенные строки
+     */
+    private EventSet<DataRow> getInsertedRows(){
+        synchronized(this){
+            if( insertedRows!=null )return insertedRows;
+            insertedRows = new SyncEventSet<>(new LinkedHashSet<DataRow>(), this);
+            return insertedRows;
+        }
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="fixed()">
+    /**
+     * Зафиксировать все строки. <br>
+     * Строки отмесенные как удаленные, удаляются из этой таблицы.
+     * Строки отмеченные как добавленные, переводятся в статус обычных.
+     * Строки отмеченные как измененные - переводятся в статус обычных с текущим состоянием данных.
+     */
+    public void fixed(){
+        synchronized(this){
+            rowTrackingListeners.closeAll();
+            
+            ArrayList<DataRow> allRowsList = new ArrayList<>();
+            for( DataRow dr : getRowsIterableAll() ){
+                if( dr==null )throw new Error("Ошибка реализации");
+                allRowsList.add(dr);
+            }
+            
+            for( DataRow dr : allRowsList ){
+                fixed(dr,true);
+            }
+            
+            initRowChangeTracking();
+        }
+        
+        fireEventQueue();
+    }
+    
+    /**
+     * Фиксация изменений
+     * @param row Строка которую требуется зафиксировать
+     */
+    public void fixed( DataRow row ){
+        if( row==null )throw new IllegalArgumentException("row == null");
+        fixed(row, true);
+        fireEventQueue();
+    }
+    
+    /**
+     * Фиксация изменений
+     * @param row Строка которую требуется зафиксировать
+     * @param addEvents true - добавить события в очередь
+     */
+    public void fixed( DataRow row,boolean addEvents ){
+        if( row==null )throw new IllegalArgumentException("row == null");
+        
+        DataRowState state0 = null;
+        DataRowState state1 = null;
+        
+        synchronized(this){
+            int ri = indexOf(row);
+
+            state0 = stateOf(row);
+            row.fixChanges(addEvents);
+            
+            boolean rowErased = false;
+            boolean rowFixed = false;
+            
+            if( getInsertedRows().remove(row) ){
+                if( getWorkedRows().contains(row) ){
+                    rowFixed = true;
+                }else{
+                    rowErased = true;
+                }
+            }else if( getDeletedRows().remove(row) ){
+                rowErased = true;
+            }else if( !getWorkedRows().contains(row) ){
+                if( getInsertedRows().contains(row) ){
+                    getInsertedRows().remove(row);
+                    rowErased = true;
+                }else if( getDeletedRows().contains(row) ){
+                    getDeletedRows().remove(row);
+                    rowErased = true;
+                }
+            }
+            
+            if( rowErased && rowFixed ){
+                throw new Error( "Ошибка реализации" );
+            }
+            
+            if( rowErased ){
+                if( addEvents ){
+                    DataRowErased e = new DataRowErased(this, row);
+                    e.setRowIndex(ri);
+                    addDataEvent(e);
+                }
+
+                try {
+                    row.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(DataTable.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                if( addEvents ){
+                    DataRowClosed e = new DataRowClosed(this, row);
+                    addDataEvent(e);
+                }
+            }
+            
+            state1 = stateOf(row);
+            
+            if( !Objects.equals(state0, state1) && addEvents ){
+                addDataEvent(new DataRowStateChanged(this, row, state0, state1));
+            }
+        }
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="rollback()">
+    /**
+     * Откат изменений таблицы
+     */
+    public void rollback(){
+        rollback(true);
+        fireEventQueue();
+    }
+    
+    /**
+     * Откат изменений таблицы
+     * @param addEvents Добавлять события в очередь
+     */
+    public void rollback(boolean addEvents){
+        synchronized(this){
+            rowTrackingListeners.closeAll();
+            
+            ArrayList<DataRow> allRowsList = new ArrayList<>();
+            for( DataRow dr : getRowsIterableAll() ){
+                if( dr==null )throw new Error("Ошибка реализации");
+                allRowsList.add(dr);
+            }
+            
+            for( DataRow dr : allRowsList ){
+                rollback(dr,addEvents);
+            }
+            
+            initRowChangeTracking();
+        }
+    }
+    
+    /**
+     * Откат изменений строки
+     * @param row Строка
+     */
+    public void rollback(DataRow row){
+        if( row==null )throw new IllegalArgumentException("row == null");
+        rollback(row, true);
+        fireEventQueue();
+    }
+    
+    /**
+     * Откат изменений строки
+     * @param row Строка
+     * @param addEvents Добавлять события в очередь
+     */
+    public void rollback(DataRow row, boolean addEvents){
+        if( row==null )throw new IllegalArgumentException("row == null");
+        synchronized(this){
+            DataRowState s0 = null;
+            DataRowState s1 = null;
+            
+            s0 = row.getState();
+            
+            switch( stateOf(row) ){
+                case Detached:
+                    row.cancelChanges(addEvents);
+                    break;
+                case Inserted:
+                {
+                    rowTrackingListeners.closeAll();
+                    
+                    int ri = indexOf(row);
+                    row.cancelChanges(addEvents);
+                    
+                    boolean insRemoved = getInsertedRows().remove(row);
+                    boolean wsRemoved = getWorkedRows().remove(row);
+                    boolean delRemoved = getDeletedRows().remove(row);
+                    
+                    if( addEvents ){
+                        DataRowErased e = new DataRowErased(this, row);
+                        e.setRowIndex(ri);
+                        addDataEvent(e);
+                    }
+                    
+                    try{
+                        row.close();
+                        // TODO generate events
+                        if( addEvents ){
+                            DataRowClosed e = new DataRowClosed(this, row);
+                            addDataEvent(e);
+                        }
+                    }catch(IOException e){
+                        logException(e);
+                    }
+                    
+                    logFiner(
+                        "row {0} rollbacked from inserted to null, ins={1} ws={2} del={3}",
+                        row, insRemoved, wsRemoved, delRemoved);
+                    
+                    initRowChangeTracking();
+                } break;
+                case Deleted:
+                {
+                    rowTrackingListeners.closeAll();
+                    
+                    boolean insRemoved = getInsertedRows().remove(row);
+                    boolean wsRemoved = getDeletedRows().remove(row);
+                    
+                    int eri = getWorkedRows().indexOf(row);
+                    boolean delRemoved = getWorkedRows().add(row);
+                    
+                    row.cancelChanges(addEvents);
+                    
+                    int ri = -1;
+                    if( eri<0 ){
+                        ri = getWorkedRows().indexOf(row);
+                    }else{
+                        logWarning("deleted row exists({0}) in workedset", eri);
+                    }
+                    
+                    // TODO generate events
+                    if( addEvents ){
+                        DataRowUndeleted ev = new DataRowUndeleted(this, row, ri);
+                        addDataEvent(ev);
+                    }
+                    
+                    logFiner(
+                        "row {0} rollbacked from deleted to fixed, ins={1} ws={2} del={3}",
+                        row, insRemoved, wsRemoved, delRemoved);
+                    
+                    initRowChangeTracking();
+                } break;
+                case Fixed:
+                    break;
+                case Updated:
+                    row.cancelChanges(addEvents);
+                    break;
+            }
+            
+            s1 = row.getState();
+            if( !Objects.equals(s0, s1) && addEvents ){
+                addDataEvent(new DataRowStateChanged(this, row, s0, s1));
+            }
+        }
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="drop()">
+    protected transient final AtomicInteger dropCallLevel = new AtomicInteger(0);
+    
+    /**
+     * Удаление всех данны, включая изменения и удаление структуры
+     */
+    public void drop(){
+        synchronized(this){
+            dropCallLevel.incrementAndGet();
+            rowTrackingListeners.closeAll();
+            try{            
+                for( DataRow mrow : getWorkedRows() ){
+                    try {
+                        mrow.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataTable.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                for( DataRow mrow : getInsertedRows() ){
+                    try {
+                        mrow.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataTable.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                for( DataRow mrow : getDeletedRows()){
+                    try {
+                        mrow.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataTable.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                getColumnsEventList().clear();
+            } finally {
+                dropCallLevel.decrementAndGet();
+                initRowChangeTracking();
+            }
+        }
+        
+        fireEvent(new DataTableDropped(this));
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="isDeleted(row):boolean">
+    /**
+     * Возвращает true если строка отмечена как удаленная
+     * @param row строка
+     * @return true - отмечена под удаление
+     */
+    public boolean isDeleted( DataRow row ){
+        if( row==null )throw new IllegalArgumentException("mrow == null");
+        synchronized(this){
+            return getDeletedRows().contains(row);
+        }
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="isInserted(row):boolean">
+    /**
+     * Возвращает true если строка отмечена как новая (inserted)
+     * @param row стока
+     * @return true - строка добавлена но не фиксирована
+     */
+    public boolean isInserted( DataRow row ){
+        if( row==null )throw new IllegalArgumentException("mrow == null");
+        synchronized(this){
+            return getInsertedRows().contains(row);
+        }
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="isUpdated(row):boolean">
+    /**
+     * Возвращает true если строка быда обновлена, но не фиксированна
+     * @param row строка 
+     * @return true - строка была обновлена, но не фиксированна
+     */
+    public boolean isUpdated( DataRow row ){
+        if( row==null )throw new IllegalArgumentException("row == null");
+        synchronized(this){
+            return row.isChanged() && !isDeleted(row) && !isInserted(row);
+        }
+    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="stateOf(row)">
+    /**
+     * Возвращает состояние строки
+     * @param row строка
+     * @return состояние строки
+     */
+    public DataRowState stateOf( DataRow row ){
+        if( row==null )throw new IllegalArgumentException("row == null");
+        synchronized(this){
+            int ri = indexOf(row);
+            
+            if( indexOf_lastIsInDeleted ){
+                return DataRowState.Deleted;
+            }
+            
+            if( ri<0 )return DataRowState.Detached;
+            
+            boolean ins = getInsertedRows().contains(row);
+            if( ins )return DataRowState.Inserted;
+            
+            if( row.isChanged() ){
+                return DataRowState.Updated;
+            }
+            
+            return DataRowState.Fixed;
+        }
+    }
+    //</editor-fold>
+    
+    /**
+     * Производит вставку строки
+     * @param values значния
+     * @return интерфейс вставки
+     */
+    public DataTableInserting insert( Object ... values ){
+        if( values==null || values.length==0 ){
+            return new DataTableInserting(this);
+        }
+        return new DataTableInserting(this, values);
+    }
+    
+    /**
+     * Производит вставку строки
+     * @param row строка
+     */
+    public void insert( final DataRow row ){
+        if( row==null )throw new IllegalArgumentException("row == null");
+        lockRun( new Runnable(){
+            public void run(){
+                //synchronized(DataTable.this){
+                    nextScn();
+                    getWorkedRows().add(row);
+                //}
+            }
+        });
+    }
+    
+    /**
+     * Удаляет строку
+     * @param row строка
+     */
+    public void delete( final DataRow row ){
+        if( row==null )throw new IllegalArgumentException("row == null");
+        lockRun( new Runnable(){
+            public void run(){
+                //synchronized(DataTable.this){
+                    nextScn();
+                    getWorkedRows().remove(row);
+                //}
+            }
+        });
+    }
+}

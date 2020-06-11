@@ -34,6 +34,7 @@
         <module>gui-swing-test</module>
 <!--        <module>sql</module>-->
         <module>next-parent</module>
+        <module>simple-types</module>
     </modules>
 
     <build>

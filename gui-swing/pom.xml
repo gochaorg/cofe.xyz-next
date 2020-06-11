@@ -23,8 +23,6 @@
         <module>gui-swing-str</module>
         <module>gui-swing-color</module>
         <module>gui-swing-tmodel</module>
-        <module>gui-swing-table</module>
-        <module>gui-swing-cell</module>
     </modules>
 
     <dependencies>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>sql</artifactId>
+        <groupId>xyz.cofe</groupId>
+        <version>1.0-SNAPSNOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <description>Создание прокси для работсы с JDBC</description>
+    <artifactId>jdbc-proxy</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>xyz.cofe</groupId>
+            <artifactId>ecolls</artifactId>
+            <version>1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>xyz.cofe</groupId>
+            <artifactId>types</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
+
+</project>
