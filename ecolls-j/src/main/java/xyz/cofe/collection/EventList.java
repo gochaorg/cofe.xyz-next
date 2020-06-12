@@ -200,8 +200,6 @@ public interface EventList<E>
         fireCollectionEvent(ev);
     }
 
-    //default void fireDeleting(int index, E e){};
-
     /**
      * Рассылка уведомления подписчикам о удалении элемента
      * @param index индекс
@@ -388,12 +386,14 @@ public interface EventList<E>
      */
     @Override
     default boolean add(E e) {
+        //noinspection Contract
         return withCollectionEventQueue(()->writeLock(()->{
             List<E> tgt = target();
             if( tgt == null ) throw new TargetNotAvailable();
             //fireInserting(tgt.size(), e);
 
             boolean res = tgt.add(e);
+            //noinspection ConstantConditions
             if( res ){
                 fireInserted(tgt.size()-1, e);
             }
@@ -472,7 +472,7 @@ public interface EventList<E>
     }
 
     /**
-     * Удаляет указанные элементы из списока
+     * Удаляет указанные элементы из списка
      * @param coll элементы
      * @return true - список изменен
      */
@@ -595,7 +595,7 @@ public interface EventList<E>
     /**
      * Удаление элементов согласно фильтру
      * @param filter фильтр
-     * @return функция замены
+     * @return факт удаления
      */
     @Override
     default boolean removeIf(Predicate<? super E> filter) {

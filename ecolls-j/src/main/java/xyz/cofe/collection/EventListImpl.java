@@ -1,8 +1,12 @@
 package xyz.cofe.collection;
 
+import xyz.cofe.fn.Pair;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -17,8 +21,24 @@ public class EventListImpl {
      * @param <E> тип элементов
      * @return факт удаления
      */
-    @SuppressWarnings({"ConstantConditions", "UnnecessaryUnboxing"})
     public static <E> boolean removeByPredicate( EventList<E> lst, Predicate<? super E> filter) {
+        return removeByPredicate(lst,filter,null);
+    }
+
+    /**
+     * Удаление элементов согласно указанному предикату
+     * @param lst список
+     * @param filter предикат
+     * @param <E> тип элементов
+     * @param fireDeleting (возможно null) уведомление о удалении
+     * @return факт удаления
+     */
+    @SuppressWarnings({"ConstantConditions", "UnnecessaryUnboxing"})
+    public static <E> boolean removeByPredicate(
+        EventList<E> lst,
+        Predicate<? super E> filter,
+        BiConsumer<Integer,? super E> fireDeleting
+    ) {
         if( filter==null ) throw new IllegalArgumentException("filter==null");
         if( lst==null ) throw new IllegalArgumentException("lst==null");
 
@@ -30,7 +50,7 @@ public class EventListImpl {
         for( int i = lst.size()-1; i >= 0; i-- ){
             E e = tgt.get(i);
             if( filter.test(e) ){
-                //fireDeleting(i, e);
+                if( fireDeleting!=null )fireDeleting.accept(i, e);
                 removeSet.add(i);
             }
         }

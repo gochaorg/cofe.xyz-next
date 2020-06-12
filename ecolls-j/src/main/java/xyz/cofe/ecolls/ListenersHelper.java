@@ -20,7 +20,8 @@ import java.util.function.Supplier;
  * <li>removeListener</li>
  * <li>fireEvent</li>
  * </ul>
- * Умеет хранить как hard так и soft ссылки на listener-ы
+ * Умеет хранить как hard так и soft ссылки на listener-ы. <br>
+ * Отдельно стоит посмотреть на {@link ImmediateEvent}.
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
  * @param <ListenerType> Тип издателья
  * @param <EventType> Тип подписчика
@@ -235,6 +236,15 @@ public class ListenersHelper<ListenerType,EventType> implements ReadWriteLockSup
      * @param event уведомление
      */
     public void fireEvent(EventType event) {
+        if( event instanceof ImmediateEvent && ((ImmediateEvent)event).isImmediateEvent() ){
+            for( ListenerType ls : readLock(()->new LinkedHashSet<>(getListeners())) ){
+                if( ls != null ){
+                    callListener.accept(ls, event);
+                }
+            }
+            return;
+        }
+
         if( eventBlockLevel.get()>0 ){
             getEventQueue().add(event);
         }else {

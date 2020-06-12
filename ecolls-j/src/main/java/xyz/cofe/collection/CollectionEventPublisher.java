@@ -1,6 +1,7 @@
 package xyz.cofe.collection;
 
 import xyz.cofe.collection.CollectionListener;
+import xyz.cofe.ecolls.ListenersHelper;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,13 +17,24 @@ import java.util.function.Supplier;
  */
 public interface CollectionEventPublisher<C,E> {
     /**
+     * Возвращает помошника подписок
+     * @return помошник
+     */
+    default ListenersHelper<
+        CollectionListener<C, E>,
+        CollectionEvent<C, E>
+        > listenerHelper(){
+        return CollectionEventPublisherImpl.listenersHelperOf(this);
+    }
+
+    /**
      * Добавляет подписчика
      * @param weak Добавить как weak (true) ссылку или как обычную (false)
      * @param listener Подписчик
      * @return Интерфейс для отсоединения подписчика
      */
     default AutoCloseable addCollectionListener(boolean weak, CollectionListener<C,E> listener){
-        return CollectionEventPublisherImpl.listenersHelperOf(this).addListener(listener,weak);
+        return listenerHelper().addListener(listener,weak);
     }
 
     /**
@@ -31,7 +43,7 @@ public interface CollectionEventPublisher<C,E> {
      * @return Интерфейс для отсоединения подписчика
      */
     default AutoCloseable addCollectionListener(CollectionListener<C,E> listener){
-        return CollectionEventPublisherImpl.listenersHelperOf(this).addListener(listener,false);
+        return listenerHelper().addListener(listener,false);
     }
 
     /**
@@ -39,7 +51,7 @@ public interface CollectionEventPublisher<C,E> {
      * @param listener Подписчик
      */
     default void removeCollectionListener(CollectionListener<C,E> listener){
-        CollectionEventPublisherImpl.listenersHelperOf(this).removeListener(listener);
+        listenerHelper().removeListener(listener);
     }
 
     /**
@@ -48,7 +60,7 @@ public interface CollectionEventPublisher<C,E> {
      * @return true - есть в списке обработки
      */
     default boolean hasCollectionListener(CollectionListener<C,E> listener){
-        return CollectionEventPublisherImpl.listenersHelperOf(this).hasListener(listener);
+        return listenerHelper().hasListener(listener);
     }
 
     /**
@@ -56,7 +68,7 @@ public interface CollectionEventPublisher<C,E> {
      * @return подписчики
      */
     default Set<CollectionListener<C,E>> getCollectionListeners(){
-        return CollectionEventPublisherImpl.listenersHelperOf(this).getListeners();
+        return listenerHelper().getListeners();
     }
 
     /**
@@ -64,7 +76,7 @@ public interface CollectionEventPublisher<C,E> {
      * @param event уведомление
      */
     default void fireCollectionEvent(CollectionEvent<C,E> event){
-        CollectionEventPublisherImpl.listenersHelperOf(this).fireEvent(event);
+        listenerHelper().fireEvent(event);
     }
 
     /**
@@ -72,7 +84,7 @@ public interface CollectionEventPublisher<C,E> {
      * @param eventBlock блок кода
      */
     default void withCollectionEventQueue(Runnable eventBlock){
-        CollectionEventPublisherImpl.listenersHelperOf(this).withQueue(eventBlock);
+        listenerHelper().withQueue(eventBlock);
     }
 
     /**
@@ -82,7 +94,7 @@ public interface CollectionEventPublisher<C,E> {
      * @return возвращаемое значение
      */
     default <T> T withCollectionEventQueue(Supplier<T> eventBlock){
-        return CollectionEventPublisherImpl.listenersHelperOf(this).withQueue(eventBlock);
+        return listenerHelper().withQueue(eventBlock);
     }
 
     /**
@@ -90,7 +102,7 @@ public interface CollectionEventPublisher<C,E> {
      * @return Очередь событий
      */
     default ConcurrentLinkedQueue<CollectionEvent<C,E>> getCollectionEventQueue(){
-        return CollectionEventPublisherImpl.listenersHelperOf(this).getEventQueue();
+        return listenerHelper().getEventQueue();
     }
 
     /**
@@ -98,6 +110,6 @@ public interface CollectionEventPublisher<C,E> {
      * @param ev событие
      */
     default void addCollectionEvent( CollectionEvent<C,E> ev ){
-        CollectionEventPublisherImpl.listenersHelperOf(this).addEvent(ev);
+        listenerHelper().addEvent(ev);
     }
 }
