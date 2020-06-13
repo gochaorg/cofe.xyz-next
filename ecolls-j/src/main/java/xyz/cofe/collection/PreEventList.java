@@ -2,6 +2,7 @@ package xyz.cofe.collection;
 
 import xyz.cofe.ecolls.ImmediateEvent;
 import xyz.cofe.fn.Pair;
+import xyz.cofe.fn.TripleConsumer;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -35,8 +36,36 @@ public interface PreEventList<E> extends EventList<E> {
      * @param e элемент
      */
     default void fireInserting(int index, E e) {
-        InsertedEvent<EventList<E>,Integer,E> ev = InsertedEvent.create(this,index,e);
+        InsertingEvent<EventList<E>,Integer,E> ev = InsertingEvent.create(this,index,e);
         fireCollectionEvent(ev);
+    }
+
+    /**
+     * Добавляет подписчика на событие начала добавления данных {@link InsertedEvent}
+     * @param weak true - добавить подписчика как weak ссылку
+     * @param ls подписчик - fn( key:Integer, oldValue:E=null, newValue:E )
+     * @return отписка от уведомлений
+     */
+    @SuppressWarnings({ "UnusedReturnValue", "unchecked", "rawtypes" })
+    default AutoCloseable onInserting(boolean weak, TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return addCollectionListener(weak, (e) -> {
+            if( e instanceof InsertingEvent ){
+                InsertingEvent<EventList<E>,Integer,E> ev = (InsertingEvent)e;
+                ls.accept(ev.getIndex(),null,ev.getNewItem());
+            }
+        });
+    }
+
+    /**
+     * Добавляет подписчика на событие начала добавления данных {@link InsertedEvent}
+     * @param ls подписчик - fn( key:Integer, oldValue:E=null, newValue:E )
+     * @return отписка от уведомлений
+     */
+    @SuppressWarnings({ "UnusedReturnValue" })
+    default AutoCloseable onInserting(TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return onInserting(false, ls);
     }
 
     /**
@@ -46,8 +75,36 @@ public interface PreEventList<E> extends EventList<E> {
      * @param current текущее значение
      */
     default void fireUpdating(int index, E old, E current){
-        UpdatedEvent<EventList<E>,Integer,E> ev = UpdatedEvent.create(this,index,current,old);
+        UpdatingEvent<EventList<E>,Integer,E> ev = UpdatingEvent.create(this,index,current,old);
         fireCollectionEvent(ev);
+    }
+
+    /**
+     * Добавляет подписчика на событие изменения данных {@link UpdatingEvent}
+     * @param weak true - добавить подписчика как weak ссылку
+     * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E )
+     * @return отписка от уведомлений
+     */
+    @SuppressWarnings({ "UnusedReturnValue", "unchecked", "rawtypes" })
+    default AutoCloseable onUpdating(boolean weak, TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return addCollectionListener(weak, (e) -> {
+            if( e instanceof UpdatingEvent ){
+                UpdatingEvent<EventList<E>,Integer,E> ev = (UpdatingEvent)e;
+                ls.accept(ev.getIndex(),ev.getOldItem(),ev.getNewItem());
+            }
+        });
+    }
+
+    /**
+     * Добавляет подписчика на событие изменения данных {@link UpdatingEvent}
+     * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E )
+     * @return отписка от уведомлений
+     */
+    @SuppressWarnings({ "UnusedReturnValue" })
+    default AutoCloseable onUpdating(TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return onUpdating(false, ls);
     }
 
     /**
@@ -56,7 +113,35 @@ public interface PreEventList<E> extends EventList<E> {
      * @param e элемент
      */
     default void fireDeleting(int index, E e){
-        fireCollectionEvent(DeletedEvent.create(this,index,e));
+        fireCollectionEvent(DeletingEvent.create(this,index,e));
+    }
+
+    /**
+     * Добавляет подписчика на событие удаления данных {@link DeletingEvent}
+     * @param weak true - добавить подписчика как weak ссылку
+     * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E=null )
+     * @return отписка от уведомлений
+     */
+    @SuppressWarnings({ "UnusedReturnValue", "unchecked", "rawtypes" })
+    default AutoCloseable onDeleting(boolean weak, TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return addCollectionListener(weak, (e) -> {
+            if( e instanceof DeletingEvent ){
+                DeletingEvent<EventList<E>,Integer,E> ev = (DeletingEvent)e;
+                ls.accept(ev.getIndex(),ev.getOldItem(),null);
+            }
+        });
+    }
+
+    /**
+     * Добавляет подписчика на событие удаления данных {@link DeletingEvent}
+     * @param ls подписчик - fn( key:Integer, oldValue:E, newValue:E=null )
+     * @return отписка от уведомлений
+     */
+    @SuppressWarnings({ "UnusedReturnValue" })
+    default AutoCloseable onDeleting(TripleConsumer<Integer,E,E> ls){
+        if( ls == null )throw new IllegalArgumentException( "ls == null" );
+        return onDeleting(false, ls );
     }
     //endregion
 
@@ -138,8 +223,10 @@ public interface PreEventList<E> extends EventList<E> {
             int changeCount = 0;
             for( E e : commited ){
                 //noinspection ConstantConditions
-                if( add(e) ){
+                if( tgt.add(e) ){
                     changeCount++;
+                    //noinspection ConstantConditions
+                    fireInserted(tgt.size()-1, e);
                 }
             }
 
@@ -170,7 +257,8 @@ public interface PreEventList<E> extends EventList<E> {
 
             int changeCount = 0;
             for( E e : commited ){
-                add(index+changeCount, e);
+                tgt.add(index+changeCount, e);
+                fireInserted(index+changeCount, e);
                 changeCount++;
             }
 
