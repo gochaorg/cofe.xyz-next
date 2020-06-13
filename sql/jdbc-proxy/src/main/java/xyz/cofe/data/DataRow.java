@@ -170,17 +170,11 @@ public class DataRow implements Closeable, Serializable
         
         if( earlyConstraint ){
             this.data = new Object[0];        
-            //List<DataColumn> dcList = table.getColumns();
-            //for( int i=0; i<dcList.size(); i++ ){
-            //    set(i, data[i], false);
-            //}
             int ccnt = table.getColumnsCount();
             for( int i=0; i<ccnt; i++ ){
                 set(i, data[i], false);
             }
         }else{        
-            //List<DataColumn> dcList = table.getColumns();
-            //this.data = Arrays.copyOf(data, dcList.size());
             int ccnt = table.getColumnsCount();
             this.data = Arrays.copyOf(data, ccnt);
         }
@@ -251,15 +245,15 @@ public class DataRow implements Closeable, Serializable
             if( table!=null ){
                 synchronized(table){
                     //List<DataColumn> dcList = table.getColumns();
-                    //Object[] res = 
-                    //    data==null 
-                    //    ? new Object[dcList.size()] 
+                    //Object[] res =
+                    //    data==null
+                    //    ? new Object[dcList.size()]
                     //    : Arrays.copyOf(data, dcList.size());
                     //return res;
                     int ccnt = table.getColumnsCount();
-                    Object[] res = 
-                        data==null 
-                        ? new Object[ccnt] 
+                    Object[] res =
+                        data==null
+                        ? new Object[ccnt]
                         : Arrays.copyOf(data, ccnt);
                     return res;
                 }

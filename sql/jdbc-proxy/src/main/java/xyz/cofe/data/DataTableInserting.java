@@ -119,7 +119,6 @@ public class DataTableInserting {
     public DataTableInserting(DataTable dt){
         this.table = dt;
         if( dt!=null ){
-            //this.values = new Object[dt.getColumns().size()];
             this.values = new Object[dt.getColumnsCount()];
         }
     }

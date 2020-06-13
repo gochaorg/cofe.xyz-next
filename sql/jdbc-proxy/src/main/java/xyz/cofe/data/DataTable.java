@@ -25,26 +25,23 @@
 package xyz.cofe.data;
 
 import xyz.cofe.collection.*;
-import xyz.cofe.collection.list.EventList;
-import xyz.cofe.collection.list.SyncEventList;
-import xyz.cofe.collection.set.EventSet;
-import xyz.cofe.collection.set.SyncEventSet;
-import xyz.cofe.common.CloseableSet;
-import xyz.cofe.common.Reciver;
 import xyz.cofe.ecolls.Closeables;
+import xyz.cofe.ecolls.ListenersHelper;
 import xyz.cofe.fn.Fn0;
 import xyz.cofe.fn.Fn1;
-import xyz.cofe.fn.Fn3;
 import xyz.cofe.fn.TripleConsumer;
 import xyz.cofe.iter.Eterable;
+import xyz.cofe.ecolls.ReadWriteLockSupport;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -60,7 +57,7 @@ import java.util.logging.Logger;
  * @author Kamnev Georgiy
  * @see DataRow
  */
-public class DataTable 
+public class DataTable implements ReadWriteLockSupport
 {
     //<editor-fold defaultstate="collapsed" desc="log Функции">
     private transient static final Logger logger = Logger.getLogger(DataTable.class.getName());
@@ -224,7 +221,15 @@ public class DataTable
         initConstraints();
         initRowChangeTracking();
     }
-    
+
+    private final ReentrantReadWriteLock sync = new ReentrantReadWriteLock();
+
+    //<editor-fold defaultstate="collapsed" desc="read write lock">
+    public ReentrantReadWriteLock getReadWriteLock(){ return sync; }
+    @Override public Lock getReadLock(){ return sync.readLock(); }
+    @Override public Lock getWriteLock(){ return sync.writeLock(); }
+    //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="data events support">
     protected transient final DataEventSupport listeners = new DataEventSupport();
     
@@ -308,46 +313,7 @@ public class DataTable
     }
     
     protected final transient AtomicInteger eventLockLevel = new AtomicInteger(0);
-    
-    /**
-     * Выполнение кода в режиме блокировки таблицы и последующим уведомлением о событии
-     * @param run код
-     * @see #fireEventQueue() 
-     */
-    public void lockRun( Runnable run ){
-        if( run==null )throw new IllegalArgumentException("run == null");
-        try{
-            eventLockLevel.incrementAndGet();
-            synchronized(this){
-                run.run();
-            }
-        }finally{
-            eventLockLevel.decrementAndGet();
-            fireEventQueue();
-        }
-    }
-    
-    /**
-     * Выполнение кода в режиме блокировки таблицы и последующим уведомлением о событии
-     * @param run код
-     * @return результат выполения кода
-     * @see #fireEventQueue() 
-     */
-    public Object lockRun( Fn0 run ){
-        if( run==null )throw new IllegalArgumentException("run == null");
-        try{
-            eventLockLevel.incrementAndGet();
-            Object o = null;
-            synchronized(this){
-                o = run.apply();
-            }
-            return o;
-        }finally{
-            eventLockLevel.decrementAndGet();
-            fireEventQueue();
-        }
-    }
-    
+
     /**
      * Выполенеие внутреннего кода
      */
@@ -393,14 +359,7 @@ public class DataTable
      */
     protected Object lockRunInternal( final Fn1<InternalRun,Object> run ){
         if( run==null )throw new IllegalArgumentException("run == null");
-        return lockRun(new Fn0() {
-            @Override
-            public Object apply() {
-                InternalRun irun = createInternalRun();
-                Object result = run.apply(irun);
-                return result;
-            }
-        });
+        return writeLock(() -> run.apply(createInternalRun()));
     }
     
     /**
@@ -595,10 +554,10 @@ public class DataTable
         TripleConsumer<Integer,DataRow,DataRow> ls = (idx,old,cur) -> {
             if( cur!=null ){
                 synchronized(cur){
-                    synchronized( DataTable.this){
+                    DataTable.this.readLock( ()->{
                         RuntimeException err = checkNullableValue(cur,true);
                         if( err!=null )throw err;
-                    }
+                    });
                 }
             }
         };
@@ -832,9 +791,9 @@ public class DataTable
      * @return true - отслеживание включенно
      */
     public boolean isTrackChanges(){
-        synchronized(this){
+        synchronized(rowTrackingListeners){
             Object[] clarr = rowTrackingListeners.getCloseables();
-            return clarr!=null ? clarr.length > 0 : false;
+            return clarr != null && clarr.length > 0;
         }
     }
     
@@ -843,15 +802,15 @@ public class DataTable
      * @param track true - Отслеживать
      */
     public void setTrackChanges(boolean track){
-        rowTrackingListeners.close();
-        if( track ){
-            initRowChangeTracking();
+        synchronized( rowTrackingListeners ){
+            rowTrackingListeners.close();
+            if( track ){
+                initRowChangeTracking();
+            }
         }
     }
     //</editor-fold>
 
-    private final ReentrantReadWriteLock sync = new ReentrantReadWriteLock();
-    
     //<editor-fold defaultstate="collapsed" desc="scn:long">
     private final AtomicLong scn = new AtomicLong(0L);
     
@@ -883,20 +842,7 @@ public class DataTable
         if( columns!=null )return columns;
         synchronized(this){
             if( columns!=null )return columns;
-            columns = new BasicEventList<>( new ArrayList<DataColumn>(), sync)/*{
-                @Override
-                protected void fireQueueEvents() {
-                    int dcall = dropCallLevel.get();
-                    //synchronized( DataTable.this ){
-                        if( dcall>0 ){
-                            eventQueue.clear();
-                            return;
-                        }
-                    //}
-                    
-                    super.fireQueueEvents();
-                }
-            }*/;
+            columns = new BasicEventList<>( new ArrayList<DataColumn>(), sync);
             initReadonlyColumns(null, columns);
             return columns;
         }
@@ -907,16 +853,12 @@ public class DataTable
      * @return колонки таблицы
      */
     public DataColumn[] getColumns(){
-        //final AtomicReference<DataColumn[]> ref = new AtomicReference<>();
-        return (DataColumn[])lockRun(new Fn0() {
-            @Override
-            public Object apply() {
-                ArrayList<DataColumn> l = new ArrayList<>();
-                for( DataColumn dc : getColumnsEventList() ){
-                    l.add(dc.clone());
-                }
-                return l.toArray(new DataColumn[]{});
+        return readLock(() -> {
+            ArrayList<DataColumn> l = new ArrayList<>();
+            for( DataColumn dc : getColumnsEventList() ){
+                l.add(dc.clone());
             }
+            return l.toArray(new DataColumn[]{});
         });
     }
     
@@ -948,12 +890,7 @@ public class DataTable
      */
     public void addColumn( final DataColumn dc ){
         if( dc==null )throw new IllegalArgumentException("dc == null");
-        lockRun(new Runnable() {
-            @Override
-            public void run() {
-                getColumnsEventList().add(dc);
-            }
-        });
+        writeLock( ()->getColumnsEventList().add(dc) );
     }
     
     /**
@@ -962,12 +899,7 @@ public class DataTable
      */
     public void removeColumn( final DataColumn dc ){
         if( dc==null )throw new IllegalArgumentException("dc == null");
-        lockRun(new Runnable() {
-            @Override
-            public void run() {
-                getColumnsEventList().remove(dc);
-            }
-        });
+        writeLock( ()->getColumnsEventList().remove(dc) );
     }
     
     /**
@@ -975,25 +907,14 @@ public class DataTable
      * @param colIdx индекс колонки
      */
     public void removeColumnByIndex( final int colIdx ){
-        //if( colIdx==null )throw new IllegalArgumentException("dc == null");
-        lockRun(new Runnable() {
-            @Override
-            public void run() {
-                getColumnsEventList().remove(colIdx);
-            }
-        });
+        writeLock( ()->getColumnsEventList().remove(colIdx) );
     }
     
     /**
      * Удаляет все колонки
      */
     public void dropColumns(){
-        lockRun(new Runnable() {
-            @Override
-            public void run() {
-                getColumnsEventList().clear();
-            }
-        });
+        writeLock(() -> getColumnsEventList().clear());
     }
     
     /**
@@ -1038,12 +959,7 @@ public class DataTable
      * @return кол-во строк в рабочем наборе
      */
     public int getRowsCount() {
-        //synchronized(this){
-        return (int)(Integer)lockRun( new Fn0(){
-            @Override public Object apply(){
-                return getWorkedRows().size();
-            }});
-        //}
+        return readLock(() -> getWorkedRows().size());
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="row(idx):DataRow">
@@ -1059,12 +975,9 @@ public class DataTable
         //    return getWorkedRows().get(row);
         //}
         if( row<0 )throw new IllegalArgumentException("row < 0");
-        return (DataRow)lockRun(new Fn0() {
-            @Override
-            public Object apply() {
-                if( row>=getWorkedRows().size() )throw new IllegalArgumentException("row("+row+") >= getRowsCount("+getWorkedRows().size()+")");
-                return getWorkedRows().get(row);
-            }
+        return readLock(() -> {
+            if( row>=getWorkedRows().size() )throw new IllegalArgumentException("row("+row+") >= getRowsCount("+getWorkedRows().size()+")");
+            return getWorkedRows().get(row);
         });
     }
     //</editor-fold>
@@ -1078,27 +991,27 @@ public class DataTable
      * @return индекс или -1
      */
     public int indexOf( final DataRow mrow ){
-        return (int)(Integer)lockRun( new Fn0(){ @Override public Object apply(){
+        return (int)(Integer)readLock( () -> {
             indexOf_lastIsInDeleted = false;
             if( mrow==null )return -1;
-            
+
             Integer cachedRI = rowIndexCache.get(mrow);
             if( cachedRI!=null ){
                 boolean cacheMiss = false;
-                
+
                 int wrSize = getWorkedRows().size();
                 if( cachedRI<0 ){
                     logWarning("cached rowIndex({0}) < 0", cachedRI);
                     rowIndexCache.remove(mrow);
                     cacheMiss = true;
                 }
-                
+
                 if( !cacheMiss && cachedRI>=wrSize ){
                     logFiner("cached rowIndex({0}) >= workedRows.size({1})", cachedRI, wrSize);
                     rowIndexCache.remove(mrow);
                     cacheMiss = true;
                 }
-                
+
                 if( !cacheMiss ){
                     Object oRow = getWorkedRows().get(cachedRI);
                     if( !Objects.equals(oRow, mrow) ){
@@ -1106,28 +1019,28 @@ public class DataTable
                         cacheMiss = true;
                     }
                 }
-                
+
                 if( !cacheMiss ){
                     logFinest("return cached index={0} for {1}", cachedRI, mrow);
                     return cachedRI;
                 }
             }
-            
+
             if( getDeletedRows().contains(mrow) ){
                 logFinest("return index={0} from deletedRows", -1);
                 indexOf_lastIsInDeleted = true;
                 return -2;
             }
-            
+
             int idx = getWorkedRows().indexOf(mrow);
             if( idx>=0 ){
                 rowIndexCache.put(mrow, idx);
                 logFiner("cache rowIndex = {0}",idx );
                 return idx;
             }
-            
+
             return -1;
-        }});
+        });
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="workedRows : EventList<DataRow>">
@@ -1158,25 +1071,15 @@ public class DataTable
      * @return итератор
      */
     public Iterator<DataRow> getRowsIterator(){
-        return (Iterator<DataRow>)lockRun(new Fn0() {
-            @Override
-            public Object apply() {
-                return getWorkedRows().iterator();
-            }
-        });
+        return (Iterator<DataRow>)readLock(() -> getWorkedRows().iterator());
     }
     
     /**
      * Итератор по рабочему набору строк
      * @return итератор
      */
-    public Iterable<DataRow> getRowsIterable(){
-        return (Iterable<DataRow>)lockRun(new Fn0() {
-            @Override
-            public Object apply() {
-                return getWorkedRows();
-            }
-        });
+    public Eterable<DataRow> getRowsIterable(){
+        return getWorkedRows();
     }
     
     /**
@@ -1185,23 +1088,15 @@ public class DataTable
      * @return Итератор
      */
     public Eterable<DataRow> getRowsIterable(final DataRowState... states){
-        return (Eterable<DataRow>)lockRun(new Fn0() {
-            @Override
-            public Object apply() {
-                Predicate<DataRow> filter = new Predicate<DataRow>() {
-                    @Override
-                    public boolean test(DataRow dr) {
-                        DataRowState st = dr.getState();
-                        for( DataRowState fst : states ){
-                            if( Objects.equals(st, fst) )return true;
-                        }
-                        return false;
-                    }
-                };
-                
-                //return Iterators.predicate(DataTable.this.getRowsIterableAll(), filter);
-                return DataTable.this.getRowsIterableAll().filter(filter);
-            }
+        return readLock( () -> {
+            Predicate<DataRow> filter = dr -> {
+                DataRowState st = dr.getState();
+                for( DataRowState fst : states ){
+                    if( Objects.equals(st, fst) )return true;
+                }
+                return false;
+            };
+            return DataTable.this.getRowsIterableAll().filter(filter);
         });
     }
     
@@ -1211,26 +1106,20 @@ public class DataTable
      * @return состояние строк
      */
     public List<DataRow> rowsList(final DataRowState... states){
-        return (List<DataRow>)lockRun(new Fn0() {
-            @Override
-            public Object apply() {
-                Predicate<DataRow> filter = new Predicate<DataRow>() {
-                    @Override
-                    public boolean test(DataRow dr) {
-                        DataRowState st = dr.getState();
-                        for( DataRowState fst : states ){
-                            if( Objects.equals(st, fst) )return true;
-                        }
-                        return false;
-                    }
-                };
-                
-                ArrayList<DataRow> list = new ArrayList<>();
-                for( DataRow dr : DataTable.this.getRowsIterableAll().filter(filter) ){
-                    list.add( dr );
+        return (List<DataRow>)readLock( () -> {
+            Predicate<DataRow> filter = dr -> {
+                DataRowState st = dr.getState();
+                for( DataRowState fst : states ){
+                    if( Objects.equals(st, fst) )return true;
                 }
-                return list;
+                return false;
+            };
+
+            ArrayList<DataRow> list = new ArrayList<>();
+            for( DataRow dr : DataTable.this.getRowsIterableAll().filter(filter) ){
+                list.add( dr );
             }
+            return list;
         });
     }
     //</editor-fold>
@@ -1276,6 +1165,13 @@ public class DataTable
         if( cset!=null )cset.add(cl);
     }
     //</editor-fold>
+
+    private static class SkipableListeners<ListenerType,EventType> extends ListenersHelper<ListenerType,EventType> {
+        public SkipableListeners( BiConsumer<ListenerType,EventType> callListFunc ){
+            super(callListFunc);
+        }
+    }
+
     //<editor-fold defaultstate="collapsed" desc="deletedRows : EventSet<DataRow>">
     private EventSet<DataRow> deletedRows;
     
@@ -1286,16 +1182,38 @@ public class DataTable
     private EventSet<DataRow> getDeletedRows(){
         synchronized(this){
             if( deletedRows!=null )return deletedRows;
-            deletedRows = new SyncEventSet<DataRow>(new LinkedHashSet<DataRow>(), this){
+
+            SkipableListeners<CollectionListener<EventSet<DataRow>, DataRow>, CollectionEvent<EventSet<DataRow>, DataRow>>
+                sl = new SkipableListeners<>((ls,ev)->{
+                    if( ls!=null ){
+                        if( dropCallLevel.get()>0 )return;
+                        ls.collectionEvent(ev);
+                    }
+                }
+            ){
                 @Override
-                protected void fireQueueEvents() {
-                    //synchronized( DataTable.this ){
-                        if( dropCallLevel.get()>0 ){
-                            eventQueue.clear();
-                            return;
-                        }
-                    //}
-                    super.fireQueueEvents();
+                public void fireEvent( CollectionEvent<EventSet<DataRow>, DataRow> event ){
+                    if( dropCallLevel.get()>0 )return;
+                    super.fireEvent(event);
+                }
+
+                @Override
+                public void addEvent( CollectionEvent<EventSet<DataRow>, DataRow> ev ){
+                    if( dropCallLevel.get()>0 )return;
+                    super.addEvent(ev);
+                }
+
+                @Override
+                public void runEventQueue(){
+                    if( dropCallLevel.get()>0 )return;
+                    super.runEventQueue();
+                }
+            };
+
+            deletedRows = new BasicEventSet<DataRow>(new LinkedHashSet<DataRow>(), this.getReadWriteLock()){
+                @Override
+                public ListenersHelper<CollectionListener<EventSet<DataRow>, DataRow>, CollectionEvent<EventSet<DataRow>, DataRow>> listenerHelper(){
+                    return sl;
                 }
             };
             return deletedRows;
@@ -1312,7 +1230,7 @@ public class DataTable
     private EventSet<DataRow> getInsertedRows(){
         synchronized(this){
             if( insertedRows!=null )return insertedRows;
-            insertedRows = new SyncEventSet<>(new LinkedHashSet<DataRow>(), this);
+            insertedRows = new BasicEventSet<DataRow>(new LinkedHashSet<DataRow>(), this.getReadWriteLock());
             return insertedRows;
         }
     }
@@ -1326,8 +1244,8 @@ public class DataTable
      * Строки отмеченные как измененные - переводятся в статус обычных с текущим состоянием данных.
      */
     public void fixed(){
-        synchronized(this){
-            rowTrackingListeners.closeAll();
+        writeLock( ()->{
+            rowTrackingListeners.close();
             
             ArrayList<DataRow> allRowsList = new ArrayList<>();
             for( DataRow dr : getRowsIterableAll() ){
@@ -1340,7 +1258,7 @@ public class DataTable
             }
             
             initRowChangeTracking();
-        }
+        });
         
         fireEventQueue();
     }
@@ -1363,11 +1281,12 @@ public class DataTable
     public void fixed( DataRow row,boolean addEvents ){
         if( row==null )throw new IllegalArgumentException("row == null");
         
-        DataRowState state0 = null;
-        DataRowState state1 = null;
-        
-        synchronized(this){
+        //synchronized(this){
+        writeLock(()->{
             int ri = indexOf(row);
+
+            DataRowState state0 = null;
+            DataRowState state1 = null;
 
             state0 = stateOf(row);
             row.fixChanges(addEvents);
@@ -1421,7 +1340,7 @@ public class DataTable
             if( !Objects.equals(state0, state1) && addEvents ){
                 addDataEvent(new DataRowStateChanged(this, row, state0, state1));
             }
-        }
+        });
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="rollback()">
@@ -1438,8 +1357,9 @@ public class DataTable
      * @param addEvents Добавлять события в очередь
      */
     public void rollback(boolean addEvents){
-        synchronized(this){
-            rowTrackingListeners.closeAll();
+        //synchronized(this){
+        writeLock(()->{
+            rowTrackingListeners.close();
             
             ArrayList<DataRow> allRowsList = new ArrayList<>();
             for( DataRow dr : getRowsIterableAll() ){
@@ -1452,7 +1372,7 @@ public class DataTable
             }
             
             initRowChangeTracking();
-        }
+        });
     }
     
     /**
@@ -1472,7 +1392,8 @@ public class DataTable
      */
     public void rollback(DataRow row, boolean addEvents){
         if( row==null )throw new IllegalArgumentException("row == null");
-        synchronized(this){
+        writeLock(()->{
+        //synchronized(this){
             DataRowState s0 = null;
             DataRowState s1 = null;
             
@@ -1484,7 +1405,7 @@ public class DataTable
                     break;
                 case Inserted:
                 {
-                    rowTrackingListeners.closeAll();
+                    rowTrackingListeners.close();
                     
                     int ri = indexOf(row);
                     row.cancelChanges(addEvents);
@@ -1518,7 +1439,7 @@ public class DataTable
                 } break;
                 case Deleted:
                 {
-                    rowTrackingListeners.closeAll();
+                    rowTrackingListeners.close();
                     
                     boolean insRemoved = getInsertedRows().remove(row);
                     boolean wsRemoved = getDeletedRows().remove(row);
@@ -1558,7 +1479,7 @@ public class DataTable
             if( !Objects.equals(s0, s1) && addEvents ){
                 addDataEvent(new DataRowStateChanged(this, row, s0, s1));
             }
-        }
+        });
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="drop()">
@@ -1568,9 +1489,10 @@ public class DataTable
      * Удаление всех данны, включая изменения и удаление структуры
      */
     public void drop(){
-        synchronized(this){
+        //synchronized(this){
+        writeLock(()->{
             dropCallLevel.incrementAndGet();
-            rowTrackingListeners.closeAll();
+            rowTrackingListeners.close();
             try{            
                 for( DataRow mrow : getWorkedRows() ){
                     try {
@@ -1599,7 +1521,7 @@ public class DataTable
                 dropCallLevel.decrementAndGet();
                 initRowChangeTracking();
             }
-        }
+        });
         
         fireEvent(new DataTableDropped(this));
     }
@@ -1613,9 +1535,7 @@ public class DataTable
      */
     public boolean isDeleted( DataRow row ){
         if( row==null )throw new IllegalArgumentException("mrow == null");
-        synchronized(this){
-            return getDeletedRows().contains(row);
-        }
+        return readLock(()-> getDeletedRows().contains(row));
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="isInserted(row):boolean">
@@ -1626,9 +1546,7 @@ public class DataTable
      */
     public boolean isInserted( DataRow row ){
         if( row==null )throw new IllegalArgumentException("mrow == null");
-        synchronized(this){
-            return getInsertedRows().contains(row);
-        }
+        return readLock(()->getInsertedRows().contains(row));
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="isUpdated(row):boolean">
@@ -1639,9 +1557,7 @@ public class DataTable
      */
     public boolean isUpdated( DataRow row ){
         if( row==null )throw new IllegalArgumentException("row == null");
-        synchronized(this){
-            return row.isChanged() && !isDeleted(row) && !isInserted(row);
-        }
+        return readLock( ()->row.isChanged() && !isDeleted(row) && !isInserted(row) );
     }
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="stateOf(row)">
@@ -1652,7 +1568,7 @@ public class DataTable
      */
     public DataRowState stateOf( DataRow row ){
         if( row==null )throw new IllegalArgumentException("row == null");
-        synchronized(this){
+        return readLock( ()->{
             int ri = indexOf(row);
             
             if( indexOf_lastIsInDeleted ){
@@ -1669,7 +1585,7 @@ public class DataTable
             }
             
             return DataRowState.Fixed;
-        }
+        });
     }
     //</editor-fold>
     
@@ -1691,13 +1607,9 @@ public class DataTable
      */
     public void insert( final DataRow row ){
         if( row==null )throw new IllegalArgumentException("row == null");
-        lockRun( new Runnable(){
-            public void run(){
-                //synchronized(DataTable.this){
-                    nextScn();
-                    getWorkedRows().add(row);
-                //}
-            }
+        writeLock(() -> {
+            nextScn();
+            getWorkedRows().add(row);
         });
     }
     
@@ -1707,13 +1619,9 @@ public class DataTable
      */
     public void delete( final DataRow row ){
         if( row==null )throw new IllegalArgumentException("row == null");
-        lockRun( new Runnable(){
-            public void run(){
-                //synchronized(DataTable.this){
-                    nextScn();
-                    getWorkedRows().remove(row);
-                //}
-            }
+        writeLock(() -> {
+            nextScn();
+            getWorkedRows().remove(row);
         });
     }
 }
