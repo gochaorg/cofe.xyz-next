@@ -43,19 +43,29 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.Timer;
 import java.util.WeakHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
-import xyz.cofe.collection.Predicate;
-import xyz.cofe.collection.list.EventList;
-import xyz.cofe.collection.list.IndexEventList;
-import xyz.cofe.collection.map.EventMap;
-import xyz.cofe.collection.map.SyncEventMap;
+
+import xyz.cofe.collection.BasicEventList;
+import xyz.cofe.collection.BasicEventMap;
+import xyz.cofe.collection.EventList;
+import xyz.cofe.collection.EventMap;
 import xyz.cofe.data.DataEvent;
 import xyz.cofe.data.DataEventListener;
 import xyz.cofe.data.DataEventSupport;
+import xyz.cofe.ecolls.ReadWriteLockSupport;
+import xyz.cofe.fn.Pair;
+import xyz.cofe.fn.Tuple3;
 import xyz.cofe.sql.proxy.ConnectionTracker;
 import xyz.cofe.sql.proxy.GenericProxy;
 import xyz.cofe.sql.proxy.GetProxyTarget;
@@ -73,37 +83,43 @@ import xyz.cofe.sql.proxy.StatementTracker;
  * </ul>
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
  */
-public class ConnectPool
+public class ConnectPool implements ReadWriteLockSupport, AutoCloseable
 {
     //<editor-fold defaultstate="collapsed" desc="log Функции">
     private static final Logger logger = Logger.getLogger(ConnectPool.class.getName());
     private static final Level logLevel = logger.getLevel();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogSevere =
         logLevel==null
             ? true
             : logLevel.intValue() <= Level.SEVERE.intValue();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogWarning =
         logLevel==null
             ? true
             : logLevel.intValue() <= Level.WARNING.intValue();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogInfo =
         logLevel==null
             ? true
             : logLevel.intValue() <= Level.INFO.intValue();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogFine =
         logLevel==null
             ? true
             : logLevel.intValue() <= Level.FINE.intValue();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogFiner =
         logLevel==null
             ? true
             : logLevel.intValue() <= Level.FINER.intValue();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogFinest =
         logLevel==null
             ? true
@@ -149,15 +165,14 @@ public class ConnectPool
         logger.exiting(ConnectPool.class.getName(), method, result);
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="dataEventSupport">
     protected transient final DataEventSupport eventSupport;
 
-    public Closeable addDataEventListener(DataEventListener ls, boolean weak) {
+    public AutoCloseable addDataEventListener(DataEventListener ls, boolean weak) {
         return eventSupport.addDataEventListener(ls, weak);
     }
 
-    public Closeable addDataEventListener(DataEventListener ls) {
+    public AutoCloseable addDataEventListener(DataEventListener ls) {
         return eventSupport.addDataEventListener(ls);
     }
 
@@ -194,7 +209,6 @@ public class ConnectPool
         }
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="id">
     private transient final static AtomicInteger idseq = new AtomicInteger();
     private transient final int id = idseq.incrementAndGet();
@@ -207,7 +221,24 @@ public class ConnectPool
      */
     public int getId(){ return id; }
     //</editor-fold>
+    //<editor-fold desc="read/write lock">
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
+    public ReadWriteLock getReadWriteLock(){
+        return readWriteLock;
+    }
+
+    @Override
+    public Lock getReadLock(){
+        return readWriteLock.readLock();
+    }
+
+    @Override
+    public Lock getWriteLock(){
+        return readWriteLock.writeLock();
+    }
+    //</editor-fold>
+    //<editor-fold desc="instances">
     private static final WeakHashMap<ConnectPool,Date>
         instances = new WeakHashMap<ConnectPool, Date>();
 
@@ -226,9 +257,9 @@ public class ConnectPool
             return inst;
         }
     }
+    //</editor-fold>
 
-    //private static final tim
-
+    //<editor-fold desc="Конструктор">
     /**
      * Конструктор по умолчанию
      */
@@ -311,9 +342,10 @@ public class ConnectPool
             }
         }
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="services : EventList<ConnectionPoolService>">
-    protected final EventList<ConnectionPoolService> services = new IndexEventList<>();
+    protected final EventList<ConnectionPoolService> services = new BasicEventList<>();
 
     /**
      * Возвращает список сервисов (расширений) пула
@@ -321,8 +353,7 @@ public class ConnectPool
      */
     public EventList<ConnectionPoolService> getServices(){ return services; }
     //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="timer">
+    //<editor-fold defaultstate="collapsed" desc="timer - таймер обслуживающий задачи утилизации/освобождения ресурсов">
     private volatile static Timer timer
         = new Timer("ConnectPool Monitor", true);
 
@@ -348,12 +379,11 @@ public class ConnectPool
         super.finalize();
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="closeAllConnections()">
     /**
      * Закрывает все объекты: statements, connections. Генерирует соответ сообщения.
      */
-    public void closeAll(){
+    public void close(){
         logFine("closeAll");
         closeAllStatements(true);
         closeAllConnections(true);
@@ -366,7 +396,7 @@ public class ConnectPool
      */
     public void closeAllStatements(boolean addEvents){
         logFine("closeAllStatements()");
-        synchronized(this){
+        writeLock(()->{
             int closedCount = 0;
             int errCount = 0;
 
@@ -399,7 +429,7 @@ public class ConnectPool
             }
 
             logFiner("closeAllStatements() closed={0} errors={1}", closedCount, errCount);
-        }
+        });
     }
 
     /**
@@ -409,27 +439,35 @@ public class ConnectPool
      */
     public void closeShared(Connection conn) throws SQLException {
         if( conn==null )throw new IllegalArgumentException("conn == null");
-        Connection sconn = null;
-        ConnectPoolEvent.Disconnected ev = null;
+        AtomicReference<ConnectPoolEvent.Disconnected> ev = new AtomicReference<>();
 
-        synchronized(this){
+        writeLock(()->{
+            Connection sconn = null;
+
             sconn = sourceOf(conn);
             boolean shared = isShared(conn);
-            if( shared==false ){
+            if( !shared ){
                 throw new IllegalArgumentException("connection not shared");
             }
 
-            sconn.close();
+            try{
+                sconn.close();
+            } catch( SQLException throwables ){
+                logException(throwables);
+                throw new RuntimeException(throwables);
+            }
 
-            ev = new ConnectPoolEvent.Disconnected(this);
-            ev.setConnection(conn);
-            ev.setSourceConnection(sconn);
-            ev.setProxy( isProxy(conn) );
+            ConnectPoolEvent.Disconnected _ev;
+            _ev = new ConnectPoolEvent.Disconnected(this);
+            _ev.setConnection(conn);
+            _ev.setSourceConnection(sconn);
+            _ev.setProxy( isProxy(conn) );
+            ev.set(_ev);
 
             sharedConnections.remove(sconn);
-        }
+        });
 
-        fireDataEvent(ev);
+        if( ev.get()!=null ) fireDataEvent(ev.get());
     }
 
     /**
@@ -439,11 +477,11 @@ public class ConnectPool
      */
     public boolean isShared(Connection conn){
         if( conn==null )throw new IllegalArgumentException("conn == null");
-        synchronized(this){
+        return readLock( ()->{
             Connection sconn = sourceOf(conn);
             String sharedName = sharedConnections.get(sconn);
             return sharedName!=null;
-        }
+        });
     }
 
     /**
@@ -452,10 +490,11 @@ public class ConnectPool
      */
     public void closeAllConnections(boolean addEvents){
         logFine("closeAllConnections()");
-        synchronized(this){
+        writeLock(()->{
             int closedCount = 0;
             int errCount = 0;
 
+            //noinspection unchecked
             for( Map.Entry<Connection,DataSource> en : connections.entrySet().toArray(new Map.Entry[]{}) ){
                 Connection cn = en.getKey();
                 if( cn==null )continue;
@@ -484,10 +523,9 @@ public class ConnectPool
             }
 
             logFiner("closeAllConnections() closed={0} errors={1}", closedCount, errCount);
-        }
+        });
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="shutdown()">
     /**
      * Закрывает все соединения в пуле
@@ -503,7 +541,7 @@ public class ConnectPool
      */
     public void shutdown(boolean addEvents){
         logFine("shutdown()");
-        synchronized(this){
+        writeLock(()->{
             logFiner("timer.cancel()");
             synchronized( ConnectPool.class ){
                 getTimer().cancel();
@@ -511,15 +549,14 @@ public class ConnectPool
                     timer = null;
                 }
             }
-
-            closeAllStatements(addEvents);
-            closeAllConnections(addEvents);
-        }
+        });
+        closeAllStatements(addEvents);
+        closeAllConnections(addEvents);
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="sources : EventMap<String,DataSource>">
-    private EventMap<String,DataSource> sources;
+    private volatile EventMap<String,DataSource> sources;
 
     /**
      * Возвращает карту именнованных источников данных
@@ -528,15 +565,14 @@ public class ConnectPool
     public EventMap<String,DataSource> getSources(){
         synchronized(this){
             if( sources!=null )return sources;
-            sources = new SyncEventMap<>(new LinkedHashMap<String, DataSource>(), this);
+            sources = new BasicEventMap<>(new LinkedHashMap<String, DataSource>(), this.readWriteLock);
             logFiner("create sources : SyncEventMap");
             return sources;
         }
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="registerSource(name,ds)">
-    private boolean skipRegistered = true;
+    private volatile boolean skipRegistered = true;
 
     /**
      * Указывает пропускать уже зарегистрированные соединения или перезаписывать существующие.
@@ -546,9 +582,7 @@ public class ConnectPool
      * @see #registerSource(java.lang.String, javax.sql.DataSource, xyz.cofe.sql.ConnectOptions)
      */
     public boolean isSkipRegistered() {
-        synchronized(this){
-            return skipRegistered;
-        }
+        return readLock(()->skipRegistered);
     }
 
     /**
@@ -558,13 +592,13 @@ public class ConnectPool
      * @see #registerSource(java.lang.String, javax.sql.DataSource, xyz.cofe.sql.ConnectOptions)
      */
     public void setSkipRegistered(boolean skipRegistered) {
-        Object old,cur;
-        synchronized(this){
+        writeLock(()->{
+            Object old,cur;
             old = this.skipRegistered;
             this.skipRegistered = skipRegistered;
             cur = this.skipRegistered;
             logFiner( "change skipRegistered from={0} to={1}", old,cur );
-        }
+        });
     }
 
     /**
@@ -588,7 +622,7 @@ public class ConnectPool
     public void registerSource( String name, DataSource ds, ConnectOptions copt ){
         if( name==null )throw new IllegalArgumentException("name == null");
         if( ds==null )throw new IllegalArgumentException("ds == null");
-        synchronized(this){
+        writeLock(()->{
             Map<String,DataSource> m = getSources();
             if( m.containsKey(name) && skipRegistered ){
                 return;
@@ -600,7 +634,7 @@ public class ConnectPool
                 options.put(ds, copt);
                 logFiner("register source options: name=\"{0}\" ds=\"{1}\" opts={2}", name, ds, copt);
             }
-        }
+        });
     }
     //</editor-fold>
 
@@ -613,7 +647,7 @@ public class ConnectPool
     public Set<String> namesOf( DataSource ds ){
         if( ds==null )throw new IllegalArgumentException("ds == null");
         LinkedHashSet<String> names = new LinkedHashSet<>();
-        synchronized(this){
+        readLock(()->{
             for(Map.Entry<String,DataSource> en : getSources().entrySet() ){
                 if( en==null )continue;
                 if( en.getKey()==null )continue;
@@ -621,7 +655,7 @@ public class ConnectPool
                     names.add(en.getKey());
                 }
             }
-        }
+        });
         return names;
     }
 
@@ -632,7 +666,7 @@ public class ConnectPool
      */
     public String nameOf( DataSource ds ){
         if( ds==null )throw new IllegalArgumentException("ds == null");
-        synchronized(this){
+        return readLock(()->{
             for(Map.Entry<String,DataSource> en : getSources().entrySet() ){
                 if( en==null )continue;
                 if( en.getKey()==null )continue;
@@ -640,8 +674,8 @@ public class ConnectPool
                     return en.getKey();
                 }
             }
-        }
-        return null;
+            return null;
+        });
     }
 
     /**
@@ -653,18 +687,23 @@ public class ConnectPool
         if( conn==null )throw new IllegalArgumentException("conn == null");
         LinkedHashSet<String> names = new LinkedHashSet<>();
 
-        conn = ConnectPool.this.sourceOf(conn);
+        Connection fconn = ConnectPool.this.sourceOf(conn);
 
-        String cachedName = connectionName.get(conn);
+        String cachedName = connectionName.get(fconn);
         if( cachedName!=null ){
             names.add(cachedName);
             return names;
         }
 
-        DataSource ds = connections.get(conn);
-        if( ds==null )return names;
+        Tuple3<Set<String>,Boolean,DataSource> r = readLock(()->{
+            DataSource ds = connections.get(fconn);
+            if( ds==null )return Tuple3.of(names,true,null);
+            return Tuple3.of(names,false,ds);
+        });
 
-        names.addAll(namesOf(ds));
+        if( r.b() || r.c()==null )return r.a();
+
+        names.addAll(namesOf(r.c()));
 
         return names;
     }
@@ -702,22 +741,22 @@ public class ConnectPool
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="getConnections()/getConnectionsMap()">
-    private WeakHashMap<Connection,String> sharedConnections = new WeakHashMap<>();
+    private final WeakHashMap<Connection,String> sharedConnections = new WeakHashMap<>();
 
     /**
      * Отношение Соединение СУБД / Источник данных
      */
-    private WeakHashMap<Connection,DataSource> connections = new WeakHashMap<>();
+    private final WeakHashMap<Connection,DataSource> connections = new WeakHashMap<>();
 
     /**
      * Отношение Соединение СУБД / Опции соединения
      */
-    private WeakHashMap<Connection,ConnectOptions> connectionOptions = new WeakHashMap<>();
+    private final WeakHashMap<Connection,ConnectOptions> connectionOptions = new WeakHashMap<>();
 
     /**
      * Отношение Соединение СУБД / Время создания соединения
      */
-    private WeakHashMap<Connection,Long> connectionCreateTime = new WeakHashMap<>();
+    private final WeakHashMap<Connection,Long> connectionCreateTime = new WeakHashMap<>();
 
     /**
      * Удаляет ссылки и связанные объекты
@@ -725,7 +764,7 @@ public class ConnectPool
      */
     public void cleanup( Connection conn ){
         if( conn==null )return;
-        synchronized( this ){
+        writeLock(()->{
             LinkedHashSet<Statement> sts = new LinkedHashSet<>();
             for( Map.Entry<Statement,Connection> e : statements.entrySet() ){
                 if( Objects.equals(e.getValue(), conn) && e.getKey()!=null ){
@@ -735,7 +774,7 @@ public class ConnectPool
             for( Statement st : sts ){
                 statements.remove(st);
             }
-        }
+        });
     }
 
     //<editor-fold defaultstate="collapsed" desc="getConnections()">
@@ -749,7 +788,8 @@ public class ConnectPool
         //boolean autoCreateProxy = true;
 
         LinkedHashSet<Connection> conn = new LinkedHashSet<>();
-        synchronized(this){
+
+        Runnable r = ()->{
             for( Map.Entry<Connection,DataSource> e : connections.entrySet() ){
                 Connection c = e.getKey();
                 if( c==null )continue;
@@ -765,13 +805,14 @@ public class ConnectPool
 
                 conn.add(c);
             }
-        }
+        };
+
+        if( autoCreateProxy ){ writeLock(r); } else { readLock(r); }
 
         logFiner( "getConnections({0}) return {1} connections",autoCreateProxy,conn.size() );
         return conn;
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="getSourceConnections()">
     /**
      * Возвращает соединения с СУБД. <p>
@@ -782,7 +823,6 @@ public class ConnectPool
         return getConnections(false);
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="getConnections()">
     /**
      * Возвращает соединения с СУБД. <p>
@@ -802,20 +842,17 @@ public class ConnectPool
      */
     public Map<DataSource,Set<Connection>> getConnectionsMap(boolean autoCreateProxy){
         //boolean autoCreateProxy = true;
-        int sumConn = 0;
 
-        synchronized(this){
+        Supplier<Map<DataSource,Set<Connection>>> s = ()->{
+            int sumConn = 0;
+
             LinkedHashMap<DataSource,Set<Connection>> map = new LinkedHashMap<>();
             for( Map.Entry<Connection,DataSource> e : connections.entrySet() ){
                 Connection c = e.getKey();
                 DataSource ds = e.getValue();
                 if( ds==null )continue;
 
-                Set<Connection> sc = map.get(ds);
-                if( sc==null ){
-                    sc = new LinkedHashSet<>();
-                    map.put(ds, sc);
-                }
+                Set<Connection> sc = map.computeIfAbsent(ds, k -> new CopyOnWriteArraySet<>());
 
                 if( c!=null ){
                     if( autoCreateProxy && !isProxy(c) ){
@@ -835,10 +872,11 @@ public class ConnectPool
 
             logFiner( "getConnectionsMap({0}) return map.size()={1} conn.sum={2}", autoCreateProxy, map.size(), sumConn );
             return map;
-        }
+        };
+
+        return autoCreateProxy ? writeLock(s) : readLock(s);
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="getSourceConnectionsMap()">
     /**
      * Возвращает карту источников данныи и их соединений. <p>
@@ -849,7 +887,6 @@ public class ConnectPool
         return getConnectionsMap(false);
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="getConnectionsMap()">
     /**
      * Возвращает карту источников данныи и их соединений. <p>
@@ -867,12 +904,9 @@ public class ConnectPool
      * @return Кол-во соединений с СУБД
      */
     public int getTotalConnectionsCount(){
-        synchronized(this){
-            return connections.size();
-        }
+        return readLock(connections::size);
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="getOpenConnections(a)">
     /**
      * Возвращает открытиые соединения с СУБД
@@ -890,7 +924,7 @@ public class ConnectPool
         for( Connection c : conns ){
             if( c==null )continue;
 
-            if( autoCreateProxy && !isProxy(c) ){
+            if( !isProxy(c) ){
                 ConnectOptions co = connectionOptions.get(c);
                 co = co!=null ? co : getDefaultOptions();
 
@@ -906,12 +940,11 @@ public class ConnectPool
         return res;
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="openConnection()">
     private Predicate<Connection> openConnection(){
         return new Predicate<Connection>() {
             @Override
-            public boolean validate(Connection conn) {
+            public boolean test(Connection conn) {
                 try {
                     if( conn==null )return false;
                     boolean closed = conn.isClosed();
@@ -924,7 +957,6 @@ public class ConnectPool
         };
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="getOpenConnectionsCount()">
     /**
      * Возвращает кол-во открытых соединений
@@ -939,19 +971,19 @@ public class ConnectPool
     private Set<Connection> findConnections( Predicate<Connection> filter ){
         if( filter==null )throw new IllegalArgumentException("filter == null");
         Set<Connection> conns = new LinkedHashSet<>();
-        synchronized(this){
+        readLock(()->{
             for( Map.Entry<Connection,DataSource> en : connections.entrySet() ){
                 Connection cn = en.getKey();
                 if( cn==null )continue;
                 try{
-                    if( filter.validate(cn) ){
+                    if( filter.test(cn) ){
                         conns.add(cn);
                     }
                 }catch( Throwable ex ){
                     logException(ex);
                 }
             }
-        }
+        });
         return conns;
     }
     //</editor-fold>
@@ -970,6 +1002,7 @@ public class ConnectPool
      * @see Connection#prepareStatement(java.lang.String)
      * @see Connection#prepareCall(java.lang.String)
      */
+    @SuppressWarnings("rawtypes")
     public GenericProxy.Builder proxyBuilder( Method meth, Statement st ){
         if( meth==null )throw new IllegalArgumentException("meth == null");
         if( st==null )throw new IllegalArgumentException("st == null");
@@ -978,9 +1011,7 @@ public class ConnectPool
 
         switch( meth.getName() ){
             case "createStatement": {
-                if( st instanceof Statement ){
-                    bldr = GenericProxy.builder((Statement)st, Statement.class);
-                }
+                bldr = GenericProxy.builder((Statement)st, Statement.class);
             } break;
             case "prepareStatement": {
                 if( st instanceof PreparedStatement ){
@@ -1005,6 +1036,7 @@ public class ConnectPool
      * @see PreparedStatement
      * @see CallableStatement
      */
+    @SuppressWarnings("rawtypes")
     public GenericProxy.Builder proxyBuilder( Statement st ){
         if( st==null )throw new IllegalArgumentException("st == null");
         GenericProxy.Builder bldr = null;
@@ -1036,6 +1068,7 @@ public class ConnectPool
         if( st==null )throw new IllegalArgumentException("st == null");
         if( conn==null )throw new IllegalArgumentException("conn == null");
 
+        @SuppressWarnings("rawtypes")
         GenericProxy.Builder bldr = proxyBuilder(meth, st);
 
         StatementTracker stt = new StatementTracker(this, conn, (Statement)st);
@@ -1066,6 +1099,7 @@ public class ConnectPool
         if( st==null )throw new IllegalArgumentException("st == null");
         if( conn==null )throw new IllegalArgumentException("conn == null");
 
+        @SuppressWarnings("rawtypes")
         GenericProxy.Builder bldr = proxyBuilder(st);
 
         StatementTracker stt = new StatementTracker(this, conn, (Statement)st);
@@ -1094,6 +1128,7 @@ public class ConnectPool
         if( st==null )throw new IllegalArgumentException("st == null");
         if( conn==null )throw new IllegalArgumentException("conn == null");
 
+        @SuppressWarnings("rawtypes")
         GenericProxy.Builder bldr = proxyBuilder(st);
 
         StatementTracker stt = new StatementTracker(this, conn, (Statement)st);
@@ -1122,6 +1157,7 @@ public class ConnectPool
         if( st==null )throw new IllegalArgumentException("st == null");
         if( conn==null )throw new IllegalArgumentException("conn == null");
 
+        @SuppressWarnings("rawtypes")
         GenericProxy.Builder bldr = proxyBuilder(st);
 
         StatementTracker stt = new StatementTracker(this, conn, (Statement)st);
@@ -1138,7 +1174,6 @@ public class ConnectPool
         return (CallableStatement)(bldr.create());
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="getStatements()">
     /**
      * Возвращает текущий набор Statement (запросов)
@@ -1173,7 +1208,6 @@ public class ConnectPool
         return stmts;
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="getStatementsMap()">
     /**
      * Возвращает карту Соединение / Запрос
@@ -1186,8 +1220,7 @@ public class ConnectPool
             for( Map.Entry<Statement,Connection> en : statements.entrySet()){
                 if( en==null )continue;
 
-                Statement sst = en.getKey();
-                Statement st = sst;
+                Statement st = en.getKey();
                 if( st==null )continue;
 
                 Connection scn = en.getValue();
@@ -1205,12 +1238,7 @@ public class ConnectPool
                 }
 
                 if( scn!=null && st!=null ){
-                    Set<Statement> ss = map.get(scn);
-                    if( ss==null ){
-                        ss = new LinkedHashSet<>();
-                        map.put(scn, ss);
-                    }
-
+                    Set<Statement> ss = map.computeIfAbsent(scn, k -> new LinkedHashSet<>());
                     ss.add(st);
                 }
             }
@@ -1218,7 +1246,6 @@ public class ConnectPool
         return map;
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="registerStatement()">
     /**
      * Регистрация созданного запроса (Statement)
@@ -1229,7 +1256,6 @@ public class ConnectPool
         if( conn==null )throw new IllegalArgumentException("conn == null");
         if( st==null )throw new IllegalArgumentException("st == null");
 
-        DataEvent de = null;
         synchronized(statements){
             Statement sst = isProxy(st) ? sourceOf(st) : st;
             if( sst!=null ){ st = sst; }
@@ -1246,14 +1272,8 @@ public class ConnectPool
                 logFiner("already registered statement");
             }
         }
-
-        if( de!=null ){
-            addDataEvent(de);
-            fireEventQueue();
-        }
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="createTimeOf()">
     /**
      * Возвращает время создания соединения
@@ -1263,14 +1283,13 @@ public class ConnectPool
     public long createTimeOf( Connection conn ){
         if( conn==null )return -1;
         conn = sourceOf(conn);
-        synchronized(this){
+        synchronized(connectionCreateTime){
             Long ct = connectionCreateTime.get(conn);
             if( ct!=null )return ct;
         }
         return -1;
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="defaultOptions : ConnectOptions">
     private ConnectOptions defaultOptions;
 
@@ -1291,7 +1310,6 @@ public class ConnectPool
         }
     }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="invokeStats : Map<Object,InvokeActivityStat>">
     private final WeakHashMap<Object,InvokeActivityStat> invokeStats = new WeakHashMap<>();
     public WeakHashMap<Object,InvokeActivityStat> getInvokeStats(){
@@ -1306,7 +1324,7 @@ public class ConnectPool
     public InvokeActivityStat activityStatOf( Connection conn ){
         if( conn==null )throw new IllegalArgumentException("conn == null");
         conn = sourceOf(conn);
-        synchronized(this){
+        synchronized(invokeStats){
             InvokeActivityStat st = invokeStats.get(conn);
             if( st==null ){
                 st = new InvokeActivityStat();
@@ -1324,7 +1342,7 @@ public class ConnectPool
     public InvokeActivityStat activityStatOf( Statement stmt ){
         if( stmt==null )throw new IllegalArgumentException("stmt == null");
         stmt = sourceOf(stmt);
-        synchronized(this){
+        synchronized(invokeStats){
             InvokeActivityStat st = invokeStats.get(stmt);
             if( st==null ){
                 st = new InvokeActivityStat();
@@ -1342,7 +1360,7 @@ public class ConnectPool
     public InvokeActivityStat activityStatOf( PreparedStatement stmt ){
         if( stmt==null )throw new IllegalArgumentException("stmt == null");
         stmt = sourceOf(stmt);
-        synchronized(this){
+        synchronized(invokeStats){
             InvokeActivityStat st = invokeStats.get(stmt);
             if( st==null ){
                 st = new InvokeActivityStat();
@@ -1360,7 +1378,7 @@ public class ConnectPool
     public InvokeActivityStat activityStatOf( CallableStatement stmt ){
         if( stmt==null )throw new IllegalArgumentException("stmt == null");
         stmt = sourceOf(stmt);
-        synchronized(this){
+        synchronized(invokeStats){
             InvokeActivityStat st = invokeStats.get(stmt);
             if( st==null ){
                 st = new InvokeActivityStat();
@@ -1372,7 +1390,7 @@ public class ConnectPool
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="options">
-    protected WeakHashMap<DataSource,ConnectOptions> options = new WeakHashMap<>();
+    protected final WeakHashMap<DataSource,ConnectOptions> options = new WeakHashMap<>();
 
     /**
      * Возвращает опции соединения с БД
@@ -1650,7 +1668,7 @@ public class ConnectPool
         //if( username==null )throw new IllegalArgumentException("username == null");
         //if( password==null )throw new IllegalArgumentException("password == null");
 
-        synchronized(this){
+        return writeLock(()->{
             if( username!=null ){
                 logFine("connect( source=\"{0}\", username=\"{1}\", password=*** )", source, username);
             }else{
@@ -1678,7 +1696,12 @@ public class ConnectPool
                     String sname = sharedConnEn.getValue();
                     if( sconn==null )continue;
                     if( sname==null )continue;
-                    if( sconn.isClosed() )continue;
+                    try{
+                        if( sconn.isClosed() )continue;
+                    } catch( SQLException throwables ){
+                        logException(throwables);
+                        throw new Error(throwables);
+                    }
 
                     if( sname.equals(source) ){
                         logger.log(Level.FINE, "already connected \"{0}\" as shared", sname);
@@ -1688,12 +1711,20 @@ public class ConnectPool
             }
 
             Connection sourceConn = null;
-            if( username!=null ){
-                sourceConn = ds.getConnection(username,password);
-            }else{
-                sourceConn = ds.getConnection();
+            try{
+                if( username!=null ){
+                    sourceConn = ds.getConnection(username,password);
+                }else{
+                    sourceConn = ds.getConnection();
+                }
+            } catch( SQLException throwables ){
+                logException(throwables);
+                throw new Error(throwables);
             }
-            connectionCreateTime.put(sourceConn, System.currentTimeMillis());
+
+            synchronized( connectionCreateTime ){
+                connectionCreateTime.put(sourceConn, System.currentTimeMillis());
+            }
 
             String dsName = source;
             String connName = dsName+"_"+connIdSeq.incrementAndGet();
@@ -1730,7 +1761,7 @@ public class ConnectPool
             fireEventQueue();
 
             return clientConn;
-        }
+        });
     }
     //</editor-fold>
 

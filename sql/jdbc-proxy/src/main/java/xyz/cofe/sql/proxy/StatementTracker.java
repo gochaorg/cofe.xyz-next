@@ -24,7 +24,7 @@
 
 package xyz.cofe.sql.proxy;
 
-import xyz.cofe.collection.Func4;
+import xyz.cofe.fn.Fn4;
 import xyz.cofe.sql.ConnectPool;
 
 import java.lang.ref.WeakReference;
@@ -132,13 +132,13 @@ public class StatementTracker extends MethodCallAdapter
     
     //<editor-fold defaultstate="collapsed" desc="collect activity">
     //<editor-fold defaultstate="collapsed" desc="collectName : Func4">
-    protected Func4<String,Object,Object,Method,Object[]> collectName = null;
+    protected Fn4<Object,Object,Method,Object[],String> collectName = null;
     
     /**
      * Указывает функцию сопостовления метода и имя метрики
      * @return функц именования метрики
      */
-    public Func4<String,Object,Object,Method,Object[]> getCollectName(){
+    public Fn4<Object,Object,Method,Object[],String> getCollectName(){
         synchronized(this){
             return collectName;
         }
@@ -148,7 +148,7 @@ public class StatementTracker extends MethodCallAdapter
      * Указывает функцию сопостовления метода и имя метрики
      * @param fn функц именования метрики
      */
-    public void setCollectName( Func4<String,Object,Object,Method,Object[]> fn ){
+    public void setCollectName( Fn4<Object,Object,Method,Object[],String> fn ){
         synchronized(this){
             collectName = fn;
         }
@@ -199,9 +199,7 @@ public class StatementTracker extends MethodCallAdapter
         synchronized(this){
             ConnectPool cp = wcpool.get();
             Connection conn = wconn.get();
-            Func4<String,Object,Object,Method,Object[]> fn = collectName;
-            
-            //if( cp==null || conn==null || fn==null )return;
+            Fn4<Object,Object,Method,Object[],String> fn = collectName;
             
             if( source instanceof Statement && fn!=null && cp!=null ){
                 Statement st = (Statement)source;

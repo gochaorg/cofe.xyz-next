@@ -24,7 +24,7 @@
 
 package xyz.cofe.sql.proxy;
 
-import xyz.cofe.collection.Func4;
+import xyz.cofe.fn.Fn4;
 import xyz.cofe.sql.ConnectPool;
 import xyz.cofe.sql.ConnectPoolEvent;
 import xyz.cofe.text.Text;
@@ -134,12 +134,12 @@ public class ConnectionTracker extends MethodCallAdapter
     
     //<editor-fold defaultstate="collapsed" desc="collect activity">
     //<editor-fold defaultstate="collapsed" desc="collectName : Func4">
-    protected volatile Func4<String,Object,Object,Method,Object[]> collectName = null;
+    protected volatile Fn4<Object,Object,Method,Object[],String> collectName = null;
     /**
      * Указывает функцию определяющую имя метрики для метода
      * @return функция сопоставления имени метода и названия метрики
      */
-    public Func4<String,Object,Object,Method,Object[]> getCollectName(){
+    public Fn4<Object,Object,Method,Object[],String> getCollectName(){
         synchronized(this){
             return collectName;
         }
@@ -150,7 +150,7 @@ public class ConnectionTracker extends MethodCallAdapter
      * если функция вернет null, то метрика не будет собираться для указанного метода <br>
      * fn( proxy, source, method, arguments ) : metricName
      */
-    public void setCollectName( Func4<String,Object,Object,Method,Object[]> fn ){
+    public void setCollectName( Fn4<Object,Object,Method,Object[],String> fn ){
         synchronized(this){
             collectName = fn;
         }
@@ -176,13 +176,13 @@ public class ConnectionTracker extends MethodCallAdapter
      * @param source исходный объект
      * @param meth метод
      * @param args параметры метода
-     * @see #setCollectName(xyz.cofe.collection.Func4) 
+     * @see #setCollectName
      */
     protected void collectActivity(Object proxy, Object source, Method meth, Object[] args){
         synchronized(this){
             ConnectPool cp = wcpool.get();
             Connection conn = wconn.get();
-            Func4<String,Object,Object,Method,Object[]> fn = collectName;
+            Fn4<Object,Object,Method,Object[],String> fn = collectName;
             if( cp==null || conn==null || fn==null )return;
             
             String cname = fn.apply(proxy, source, meth, args);

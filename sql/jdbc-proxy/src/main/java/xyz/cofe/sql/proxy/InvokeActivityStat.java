@@ -24,12 +24,14 @@
 
 package xyz.cofe.sql.proxy;
 
-import xyz.cofe.collection.Func4;
-import xyz.cofe.collection.map.SyncEventMap;
+import xyz.cofe.collection.BasicEventMap;
+import xyz.cofe.fn.Fn4;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -117,14 +119,15 @@ public class InvokeActivityStat {
     protected final Map<String,Long> firstCall;
     protected final Map<String,Long> callCount;
     protected volatile Long lastActivity;
+    protected ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     
     /**
      * Конструктор по умолчанию
      */
     public InvokeActivityStat(){
-        lastCall  = new SyncEventMap<>(new LinkedHashMap(), this);
-        firstCall = new SyncEventMap<>(new LinkedHashMap(), this);
-        callCount = new SyncEventMap<>(new LinkedHashMap(), this);
+        lastCall  = new BasicEventMap<>(new LinkedHashMap(), readWriteLock);
+        firstCall = new BasicEventMap<>(new LinkedHashMap(), readWriteLock);
+        callCount = new BasicEventMap<>(new LinkedHashMap(), readWriteLock);
     }
     
     /**
@@ -333,9 +336,9 @@ public class InvokeActivityStat {
      * @param name имя метрики
      * @return функц получения имени метрики
      */
-    public static Func4<String,Object,Object, Method, Object[]> constName( final String name ){
+    public static Fn4<Object,Object, Method, Object[],String> constName( final String name ){
         if( name==null )throw new IllegalArgumentException("name == null");
-        return new Func4<String, Object, Object, Method, Object[]>() {
+        return new Fn4<Object, Object, Method, Object[],String>() {
             @Override
             public String apply(Object arg1, Object arg2, Method arg3, Object[] arg4) {
                 return name;
@@ -347,8 +350,8 @@ public class InvokeActivityStat {
      * Возвращает имя метода в качетсве имени метрики
      * @return функц получения имени метрики
      */
-    public static Func4<String,Object,Object, Method, Object[]> simpleMethodName(){
-        return new Func4<String, Object, Object, Method, Object[]>() {
+    public static Fn4<Object,Object, Method, Object[],String> simpleMethodName(){
+        return new Fn4<Object, Object, Method, Object[],String>() {
             @Override
             public String apply(Object arg1, Object arg2, Method arg3, Object[] arg4) {
                 if( arg3==null )return null;
@@ -363,12 +366,12 @@ public class InvokeActivityStat {
      * @param excludeMethodNames методы исключемые из сбора статистики
      * @return функция сопоставления вызова метода и метрики
      */
-    public static Func4<String,Object,Object, Method, Object[]> exclude( 
-        final Func4<String,Object,Object, Method, Object[]> include,
+    public static Fn4<Object,Object, Method, Object[],String> exclude(
+        final Fn4<Object,Object, Method, Object[],String> include,
         final String ... excludeMethodNames
     ){
         if( include==null )throw new IllegalArgumentException("include == null");
-        return new Func4<String, Object, Object, Method, Object[]>() {
+        return new Fn4<Object, Object, Method, Object[],String>() {
             @Override
             public String apply(Object arg1, Object arg2, Method arg3, Object[] arg4) {
                 if( arg3!=null ){
@@ -391,7 +394,7 @@ public class InvokeActivityStat {
     public static MethodCallListener createActivityTracker( 
         final InvokeActivityStat stat,
         final boolean asWeak,
-        final Func4<String,Object,Object, Method, Object[]> nameGeneraor
+        final Fn4<Object,Object, Method, Object[],String> nameGeneraor
     ){
         if( stat==null )throw new IllegalArgumentException("stat == null");
         
