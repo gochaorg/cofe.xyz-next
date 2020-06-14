@@ -537,20 +537,6 @@ public class DataTable implements ReadWriteLockSupport
      * @param elist Список строк
      */
     private void listenForNotNullValue( Closeables cset, EventList<DataRow> elist ){
-//        Closeable cl =
-//            elist.onAdding(new Reciver<DataRow>() {
-//                @Override
-//                public void recive(DataRow dr) {
-//                    if( dr==null )throw new IllegalStateException("null rows not allowed");
-//                    synchronized(dr){
-//                        synchronized( DataTable.this){
-//                            RuntimeException err = checkNullableValue(dr,true);
-//                            if( err!=null )throw err;
-//                        }
-//                    }
-//                }
-//            });
-
         TripleConsumer<Integer,DataRow,DataRow> ls = (idx,old,cur) -> {
             if( cur!=null ){
                 synchronized(cur){
@@ -562,11 +548,13 @@ public class DataTable implements ReadWriteLockSupport
             }
         };
 
-        AutoCloseable cl1 = elist.onInserted(ls);
-        AutoCloseable cl2 = elist.onUpdated(ls);
-        
-        if( cset!=null )cset.add(cl1);
-        if( cset!=null )cset.add(cl2);
+        if( elist instanceof PreEventList ){
+            cset.add(((PreEventList<DataRow>) elist).onInserting(ls));
+            cset.add(((PreEventList<DataRow>) elist).onUpdating(ls));
+        }else{
+            cset.add(elist.onInserted(ls));
+            cset.add(elist.onUpdated(ls));
+        }
     }
     
     /**
@@ -1059,9 +1047,8 @@ public class DataTable implements ReadWriteLockSupport
         Object sync = this;
         synchronized(sync){
             if( workedRows!=null )return workedRows;
-            workedRows = new BasicEventList<DataRow>( new ArrayList<>(), this.sync );
+            workedRows = new StdEventList<DataRow>( new ArrayList<DataRow>(), this.sync );
             listenForDisableNullRows( null, workedRows );
-            //listenForIndexCache(null, workedRows);
             return workedRows;
         }
     }
@@ -1156,13 +1143,22 @@ public class DataTable implements ReadWriteLockSupport
      */
     private void listenForDisableNullRows( Closeables cset, EventList<DataRow> elist ){
         NullRowsDisabler nldis = new NullRowsDisabler();
-        // must before
-        AutoCloseable cl = elist.onInserted(nldis);
-        if( cset!=null )cset.add(cl);
 
-        // must before
-        cl = elist.onUpdated(nldis);
-        if( cset!=null )cset.add(cl);
+        if( elist instanceof PreEventList ){
+            AutoCloseable cl = ((PreEventList<DataRow>) elist).onInserting(nldis);
+            if( cset != null ) cset.add(cl);
+
+            cl = ((PreEventList<DataRow>) elist).onUpdating(nldis);
+            if( cset!=null )cset.add(cl);
+        }else{
+            AutoCloseable cl = elist.onInserted(nldis);
+            if( cset != null ) cset.add(cl);
+
+            cl = elist.onUpdated(nldis);
+            if( cset!=null )cset.add(cl);
+
+            System.err.println("workedRows must implement PreEventList");
+        }
     }
     //</editor-fold>
 
