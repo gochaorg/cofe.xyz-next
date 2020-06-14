@@ -44,6 +44,9 @@ public class BasicEventList<E> implements EventList<E> {
         this.readWriteLock = rwLock;
     }
 
+    /**
+     * Пописчики на события
+     */
     private final ListenersHelper<
         CollectionListener<EventList<E>,E>,
         CollectionEvent<EventList<E>,E>
@@ -53,6 +56,10 @@ public class BasicEventList<E> implements EventList<E> {
             }
     } );
 
+    /**
+     * Возвращает подписчиков
+     * @return подписчики
+     */
     @Override
     public ListenersHelper<CollectionListener<EventList<E>, E>, CollectionEvent<EventList<E>, E>> listenerHelper(){
         return listenersHelper;

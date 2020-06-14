@@ -1,5 +1,7 @@
 package xyz.cofe.collection;
 
+import xyz.cofe.ecolls.ListenersHelper;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -45,6 +47,25 @@ public class BasicEventSet<E> implements EventSet<E> {
     @Override
     public Set<E> target() {
         return target;
+    }
+
+    /**
+     * Пописчики на события
+     */
+    private final ListenersHelper<CollectionListener<EventSet<E>, E>, CollectionEvent<EventSet<E>, E>>
+        listenersHelper = new ListenersHelper<>( ( ls, ev) -> {
+        if( ls!=null ){
+            ls.collectionEvent(ev);
+        }
+    } );
+
+    /**
+     * Возвращает подписчиков
+     * @return подписчики
+     */
+    @Override
+    public ListenersHelper<CollectionListener<EventSet<E>, E>, CollectionEvent<EventSet<E>, E>> listenerHelper(){
+        return listenersHelper;
     }
 
     /**

@@ -1,5 +1,7 @@
 package xyz.cofe.collection;
 
+import xyz.cofe.ecolls.ListenersHelper;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +49,25 @@ public class BasicEventMap<K,V> implements EventMap<K,V> {
     @Override
     public Map<K, V> target() {
         return target;
+    }
+
+    /**
+     * Пописчики на события
+     */
+    private final ListenersHelper<CollectionListener<EventMap<K, V>, V>, CollectionEvent<EventMap<K, V>, V>>
+        listenersHelper = new ListenersHelper<>( ( ls, ev) -> {
+        if( ls!=null ){
+            ls.collectionEvent(ev);
+        }
+    } );
+
+    /**
+     * Возвращает подписчиков
+     * @return подписчики
+     */
+    @Override
+    public ListenersHelper<CollectionListener<EventMap<K, V>, V>, CollectionEvent<EventMap<K, V>, V>> listenerHelper(){
+        return listenersHelper;
     }
 
     /**
