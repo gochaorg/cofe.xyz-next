@@ -26,7 +26,6 @@ package xyz.cofe.data;
 
 import xyz.cofe.ecolls.Closeables;
 import xyz.cofe.fn.Fn1;
-import xyz.cofe.sql.JdbcColumn;
 
 import java.util.WeakHashMap;
 import java.util.logging.Level;

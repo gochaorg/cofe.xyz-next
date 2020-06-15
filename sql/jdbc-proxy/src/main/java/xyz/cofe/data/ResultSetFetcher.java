@@ -22,11 +22,7 @@
  * THE SOFTWARE.
  */
 
-package xyz.cofe.sql;
-
-import xyz.cofe.data.DataRow;
-import xyz.cofe.data.DataTable;
-import xyz.cofe.data.DataTableInserting;
+package xyz.cofe.data;
 
 import javax.swing.event.SwingPropertyChangeSupport;
 import java.beans.PropertyChangeListener;

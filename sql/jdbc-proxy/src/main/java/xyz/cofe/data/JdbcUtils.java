@@ -22,10 +22,7 @@
  * ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
  */
 
-package xyz.cofe.sql;
-
-import xyz.cofe.data.DataColumn;
-import xyz.cofe.data.DataTable;
+package xyz.cofe.data;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

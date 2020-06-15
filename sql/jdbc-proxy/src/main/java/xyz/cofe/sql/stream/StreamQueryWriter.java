@@ -21,11 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package xyz.cofe.sql;
+package xyz.cofe.sql.stream;
 
-import xyz.cofe.sql.stream.Err;
-import xyz.cofe.sql.stream.Message;
-import xyz.cofe.sql.stream.QueryStream;
+import xyz.cofe.sql.QueryWriter;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

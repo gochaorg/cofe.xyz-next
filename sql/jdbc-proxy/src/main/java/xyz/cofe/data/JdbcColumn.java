@@ -22,9 +22,7 @@
  * THE SOFTWARE.
  */
 
-package xyz.cofe.sql;
-
-import xyz.cofe.data.DataColumn;
+package xyz.cofe.data;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
