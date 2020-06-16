@@ -23,8 +23,6 @@
  */
 package xyz.cofe.sql.stream;
 
-import xyz.cofe.sql.qexec.QueryWriter;
-
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

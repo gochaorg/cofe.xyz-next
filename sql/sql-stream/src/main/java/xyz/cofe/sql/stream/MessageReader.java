@@ -22,7 +22,7 @@
  * ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
  */
 
-package xyz.cofe.sql.qexec;
+package xyz.cofe.sql.stream;
 
 import java.sql.SQLException;
 import java.sql.SQLWarning;

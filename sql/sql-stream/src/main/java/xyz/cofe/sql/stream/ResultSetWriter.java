@@ -21,54 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package xyz.cofe.sql.qexec;
+package xyz.cofe.sql.stream;
 
 import java.sql.ResultSet;
-import java.sql.SQLWarning;
 
 /**
- * Запись результата запроса
+ * Пишет надор табличных данных
  * @author user
  */
-public interface QueryWriter {
+public interface ResultSetWriter {
     /**
-     * Начало записи
-     */
-    void begin();
-    
-    /**
-     * Запись ResultSet
+     * Начало записи ResultSet
      * @param rs набор данных
-     * @param rsIndex номер набора данных 
      */
-    void writeResultSet( ResultSet rs, int rsIndex );
-    
-    /**
-     * Записть сгенерированных ключей
-     * @param rs ключи
-     */
-    void writeGeneratedKeys( ResultSet rs );
-    
-    /**
-     * Запись счетчика обновленных строк
-     * @param count кол-во строк
-     */
-    void writeUpdateCount( int count );
-    
-    /**
-     * Запись сообщения
-     * @param message сообщение
-     */
-    void writeMessage( SQLWarning message );
-    
-    /**
-     * Конец записи
-     */
-    void end();
-    
-    /**
-     * Запись ошибки
-     * @param err ошибка
-     */
-    void writeError( Throwable err );
+    void writeResultSet( ResultSet rs );
 }

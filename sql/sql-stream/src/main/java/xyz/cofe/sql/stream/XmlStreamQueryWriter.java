@@ -23,7 +23,6 @@
  */
 package xyz.cofe.sql.stream;
 
-import xyz.cofe.sql.qexec.QueryWriter;
 import xyz.cofe.xml.FormatXMLWriter;
 
 import javax.xml.stream.XMLStreamException;
