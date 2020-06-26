@@ -24,6 +24,18 @@
     <orderEntry type="library" name="Maven: xyz.cofe:text-lex:1.0" level="project" />
     <orderEntry type="library" name="Maven: xyz.cofe:xml-utl:1.0" level="project" />
     <orderEntry type="library" name="Maven: xyz.cofe:iofun:1.0" level="project" />
+    <orderEntry type="module" module-name="ecolls" />
+    <orderEntry type="module" module-name="types" />
+    <orderEntry type="module" module-name="types-spi" />
+    <orderEntry type="module" module-name="simple-types" />
+    <orderEntry type="module" module-name="text-out" />
+    <orderEntry type="module" module-name="fs" />
+    <orderEntry type="module" module-name="cbuffer" />
+    <orderEntry type="module" module-name="basic-template" />
+    <orderEntry type="module" module-name="text" />
+    <orderEntry type="module" module-name="text-lex" />
+    <orderEntry type="module" module-name="xml-utl" />
+    <orderEntry type="module" module-name="iofun" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.12" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
   </component>

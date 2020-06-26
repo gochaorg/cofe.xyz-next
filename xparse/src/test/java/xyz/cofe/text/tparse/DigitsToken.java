@@ -9,15 +9,12 @@ public class DigitsToken extends CToken {
     public DigitsToken(CharPointer begin, CharPointer end) {
         super(begin, end);
     }
-
     public DigitsToken(CToken begin, CToken end) {
         super(begin, end);
     }
-
     public DigitsToken(List<CToken> tokens) {
         super(tokens);
     }
-
     protected DigitsToken(DigitsToken sample ){
         this( sample.begin(), sample.end() );
         this.radix = sample.radix;
