@@ -10,7 +10,7 @@ import xyz.cofe.gui.swing.properties.editor.CustomEditor;
 import xyz.cofe.gui.swing.tree.TreeTableNodeGetFormatOf;
 import xyz.cofe.iter.Eterable;
 import xyz.cofe.text.Text;
-import xyz.cofe.text.template.SimpleTypes;
+import xyz.cofe.simpletypes.SimpleTypes;
 
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;

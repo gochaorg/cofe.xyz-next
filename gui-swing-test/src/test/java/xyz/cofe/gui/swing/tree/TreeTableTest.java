@@ -23,9 +23,9 @@
  */
 package xyz.cofe.gui.swing.tree;
 
+import xyz.cofe.gui.swing.tmodel.WrapTM;
 import xyz.cofe.io.fn.IOFun;
 import xyz.cofe.iter.Eterable;
-import xyz.cofe.text.Text;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,6 +44,18 @@ import java.util.logging.Logger;
  */
 public class TreeTableTest
     extends javax.swing.JFrame {
+
+    {
+        ConsoleHandler ch = new ConsoleHandler();
+        ch.setLevel(Level.ALL);
+        ch.setFilter( rec ->
+            rec.getLoggerName().matches("(?is).*(TreeTableFilterModel|WrapTM).*")
+        );
+
+        Logger.getLogger("").addHandler(ch);
+        Logger.getLogger(TreeTableFilterModel.class.getName()).setLevel(Level.ALL);
+        Logger.getLogger(WrapTM.class.getName()).setLevel(Level.ALL);
+    }
 
     /**
      * Creates new form TreeTableTest

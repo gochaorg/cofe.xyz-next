@@ -7,7 +7,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/main/java-mr/11" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -16,7 +15,8 @@
     <orderEntry type="library" name="Maven: xyz.cofe:xml-utl:1.0" level="project" />
     <orderEntry type="library" name="Maven: xyz.cofe:text:1.0" level="project" />
     <orderEntry type="library" name="Maven: xyz.cofe:iofun:1.0" level="project" />
-    <orderEntry type="library" name="Maven: xyz.cofe:basic-template:1.0" level="project" />
+    <orderEntry type="library" name="Maven: xyz.cofe:basic-template:1.1" level="project" />
+    <orderEntry type="library" name="Maven: xyz.cofe:simple-types:1.0" level="project" />
     <orderEntry type="library" name="Maven: xyz.cofe:types:1.0" level="project" />
     <orderEntry type="library" name="Maven: xyz.cofe:types-spi:1.1" level="project" />
     <orderEntry type="library" name="Maven: xyz.cofe:fs:1.1" level="project" />

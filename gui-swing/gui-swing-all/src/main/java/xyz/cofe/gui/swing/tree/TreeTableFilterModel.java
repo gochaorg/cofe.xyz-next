@@ -308,6 +308,7 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
                     // необходимо отобразить строку
                     di = source.add(si);
                     includeRows.add(di);
+                    logFiner("include for show di="+di+" si="+si+" node="+node.getData());
                 }
             }else{
                 continue;
@@ -336,11 +337,13 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
                 if( d>1 ){
                     rangeEnd = diPrev;
                     ranges.add(new int[]{ rangeStart, rangeEnd });
+                    logFiner("add range "+rangeStart+" "+rangeEnd);
+                    rangeStart = di;
                 }
-                rangeStart = di;
             }
             diPrev = di;
         }
+        logFiner("add range "+rangeStart+" "+diPrev);
         ranges.add(new int[]{ rangeStart, diPrev });
 
         for( int ri=0; ri<ranges.size(); ri++ ){
@@ -379,28 +382,25 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
             if( frontIndex==null )continue;
             if( frontIndex<0 )continue;
 
-//            System.out.println("ts level="+ts.getLevel()+" path="+
-//                ts.nodes().map( x -> ((TreeTableNode)x).getData() ).toList()
-//            );
+            logFiner("ts level="+ts.getLevel()+" path="+
+                ts.nodes().map( x -> ((TreeTableNode)x).getData() ).toList());
+
             int lvl = Math.abs(ts.getLevel());
             if( lvl>0 ){
                 // точно не видим
-//                System.out.println("mark 1 removeByIndex="+frontIndex);
-                //source.removeByIndex(frontIndex);
+                logFiner("mark 1 removeByIndex="+frontIndex);
                 forRemoveFrontRows.add(frontIndex);
-                //removedRows.add(frontIndex);
                 continue;
             }
 
             if( !isVisible(node) ){
-//                System.out.println("mark 2 removeByIndex="+frontIndex);
-                //source.removeByIndex(frontIndex);
+                logFiner("mark 2 removeByIndex="+frontIndex);
                 forRemoveFrontRows.add(frontIndex);
             }
         }
 
         forRemoveFrontRows.descendingSet().forEach( frontRowIdx -> {
-//            System.out.println("remove front="+frontRowIdx);
+            logFiner("remove front="+frontRowIdx);
             source.removeByIndex(frontRowIdx);
             removedRows.add(frontRowIdx);
         });
@@ -426,12 +426,15 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
                 int d = Math.abs(diPrev - di);
                 if( d>1 ){
                     rangeEnd = diPrev;
+                    logFiner("add remove range "+rangeStart+" .. "+rangeEnd);
                     ranges.add(new int[]{ rangeStart, rangeEnd });
                     rangeStart = di;
                 }
             }
             diPrev = di;
         }
+
+        logFiner("add remove range "+rangeStart+" .. "+diPrev);
         ranges.add(new int[]{ rangeStart, diPrev });
 
         for( int ri=ranges.size()-1; ri>=0; ri-- ){

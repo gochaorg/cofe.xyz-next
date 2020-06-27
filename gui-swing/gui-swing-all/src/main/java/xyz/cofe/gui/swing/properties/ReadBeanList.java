@@ -31,7 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import xyz.cofe.iter.Eterable;
-import xyz.cofe.text.template.SimpleTypes;
+import xyz.cofe.simpletypes.SimpleTypes;
 
 /**
  * Чтение списка как набор свойств
