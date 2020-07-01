@@ -121,7 +121,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     default void remove(int indexes) {
         TreeImpl.deleteByIndex(this, new int[]{indexes}, t-> {
             if( t!=null )t.b().compareAndSetParent((A)this,null);
-            treeNotify(new TreeEvent.Removed<A>(this, t.b()));
+            treeNotify(new TreeEvent.Deleted<A>(this, t.b(), t.a()));
         });
     }
 
@@ -129,7 +129,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     default void removes(int... indexes) {
         TreeImpl.deleteByIndex(this, indexes,t-> {
             if( t!=null )t.b().compareAndSetParent((A)this,null);
-            treeNotify(new TreeEvent.Removed<A>(this, t.b()));
+            treeNotify(new TreeEvent.Deleted<A>(this, t.b(), t.a()));
         });
     }
 
@@ -137,7 +137,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     default void removes(Iterable<Integer> indexes) {
         TreeImpl.deleteByIndex(this, indexes,t-> {
             if( t!=null )t.b().compareAndSetParent((A)this,null);
-            treeNotify(new TreeEvent.Removed<A>(this, t.b()));
+            treeNotify(new TreeEvent.Deleted<A>(this, t.b(), t.a()));
         });
     }
 
@@ -150,7 +150,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     default void deletes(A... nodes) {
         TreeImpl.deleteByValue(this, nodes, t-> {
             if( t!=null )t.b().compareAndSetParent((A)this,null);
-            treeNotify(new TreeEvent.Removed<A>(this, t.b()));
+            treeNotify(new TreeEvent.Deleted<A>(this, t.b(), t.a()));
         });
     }
 
@@ -158,7 +158,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     default void deletes(Iterable<A> nodes) {
         TreeImpl.deleteByValue(this, nodes, t-> {
             if( t!=null )t.b().compareAndSetParent((A)this,null);
-            treeNotify(new TreeEvent.Removed<A>(this, t.b()));
+            treeNotify(new TreeEvent.Deleted<A>(this, t.b(), t.a()));
         });
     }
 
