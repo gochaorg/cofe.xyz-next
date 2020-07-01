@@ -2,14 +2,12 @@ package xyz.cofe.collection;
 
 import xyz.cofe.iter.*;
 
-import java.util.Iterator;
-
 /**
  * Узел дерева
- * @param <A> тип элемента дерева
+ * @param <SELF> тип элемента дерева
  */
 @SuppressWarnings("unchecked")
-public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
+public interface Tree<SELF extends Tree<SELF>> extends ImTree<SELF>, ImTreeWalk<SELF> {
     /**
      * Возвращает кол-во дочерних элементов
      * @return кол-во элементов
@@ -23,7 +21,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param idx индекс дочернего элемента
      * @return дочерний элемент
      */
-    default A get(int idx) {
+    default SELF get( int idx) {
         return TreeImpl.node(this, idx);
     }
 
@@ -31,7 +29,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * Возвращает дочерние элементы
      * @return дочерние элементы
      */
-    default Eterable<A> nodes(){
+    default Eterable<SELF> nodes(){
         return new EterableProxy<>(TreeImpl.nodesOf(this));
     }
 
@@ -41,24 +39,24 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * Добавляет дочерний узел
      * @param node узел
      */
-    default void append( A node ){
-        TreeImpl.append((A)this,node);
+    default void append( SELF node ){
+        TreeImpl.append((SELF)this,node);
     }
 
     /**
      * Добавляет дочерние узлы
      * @param nodes дочерние узлы
      */
-    default void appends( A ... nodes ){
-        TreeImpl.append((A)this,nodes);
+    default void appends( SELF... nodes ){
+        TreeImpl.append((SELF)this,nodes);
     }
 
     /**
      * Добавляет дочерние узлы
      * @param nodes дочерние узлы
      */
-    default void appends( Iterable<A> nodes ){
-        TreeImpl.append((A)this,nodes);
+    default void appends( Iterable<SELF> nodes ){
+        TreeImpl.append((SELF)this,nodes);
     }
 
     /**
@@ -66,8 +64,8 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param idx индекс в какую позицию будет добавлен узел
      * @param node узел
      */
-    default void insert( int idx, A node ){
-        TreeImpl.insert((A)this,idx, node);
+    default void insert( int idx, SELF node ){
+        TreeImpl.insert((SELF)this,idx, node);
     }
 
     /**
@@ -75,7 +73,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param idx индекс в какую позицию будет добавлены узлы
      * @param nodes дочерние узлы
      */
-    default void inserts( int idx, A ... nodes ){
+    default void inserts( int idx, SELF... nodes ){
         TreeImpl.insert(this,idx, nodes);
     }
 
@@ -84,7 +82,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param idx индекс в какую позицию будет добавлены узлы
      * @param nodes дочерние узлы
      */
-    default void inserts( int idx, Iterable<A> nodes ){
+    default void inserts( int idx, Iterable<SELF> nodes ){
         TreeImpl.insert(this,idx, nodes);
     }
 
@@ -93,7 +91,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param idx индекс
      * @param node узел
      */
-    default void set( int idx, A node ){
+    default void set( int idx, SELF node ){
         TreeImpl.set(this,idx, node);
     }
 
@@ -102,7 +100,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param idx индекс
      * @param nodes узелы
      */
-    default void sets( int idx, A ... nodes ){
+    default void sets( int idx, SELF... nodes ){
         TreeImpl.set(this,idx, nodes);
     }
 
@@ -111,7 +109,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * @param idx индекс
      * @param nodes узелы
      */
-    default void sets( int idx, Iterable<A> nodes ){
+    default void sets( int idx, Iterable<SELF> nodes ){
         TreeImpl.set(this,idx, nodes);
     }
 
@@ -143,7 +141,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * Удаляет дочерние узлы
      * @param node дочерние узлы
      */
-    default void delete( A node ){
+    default void delete( SELF node ){
         TreeImpl.deleteByValue(this, node);
     }
 
@@ -151,7 +149,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * Удаляет дочерние узлы
      * @param nodes дочерние узлы
      */
-    default void deletes( A ... nodes ){
+    default void deletes( SELF... nodes ){
         TreeImpl.deleteByValue(this, nodes);
     }
 
@@ -159,7 +157,7 @@ public interface Tree<A extends Tree<A>> extends ImTree<A>, ImTreeWalk<A> {
      * Удаляет дочерние узлы
      * @param nodes дочерние узлы
      */
-    default void deletes( Iterable<A> nodes ){
+    default void deletes( Iterable<SELF> nodes ){
         TreeImpl.deleteByValue(this, nodes);
     }
 
