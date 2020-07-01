@@ -18,6 +18,12 @@ public class EterableProxy<A> implements Eterable<A> {
         this.target = target;
     }
 
+    /**
+     * Возвращает целевой объект
+     * @return целевой объект
+     */
+    public Iterable<? extends A> target(){ return target; }
+
     @Override
     public Iterator<A> iterator() {
         return (Iterator<A>)target.iterator();
