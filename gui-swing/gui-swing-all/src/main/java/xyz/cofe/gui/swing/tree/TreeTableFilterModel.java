@@ -150,7 +150,6 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
                 TreeTableNode node = (TreeTableNode)onode;
                 boolean visible = isVisible(node);
 
-//                if( isLo
                 logFinest("filter.validate visible={0} ro={1} data={2}",
                     visible, node.getRootOffset(), node.getData());
 
@@ -203,7 +202,7 @@ public class TreeTableFilterModel extends FilterRowTM implements TreeTableModelI
 
         return ((TreeTableModelInterface)getTableModel()).getNodeOf(directRow);
     }
-    //
+
     @Override
     public synchronized int getRowOf( TreeTableNode node ){
         if( node==null )return -1;
