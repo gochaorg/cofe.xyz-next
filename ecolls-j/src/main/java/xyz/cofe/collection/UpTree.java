@@ -180,7 +180,7 @@ public interface UpTree<A extends UpTree<A>> extends Tree<A>, GetTreeParent<A>, 
     }
 
     /**
-     * Возвращает следующий соседний узел
+     * Возвращает предыдущий соседний узел
      * @return Узел или null в случаи достижения края
      */
     default A getPreviousSibling(){
