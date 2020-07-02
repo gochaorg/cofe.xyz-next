@@ -7,7 +7,7 @@ import xyz.cofe.iter.TreeStep;
 import xyz.cofe.txt.Str;
 
 public class IndexTreeTest {
-    public static class TStr implements IndexTree<TStr> {
+    public static class TStr extends BasicTree<TStr> implements IndexTree<TStr> {
         public TStr(){}
         public TStr(String str){
             setValue(str);
