@@ -1,5 +1,6 @@
 package xyz.cofe.gui.swing.tree;
 
+import xyz.cofe.collection.BasicTree;
 import xyz.cofe.collection.NodesExtracter;
 import xyz.cofe.fn.Fn1;
 import xyz.cofe.iter.Eterable;
@@ -11,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class TreeTableNodeBasic
+    extends BasicTree<TreeTableNodeBasic>
     implements TreeTableNode<TreeTableNodeBasic>, TreeTableNodeGetText
 {
     //<editor-fold defaultstate="collapsed" desc="log Функции">
