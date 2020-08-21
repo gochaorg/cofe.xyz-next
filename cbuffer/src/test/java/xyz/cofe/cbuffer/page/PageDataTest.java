@@ -2,6 +2,8 @@ package xyz.cofe.cbuffer.page;
 
 import org.junit.Test;
 import xyz.cofe.cbuffer.MemContentBuffer;
+import xyz.cofe.collection.BasicEventList;
+import xyz.cofe.collection.EventList;
 import xyz.cofe.ecolls.Closeables;
 import xyz.cofe.fn.Pair;
 
@@ -114,4 +116,8 @@ public class PageDataTest {
 
         System.out.println("fpages="+pd.fastPageCount()+" fbytes="+fastMem.getSize());
     }
+
+//    private void tst01(){
+//        EventList el = new BasicEventList();
+//    }
 }
