@@ -13,3 +13,8 @@ ecolls-j/target/
 */*/pom.xml.versionsBackup
 */*.iml
 gui-swing/gui-swing-all/gui-swing-all.iml
+*/*.iml
+*/*/*.iml
+*/target
+*/*/target
+*/*/*/target

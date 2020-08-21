@@ -5,7 +5,7 @@
     <parent>
         <artifactId>next-parent</artifactId>
         <groupId>xyz.cofe</groupId>
-        <version>1.0</version>
+        <version>1.1-SNAPSHOT</version>
         <relativePath>../next-parent</relativePath>
     </parent>
 
@@ -13,39 +13,39 @@
 
     <artifactId>sql</artifactId>
     <groupId>xyz.cofe</groupId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <dependencies>
         <dependency>
             <groupId>xyz.cofe</groupId>
             <artifactId>ecolls</artifactId>
-            <version>1.6</version>
+            <version>[1.6,)</version>
         </dependency>
         <dependency>
             <groupId>xyz.cofe</groupId>
             <artifactId>types</artifactId>
-            <version>1.0</version>
+            <version>[1.0,)</version>
         </dependency>
         <dependency>
             <groupId>xyz.cofe</groupId>
             <artifactId>simple-types</artifactId>
-            <version>1.0</version>
+            <version>[1.0,)</version>
         </dependency>
         <dependency>
             <groupId>xyz.cofe</groupId>
             <artifactId>text-out</artifactId>
-            <version>1.0</version>
+            <version>[1.0,)</version>
         </dependency>
         <dependency>
             <groupId>xyz.cofe</groupId>
             <artifactId>basic-template</artifactId>
-            <version>1.1</version>
+            <version>[1.1,)</version>
         </dependency>
         <dependency>
             <groupId>xyz.cofe</groupId>
             <artifactId>xml-utl</artifactId>
-            <version>1.0</version>
+            <version>[1.0,)</version>
         </dependency>
     </dependencies>
 

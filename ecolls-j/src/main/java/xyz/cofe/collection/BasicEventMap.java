@@ -1,6 +1,8 @@
 package xyz.cofe.collection;
 
 import xyz.cofe.ecolls.ListenersHelper;
+import xyz.cofe.scn.ScnEvent;
+import xyz.cofe.scn.ScnListener;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,6 +16,20 @@ import java.util.concurrent.locks.ReadWriteLock;
  * @param <V> Тип значения
  */
 public class BasicEventMap<K,V> implements EventMap<K,V> {
+    //region scnListenerHelper
+    private final ListenersHelper<ScnListener<EventMap<K, V>, Long, CollectionEvent<EventMap<K, V>, V>>, ScnEvent<EventMap<K, V>, Long, CollectionEvent<EventMap<K, V>, V>>>
+    lh = new ListenersHelper<>(ScnListener::scnEvent);
+
+    /**
+     * Возвращает помощника издателя для поддержи событий
+     * @return помощник издателя
+     */
+    @Override
+    public ListenersHelper<ScnListener<EventMap<K, V>, Long, CollectionEvent<EventMap<K, V>, V>>, ScnEvent<EventMap<K, V>, Long, CollectionEvent<EventMap<K, V>, V>>> scnListenerHelper(){
+        return lh;
+    }
+    //endregion
+
     /**
      * Конструктор по умолчанию
      */
