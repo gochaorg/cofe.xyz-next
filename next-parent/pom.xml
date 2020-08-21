@@ -6,7 +6,7 @@
 
     <groupId>xyz.cofe</groupId>
     <artifactId>next-parent</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>common-parent for cofe.xyz-next</name>
