@@ -1,6 +1,8 @@
 package xyz.cofe.collection;
 
 import xyz.cofe.ecolls.ListenersHelper;
+import xyz.cofe.scn.ScnEvent;
+import xyz.cofe.scn.ScnListener;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -12,6 +14,20 @@ import java.util.concurrent.locks.ReadWriteLock;
  * @param <E> тип элементов в наборе
  */
 public class BasicEventSet<E> implements EventSet<E> {
+    //region scnListenerHelper
+    private final ListenersHelper<ScnListener<EventSet<E>, Long, CollectionEvent<EventSet<E>, E>>, ScnEvent<EventSet<E>, Long, CollectionEvent<EventSet<E>, E>>>
+    lh = new ListenersHelper<>( ScnListener::scnEvent );
+
+    /**
+     * Возвращает помощника издателя для поддержи событий
+     * @return помощник издателя
+     */
+    @Override
+    public ListenersHelper<ScnListener<EventSet<E>, Long, CollectionEvent<EventSet<E>, E>>, ScnEvent<EventSet<E>, Long, CollectionEvent<EventSet<E>, E>>> scnListenerHelper(){
+        return lh;
+    }
+    //endregion
+
     /**
      * Конструктор по умолчанию
      */

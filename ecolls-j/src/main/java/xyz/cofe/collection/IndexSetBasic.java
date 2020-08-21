@@ -35,10 +35,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import xyz.cofe.ecolls.ListenersHelper;
 import xyz.cofe.fn.Pair;
 import xyz.cofe.fn.QuadConsumer;
 import xyz.cofe.ecolls.ReadWriteLockSupport;
 import xyz.cofe.scn.LongScn;
+import xyz.cofe.scn.ScnEvent;
+import xyz.cofe.scn.ScnListener;
 import xyz.cofe.sort.SortInsert;
 import xyz.cofe.sort.SortInsertProfiling;
 
@@ -116,6 +119,20 @@ public class IndexSetBasic<A extends Comparable<A>>
         logger.exiting(IndexSetBasic.class.getName(), method, result);
     }
     //</editor-fold>
+
+    //region scnListenerHelper
+    private final ListenersHelper<ScnListener<IndexSetBasic<A>, Long, Void>, ScnEvent<IndexSetBasic<A>, Long, Void>>
+    lh = new ListenersHelper<>(ScnListener::scnEvent);
+
+    /**
+     * Возвращает помощника издателя для поддержи событий
+     * @return помощник издателя
+     */
+    @Override
+    public ListenersHelper<ScnListener<IndexSetBasic<A>, Long, Void>, ScnEvent<IndexSetBasic<A>, Long, Void>> scnListenerHelper(){
+        return lh;
+    }
+    //endregion
 
     protected final List<A> list;
 

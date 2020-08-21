@@ -10,9 +10,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import xyz.cofe.ecolls.ListenersHelper;
 import xyz.cofe.iter.EmptyIterable;
 import xyz.cofe.iter.Eterable;
 import xyz.cofe.scn.LongScn;
+import xyz.cofe.scn.ScnEvent;
+import xyz.cofe.scn.ScnListener;
 
 /*
  * The MIT License
@@ -63,35 +67,41 @@ import xyz.cofe.scn.LongScn;
 public class ClassNode
     implements NodesExtracter, LongScn<ClassNode,Object>
 {
-    //<editor-fold defaultstate="collapsed" desc="log Функции">
+    //region log Функции
     private static final Logger logger = Logger.getLogger(ClassNode.class.getName());
     private static final Level logLevel = logger.getLevel();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogSevere =
         logLevel==null
             ? true
             : logLevel.intValue() <= Level.SEVERE.intValue();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogWarning =
         logLevel==null
             ? true
             : logLevel.intValue() <= Level.WARNING.intValue();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogInfo =
         logLevel==null
             ? true
             : logLevel.intValue() <= Level.INFO.intValue();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogFine =
         logLevel==null
             ? true
             : logLevel.intValue() <= Level.FINE.intValue();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogFiner =
         logLevel==null
             ? true
             : logLevel.intValue() <= Level.FINER.intValue();
 
+    @SuppressWarnings("SimplifiableConditionalExpression")
     private static final boolean isLogFinest =
         logLevel==null
             ? true
@@ -124,21 +134,35 @@ public class ClassNode
     private static void logException(Throwable ex){
         logger.log(Level.SEVERE, null, ex);
     }
-    //</editor-fold>
+    //endregion
 
-    protected final Map<Class,Set<NodesExtracter>> typedExtracter;
+    //region scnListenerHelper
+    private final ListenersHelper<ScnListener<ClassNode, Long, Object>, ScnEvent<ClassNode, Long, Object>> lh =
+        new ListenersHelper<>(ScnListener::scnEvent);
+
+    /**
+     * Возвращает помощника издателя для поддержи событий
+     * @return помощник издателя
+     */
+    @Override
+    public ListenersHelper<ScnListener<ClassNode, Long, Object>, ScnEvent<ClassNode, Long, Object>> scnListenerHelper(){
+        return lh;
+    }
+    //endregion
+
+    protected final Map<Class<?>,Set<NodesExtracter>> typedExtracter;
     protected final ClassSet types;
 
     /**
      * Конструктор по умочанию
      */
     public ClassNode(){
-        Map<Class, Set<NodesExtracter>>
-            typedExtracter = new LinkedHashMap<Class, Set<NodesExtracter>>();
+        Map<Class<?>, Set<NodesExtracter>>
+            typedExtracter = new LinkedHashMap<>();
 
         types = new ClassSet(true);
 
-        BasicEventMap<Class,Set<NodesExtracter>> ev_typedExtracter
+        BasicEventMap<Class<?>,Set<NodesExtracter>> ev_typedExtracter
             = new BasicEventMap<>(typedExtracter);
 
         typedExtracter = ev_typedExtracter;
@@ -152,12 +176,14 @@ public class ClassNode
      * @param src образец для копирования
      */
     public ClassNode(ClassNode src){
-        Map<Class, Set<NodesExtracter>>
-            typedExtracter = new LinkedHashMap<Class, Set<NodesExtracter>>();
+        Map<Class<?>, Set<NodesExtracter>>
+            typedExtracter = new LinkedHashMap<>();
+
         types = new ClassSet(true);
 
-        BasicEventMap<Class,Set<NodesExtracter>> ev_typedExtracter
+        BasicEventMap<Class<?>,Set<NodesExtracter>> ev_typedExtracter
             = new BasicEventMap<>(typedExtracter);
+
         typedExtracter = ev_typedExtracter;
 
         this.typedExtracter = typedExtracter;
@@ -177,7 +203,7 @@ public class ClassNode
         return new ClassNode(this);
     }
 
-    private AutoCloseable syncTypes( final ClassSet types, EventMap<Class,Set<NodesExtracter>>  map ){
+    private AutoCloseable syncTypes( final ClassSet types, EventMap<Class<?>,Set<NodesExtracter>>  map ){
         return map.onChanged( (cls,oldset,newset)->{
             if( cls!=null ){
                 if( oldset!=null ){
@@ -246,7 +272,7 @@ public class ClassNode
      * @param cls тип
      * @param ne функция
      */
-    public void remove( Class cls, NodesExtracter ne ){
+    public void remove( Class<?> cls, NodesExtracter ne ){
         if( cls==null )throw new IllegalArgumentException( "cls==null" );
         if( ne==null )throw new IllegalArgumentException( "ne==null" );
 
@@ -265,7 +291,7 @@ public class ClassNode
      * Очищает все функции следования для указанного типа
      * @param cls тип
      */
-    public void clear( Class cls ){
+    public void clear( Class<?> cls ){
         if( cls==null )throw new IllegalArgumentException( "cls==null" );
 
         Set<NodesExtracter> setne = typedExtracter.get(cls);
@@ -292,7 +318,7 @@ public class ClassNode
      * @param cls тип
      * @return true - есть функции
      */
-    public boolean hasClass( Class cls ){
+    public boolean hasClass( Class<?> cls ){
         if( cls==null )throw new IllegalArgumentException( "cls==null" );
         return typedExtracter.containsKey(cls);
     }
@@ -323,7 +349,7 @@ public class ClassNode
      * @param cls тип данных
      * @return набор подходящих функций
      */
-    public NodesExtracter[] extractersOf( Class cls ){
+    public NodesExtracter[] extractersOf( Class<?> cls ){
         if( cls==null )throw new IllegalArgumentException( "cls==null" );
 
         Set<NodesExtracter> childrenExtr = typedExtracter.get(cls);
@@ -363,16 +389,16 @@ public class ClassNode
      * @param node объект из которого происходит извлечение данных
      * @return Объекты которые следуют согласно указанным функциям
      */
-    public Eterable fetch( Object node ){
+    public Eterable<?> fetch( Object node ){
         if( node==null )return Eterable.empty();
 
-        Class cls = node.getClass();
+        Class<?> cls = node.getClass();
 
         NodesExtracter[] extrs = extractersOf(cls);
         return fetch(node, extrs);
     }
 
-    private Eterable fetch( Object node, NodesExtracter ... set ){
+    private Eterable<?> fetch( Object node, NodesExtracter ... set ){
         Eterable itr = null;
         for( NodesExtracter ne : set ){
             if( ne!=null ){
@@ -396,7 +422,7 @@ public class ClassNode
      * @see #fetch(java.lang.Object)
      */
     @Override
-    public Eterable extract(Object from) {
+    public Eterable<?> extract(Object from) {
         return fetch(from);
     }
 }

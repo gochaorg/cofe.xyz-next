@@ -1,5 +1,6 @@
 package xyz.cofe.scn;
 
+import xyz.cofe.ecolls.ListenersHelper;
 import xyz.cofe.fn.TripleConsumer;
 
 import java.util.Set;
@@ -11,11 +12,19 @@ import java.util.function.Supplier;
  */
 public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?>,CAUSE> {
     /**
+     * Возвращает помощника издателя для поддержи событий
+     * @return помошник издателя
+     */
+    default ListenersHelper<ScnListener<Owner,SCN,CAUSE>, ScnEvent<Owner,SCN,CAUSE>> scnListenerHelper(){
+        return ScnImpl.<Owner,SCN,CAUSE>listener(this);
+    }
+
+    /**
      * Возвращает активных подписчиков
      * @return подписчики
      */
     default Set<ScnListener<Owner,SCN,CAUSE>> getScnChangedListeners(){
-        return ScnImpl.<Owner,SCN,CAUSE>listener(this).getListeners();
+        return scnListenerHelper().getListeners();
     }
 
     /**
@@ -24,7 +33,7 @@ public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?
      * @return Интерфейс отписки от уведомлений
      */
     default AutoCloseable addScnChangedListener(ScnListener<Owner,SCN,CAUSE> listener){
-        return ScnImpl.<Owner,SCN,CAUSE>listener(this).addListener(listener);
+        return scnListenerHelper().addListener(listener);
     }
 
     /**
@@ -34,7 +43,7 @@ public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?
      * @return Интерфейс отписки от уведомлений
      */
     default AutoCloseable addScnChangedListener(boolean weakLink, ScnListener<Owner, SCN,CAUSE> listener){
-        return ScnImpl.<Owner,SCN,CAUSE>listener(this).addListener(listener,weakLink);
+        return scnListenerHelper().addListener(listener,weakLink);
     }
 
     /**
@@ -42,14 +51,14 @@ public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?
      * @param listener подписчик
      */
     default void removeScnChangedListener(ScnListener<Owner,SCN,CAUSE> listener){
-        ScnImpl.<Owner,SCN,CAUSE>listener(this).removeListener(listener);
+        scnListenerHelper().removeListener(listener);
     }
 
     /**
      * Удаляет всех подписчиков
      */
     default void removeAllScnChangedListeners(){
-        ScnImpl.<Owner,SCN,CAUSE>listener(this).removeAllListeners();
+        scnListenerHelper().removeAllListeners();
     }
 
     /**
@@ -58,7 +67,7 @@ public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?
      * @return true - подписчик имеется в списках рассылки
      */
     default boolean hasScnChangedListener(ScnListener<Owner,SCN,CAUSE> listener){
-        return ScnImpl.<Owner,SCN,CAUSE>listener(this).hasListener(listener);
+        return scnListenerHelper().hasListener(listener);
     }
 
     /**
@@ -79,7 +88,7 @@ public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?
             this,
             from,
             to);
-        ScnImpl.<Owner,SCN,CAUSE>listener(this).fireEvent(ev);
+        scnListenerHelper().fireEvent(ev);
     }
 
     /**
@@ -97,7 +106,7 @@ public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?
             from,
             to,
             cause);
-        ScnImpl.listener(this).fireEvent(ev);
+        scnListenerHelper().fireEvent(ev);
     }
 
     /**
@@ -117,7 +126,7 @@ public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?
      */
     default void scn(Runnable run){
         if( run == null )throw new IllegalArgumentException( "run == null" );
-        ScnImpl.<Owner,SCN,CAUSE>listener(this).withQueue(run);
+        scnListenerHelper().withQueue(run);
     }
 
     /**
@@ -129,6 +138,6 @@ public interface Scn<Owner extends Scn<Owner,SCN,CAUSE>,SCN extends Comparable<?
      */
     default <T> T scn(Supplier<T> run){
         if( run == null )throw new IllegalArgumentException( "run == null" );
-        return ScnImpl.<Owner,SCN,CAUSE>listener(this).withQueue(run);
+        return scnListenerHelper().withQueue(run);
     }
 }

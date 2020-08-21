@@ -2,6 +2,8 @@ package xyz.cofe.collection;
 
 import xyz.cofe.ecolls.ListenersHelper;
 import xyz.cofe.fn.TripleConsumer;
+import xyz.cofe.scn.ScnEvent;
+import xyz.cofe.scn.ScnListener;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +19,21 @@ import java.util.function.Supplier;
  * @param <E> тип элементов в списке
  */
 public class BasicEventList<E> implements EventList<E> {
+    //region scnListenerHelper
+    private final
+    ListenersHelper<ScnListener<EventList<E>, Long, CollectionEvent<EventList<E>, E>>, ScnEvent<EventList<E>, Long, CollectionEvent<EventList<E>, E>>>
+    lh = new ListenersHelper<>(ScnListener::scnEvent);
+
+    /**
+     * Возвращает помощника издателя для поддержи событий
+     * @return помощник издателя
+     */
+    @Override
+    public ListenersHelper<ScnListener<EventList<E>, Long, CollectionEvent<EventList<E>, E>>, ScnEvent<EventList<E>, Long, CollectionEvent<EventList<E>, E>>> scnListenerHelper(){
+        return lh;
+    }
+    //endregion
+
     /**
      * Конструктор по умолчанию
      */

@@ -23,9 +23,12 @@
  */
 package xyz.cofe.collection.graph;
 
+import xyz.cofe.ecolls.ListenersHelper;
 import xyz.cofe.ecolls.ReadWriteLockSupport;
 import xyz.cofe.iter.Eterable;
 import xyz.cofe.scn.LongScn;
+import xyz.cofe.scn.ScnEvent;
+import xyz.cofe.scn.ScnListener;
 
 import java.util.*;
 import java.util.ArrayList;
@@ -38,6 +41,20 @@ import java.util.ArrayList;
  */
 public class SimpleSDGraph<N, E> implements SingleDirectedGraph<N, E>, ReadWriteLockSupport, LongScn<SimpleSDGraph<N,E>,Void>
 {
+    //region scnListenerHelper
+    private final ListenersHelper<ScnListener<SimpleSDGraph<N, E>, Long, Void>, ScnEvent<SimpleSDGraph<N, E>, Long, Void>>
+    lh = new ListenersHelper<>(ScnListener::scnEvent);
+
+    /**
+     * Возвращает помощника издателя для поддержи событий
+     * @return помощник издателя
+     */
+    @Override
+    public ListenersHelper<ScnListener<SimpleSDGraph<N, E>, Long, Void>, ScnEvent<SimpleSDGraph<N, E>, Long, Void>> scnListenerHelper(){
+        return lh;
+    }
+    //endregion
+
     /**
      * Фабрика
      */
