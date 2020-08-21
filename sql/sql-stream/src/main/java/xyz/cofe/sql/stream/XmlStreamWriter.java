@@ -23,7 +23,10 @@
  */
 package xyz.cofe.sql.stream;
 
+import xyz.cofe.ecolls.ListenersHelper;
 import xyz.cofe.scn.LongScn;
+import xyz.cofe.scn.ScnEvent;
+import xyz.cofe.scn.ScnListener;
 import xyz.cofe.xml.FormatXMLWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -44,6 +47,18 @@ import java.util.logging.Logger;
  * @author nt.gocha@gmail.com
  */
 public class XmlStreamWriter extends DataStreamAbstract implements QueryStream, LongScn<XmlStreamWriter,XmlStreamWriter> {
+    private final ListenersHelper<ScnListener<XmlStreamWriter, Long, XmlStreamWriter>, ScnEvent<XmlStreamWriter, Long, XmlStreamWriter>>
+    lh = new ListenersHelper<>(ScnListener::scnEvent);
+
+    /**
+     * Возвращает помошника издателя для поддержи событий
+     * @return помошник издателя
+     */
+    @Override
+    public ListenersHelper<ScnListener<XmlStreamWriter, Long, XmlStreamWriter>, ScnEvent<XmlStreamWriter, Long, XmlStreamWriter>> scnListenerHelper(){
+        return lh;
+    }
+
     protected FormatXMLWriter out;
     
     /**

@@ -26,7 +26,10 @@ package xyz.cofe.sql.cpool;
 
 import xyz.cofe.collection.BasicEventMap;
 import xyz.cofe.collection.EventMap;
+import xyz.cofe.ecolls.ListenersHelper;
 import xyz.cofe.scn.LongScn;
+import xyz.cofe.scn.ScnEvent;
+import xyz.cofe.scn.ScnListener;
 
 import javax.sql.DataSource;
 import java.beans.PropertyChangeListener;
@@ -52,36 +55,42 @@ import java.util.logging.Logger;
 public class SimpleDataSource 
     implements DataSource, LongScn<SimpleDataSource, SimpleDataSource>
 {
-    //<editor-fold defaultstate="collapsed" desc="log Функции">
+    //region log Функции
     private transient static final Logger logger = Logger.getLogger(SimpleDataSource.class.getName());
     private transient static final Level logLevel = logger.getLevel();
     
-    private transient static final boolean isLogSevere = 
+    @SuppressWarnings("SimplifiableConditionalExpression")
+    private transient static final boolean isLogSevere =
         logLevel==null 
         ? true
         : logLevel.intValue() <= Level.SEVERE.intValue();
-    
-    private transient static final boolean isLogWarning = 
+
+    @SuppressWarnings("SimplifiableConditionalExpression")
+    private transient static final boolean isLogWarning =
         logLevel==null 
         ? true
         : logLevel.intValue() <= Level.WARNING.intValue();
-    
-    private transient static final boolean isLogInfo = 
+
+    @SuppressWarnings("SimplifiableConditionalExpression")
+    private transient static final boolean isLogInfo =
         logLevel==null 
         ? true
         : logLevel.intValue() <= Level.INFO.intValue();
-    
-    private transient static final boolean isLogFine = 
+
+    @SuppressWarnings("SimplifiableConditionalExpression")
+    private transient static final boolean isLogFine =
         logLevel==null 
         ? true
         : logLevel.intValue() <= Level.FINE.intValue();
-    
-    private transient static final boolean isLogFiner = 
+
+    @SuppressWarnings("SimplifiableConditionalExpression")
+    private transient static final boolean isLogFiner =
         logLevel==null 
         ? true
         : logLevel.intValue() <= Level.FINER.intValue();
-    
-    private transient static final boolean isLogFinest = 
+
+    @SuppressWarnings("SimplifiableConditionalExpression")
+    private transient static final boolean isLogFinest =
         logLevel==null 
         ? true
         : logLevel.intValue() <= Level.FINEST.intValue();
@@ -125,7 +134,21 @@ public class SimpleDataSource
     private static void logExiting( String method, Object result){
         logger.exiting(SimpleDataSource.class.getName(), method, result);
     }
-    //</editor-fold>
+    //endregion
+
+    //region scnListenerHelper
+    private final ListenersHelper<ScnListener<SimpleDataSource, Long, SimpleDataSource>, ScnEvent<SimpleDataSource, Long, SimpleDataSource>> lh =
+        new ListenersHelper<>(ScnListener::scnEvent);
+
+    /**
+     * Возвращает помощника издателя для поддержи событий
+     * @return помошник издателя
+     */
+    @Override
+    public ListenersHelper<ScnListener<SimpleDataSource, Long, SimpleDataSource>, ScnEvent<SimpleDataSource, Long, SimpleDataSource>> scnListenerHelper(){
+        return lh;
+    }
+    //endregion
 
     protected final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
@@ -133,7 +156,7 @@ public class SimpleDataSource
         return readWriteLock;
     }
 
-    //<editor-fold defaultstate="collapsed" desc="PropertyChangeSupport">
+    //region PropertyChangeSupport
     protected transient final PropertyChangeSupport psupport;
     
     public void addPropertyChangeListener( PropertyChangeListener listener) {
@@ -167,7 +190,7 @@ public class SimpleDataSource
     public boolean hasListeners( String propertyName) {
         return psupport.hasListeners(propertyName);
     }
-    //</editor-fold>
+    //endregion
 
     public SimpleDataSource(){
         psupport = new PropertyChangeSupport(this);
