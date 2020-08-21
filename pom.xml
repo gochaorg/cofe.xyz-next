@@ -35,6 +35,7 @@
         <module>sql</module>
         <module>next-parent</module>
         <module>simple-types</module>
+        <module>xml-utl</module>
     </modules>
 
     <build>
