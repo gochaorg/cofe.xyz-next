@@ -15,8 +15,7 @@
     <description>common lib for any platform</description>
 
     <artifactId>ecolls</artifactId>
-    <groupId>xyz.cofe</groupId>
-    <version>1.6</version>
+    <version>1.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
