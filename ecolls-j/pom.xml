@@ -13,7 +13,7 @@
     <description>common lib for any platform</description>
 
     <artifactId>ecolls</artifactId>
-    <version>1.7</version>
+    <version>1.8-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <!-- Подключение git для хранения исходников -->
@@ -21,7 +21,7 @@
         <connection>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</connection>
         <url>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</url>
         <developerConnection>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</developerConnection>
-        <tag>ecolls-1.7</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
