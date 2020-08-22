@@ -38,6 +38,14 @@
         </dependency>
     </dependencies>
 
+    <!-- Подключение git для хранения исходников -->
+    <scm>
+        <connection>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</connection>
+        <url>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</url>
+        <developerConnection>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
     <modules>
         <module>types</module>
         <module>simple-types</module>
