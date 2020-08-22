@@ -18,6 +18,14 @@
     <version>1.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <!-- Подключение git для хранения исходников -->
+    <scm>
+        <connection>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</connection>
+        <url>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</url>
+        <developerConnection>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
