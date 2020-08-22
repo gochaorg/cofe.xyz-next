@@ -12,6 +12,7 @@
     <packaging>pom</packaging>
 
     <artifactId>types-parent</artifactId>
+  <version>1.2-SNAPSHOT</version>
     <description>data type convertions (parent)</description>
 
     <properties>
@@ -26,7 +27,7 @@
         <dependency>
             <groupId>xyz.cofe</groupId>
             <artifactId>ecolls</artifactId>
-            <version>1.7</version>
+            <version>1.8-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -41,7 +42,7 @@
         <connection>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</connection>
         <url>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</url>
         <developerConnection>scm:git:git@github.com:gochaorg/cofe.xyz-next.git</developerConnection>
-        <tag>types-parent-1.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <modules>
