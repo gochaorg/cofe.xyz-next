@@ -1,0 +1,5 @@
+*.releaseBackup
+*/*.releaseBackup
+*.release.properties
+release.properties
+*/release.properties

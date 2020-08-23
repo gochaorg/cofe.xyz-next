@@ -35,6 +35,8 @@
         <module>sql</module>
         <module>next-parent</module>
         <module>simple-types</module>
+        <module>types-parent</module>
+        <module>type-dist</module>
     </modules>
 
     <build>
