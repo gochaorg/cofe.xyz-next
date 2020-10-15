@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>srvmon</artifactId>
+        <groupId>xyz.cofe</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>mapitf</artifactId>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.6.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xyz.cofe</groupId>
+            <artifactId>ecolls</artifactId>
+            <version>[1.7,2.0)</version>
+        </dependency>
+
+        <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version>3.7.0</version>
+        </dependency>
+        <!-- If using JDK 8, add the following additional dependency. -->
+<!--        <dependency>-->
+<!--            <groupId>com.google.errorprone</groupId>-->
+<!--            <artifactId>javac</artifactId>-->
+<!--            <version>9+181-r4173-1</version>-->
+<!--        </dependency>-->
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
+                    <!-- If using JDK 8, add source and target. -->
+<!--                    <source>1.8</source>-->
+<!--                    <target>1.8</target>-->
+                    <!-- If using JDK 11, remove source and target and uncomment "release" below. -->
+                     <release>8</release>
+                    <compilerArguments>
+                        <Xmaxerrs>10000</Xmaxerrs>
+                        <Xmaxwarns>10000</Xmaxwarns>
+                    </compilerArguments>
+                    <!-- Without showWarnings and verbose, maven-compiler-plugin may not show output. -->
+                    <showWarnings>true</showWarnings>
+                    <verbose>true</verbose>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.checkerframework</groupId>
+                            <artifactId>checker</artifactId>
+                            <version>3.7.0</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <annotationProcessors>
+                        <!-- Add all the checkers you want to enable here -->
+                        <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
+                    </annotationProcessors>
+                    <compilerArgs>
+                        <!-- If using JDK 8, use only the argument immediately below. -->
+<!--                        <arg>-J-Xbootclasspath/p:${errorProneJavac}</arg>-->
+
+                        <!-- If using JDK 11, remove the argument above, remove the
+                             space in the one below, and uncomment it. -->
+                         <arg>-J- -add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+
+                        <!-- Optionally, -Awarns turns type-checking errors into warnings. -->
+                        <!-- <arg>-Awarns</arg> -->
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
