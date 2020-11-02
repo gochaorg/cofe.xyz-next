@@ -25,7 +25,7 @@ public interface PropertyMapper {
                 if( mname==null )return Optional.empty();
 
                 String pname = null;
-                if( mname.startsWith("get") && mname.length()>3 ){
+                if( (mname.startsWith("get") || mname.startsWith("set")) && mname.length()>3 ){
                     pname = mname.substring(3);
                 }else if( mname.startsWith("is") && mname.length()>2 ){
                     pname = mname.substring(2);

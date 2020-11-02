@@ -119,17 +119,13 @@ public class DataProxy implements InvokeHandler {
                         Type ptArg = ptArgs[0];
                         if( ptArg instanceof Class && ((Class<?>) ptArg).isInterface() ){
                             EventList<Object> evList;
+                            List<Object> srcList = null;
 
                             Object oval = getValues().get(methodName);
                             if( oval instanceof List ){
-                                if( oval instanceof EventList ){
-                                    evList = (EventList<Object>)oval;
-                                }else {
-                                    evList = new BasicEventList<>((List) oval);
-                                }
-                            } else {
-                                evList = new BasicEventList<>();
+                                srcList = (List)oval;
                             }
+                            evList = new BasicEventList<>();
 
                             evList.onScn((from,to,casue)->getScn().incrementAndGet());
                             evList.onInserted((idx,old,newv)->{
@@ -177,6 +173,22 @@ public class DataProxy implements InvokeHandler {
 
                             getValues().put(methodName,evList);
 
+                            if( srcList!=null ){
+                                for( Object itm : srcList ){
+                                    if( itm instanceof Map ){
+                                        Object wrapItm = Mapper.bind((
+                                                Map<String, Object>) itm,
+                                                (Class<? extends Object>) ptArg,
+                                                propertyMapper
+                                        );
+
+                                        evList.target().add(wrapItm);
+                                    }
+                                }
+                            }
+
+                            getValues().put(methodName, evList);
+
                             fn = (fp,fa)->getValues().get(methodName);
                             return Optional.of(new CompileResult(fn));
                         }
@@ -222,6 +234,12 @@ public class DataProxy implements InvokeHandler {
             return write(valueName, args[0], params[0], method.getGenericReturnType(), proxy);
         }
 
+        if( params.length==0 ){
+            Map<String,@Nullable Object> vals = getValues();
+            if( vals.containsKey(valueName) ){
+                return vals.get(valueName);
+            }
+        }
         throw new Error("can't invoke "+method);
     }
 
