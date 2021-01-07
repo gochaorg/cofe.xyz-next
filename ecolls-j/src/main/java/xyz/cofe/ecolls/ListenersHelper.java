@@ -71,6 +71,16 @@ public class ListenersHelper<ListenerType,EventType> implements ReadWriteLockSup
     }
     //</editor-fold>
 
+    /**
+     * Кол-во вызовов подписчиков
+     */
+    protected final Map<ListenerType,Integer> listenersCalls = new LinkedHashMap<>();
+
+    /**
+     * Кол-во вызовов подписчиков
+     */
+    protected final Map<ListenerType,Integer> weakListenersCalls = new WeakHashMap<>();
+
     //<editor-fold defaultstate="collapsed" desc="listeners - Hard ссылки">
     /**
      * Hard ссылки на подписчиков
@@ -123,7 +133,7 @@ public class ListenersHelper<ListenerType,EventType> implements ReadWriteLockSup
             throw new IllegalArgumentException("listener==null");
         }
 
-        return writeLock(()->addListener0(listener));
+        return addListener(listener,false);
     }
 
     private AutoCloseable createRemover(ListenerType listener){
@@ -137,11 +147,6 @@ public class ListenersHelper<ListenerType,EventType> implements ReadWriteLockSup
         };
     }
 
-    private AutoCloseable addListener0(ListenerType listener) {
-        listeners.add(listener);
-        return createRemover(listener);
-    }
-
     /**
      * Добавление подписчика.
      * @param listener Подписчик.
@@ -152,15 +157,56 @@ public class ListenersHelper<ListenerType,EventType> implements ReadWriteLockSup
         if( listener==null )throw new IllegalArgumentException( "listener==null" );
         return writeLock(()->{
             if( weakLink ){
-                return addListenerWeak0(listener);
+                return addListenerWeak0(listener, null);
             }else{
-                return addListener0(listener);
+                return addListener0(listener, null);
             }
         });
     }
 
-    private AutoCloseable addListenerWeak0(ListenerType listener) {
+    /**
+     * Добавление подписчика.
+     * @param listener Подписчик.
+     * @param weakLink true - добавить как weak ссылку / false - как hard ссылку
+     * @param limitCalls Ограничение кол-ва вызовов, 0 или меньше - нет ограничений
+     * @return Интерфес для отсоединения подписчика
+     */
+    public AutoCloseable addListener(ListenerType listener, boolean weakLink, int limitCalls){
+        if( listener==null )throw new IllegalArgumentException( "listener==null" );
+        return writeLock(()->{
+            if( weakLink ){
+                return addListenerWeak0(listener, limitCalls);
+            }else{
+                return addListener0(listener, limitCalls);
+            }
+        });
+    }
+
+    private AutoCloseable addListener0(ListenerType listener, Integer limitCalls) {
+        listeners.add(listener);
+        if( limitCalls!=null && limitCalls>0 ){
+            listenersCalls.put(listener, limitCalls);
+        }
+        if( listener instanceof LimitedListenerCall ){
+            int callLimit = ((LimitedListenerCall)listener).getCallLimits();
+            if( callLimit>0 ){
+                listenersCalls.put(listener,callLimit);
+            }
+        }
+        return createRemover(listener);
+    }
+
+    private AutoCloseable addListenerWeak0(ListenerType listener, Integer limitCalls) {
         weakListeners.put(listener, true);
+        if( limitCalls!=null && limitCalls>0 ){
+            weakListenersCalls.put(listener, limitCalls);
+        }
+        if( listener instanceof LimitedListenerCall ){
+            int callLimit = ((LimitedListenerCall)listener).getCallLimits();
+            if( callLimit>0 ){
+                weakListenersCalls.put(listener,callLimit);
+            }
+        }
         return createRemover(listener);
     }
     //</editor-fold>
@@ -182,6 +228,8 @@ public class ListenersHelper<ListenerType,EventType> implements ReadWriteLockSup
     private void removeAllListeners0(){
         weakListeners.clear();
         listeners.clear();
+        listenersCalls.clear();
+        weakListenersCalls.clear();
     }
 
     public void removeAllListeners(){
@@ -236,24 +284,62 @@ public class ListenersHelper<ListenerType,EventType> implements ReadWriteLockSup
      * @param event уведомление
      */
     public void fireEvent(EventType event) {
-        if( event instanceof ImmediateEvent && ((ImmediateEvent)event).isImmediateEvent() ){
-            for( ListenerType ls : readLock(()->new LinkedHashSet<>(getListeners())) ){
-                if( ls != null ){
-                    callListener.accept(ls, event);
-                }
-            }
-            return;
-        }
+        Collection<ListenerType> removeListeners = null;
 
-        if( eventBlockLevel.get()>0 ){
-            getEventQueue().add(event);
-        }else {
-            if( event != null ){
-                for( ListenerType ls : readLock(()->new LinkedHashSet<>(getListeners())) ){
+        try{
+            if( event instanceof ImmediateEvent && ((ImmediateEvent) event).isImmediateEvent() ){
+                for( ListenerType ls : readLock(() -> new LinkedHashSet<>(getListeners())) ){
                     if( ls != null ){
                         callListener.accept(ls, event);
                     }
                 }
+                return;
+            }
+
+            if( eventBlockLevel.get() > 0 ){
+                getEventQueue().add(event);
+            } else {
+                if( event != null ){
+                    for( ListenerType ls : readLock(() -> new LinkedHashSet<>(getListeners())) ){
+                        if( ls != null ){
+                            callListener.accept(ls, event);
+
+                            Integer cntrWeak = weakListenersCalls.getOrDefault(ls, null);
+                            if( cntrWeak != null ){
+                                cntrWeak = cntrWeak - 1;
+                                weakListenersCalls.put(ls, cntrWeak);
+                                if( cntrWeak <= 0 ){
+                                    if( removeListeners == null ){
+                                        removeListeners = new HashSet<>();
+                                    }
+                                    removeListeners.add(ls);
+                                }
+                            }
+
+                            Integer cntrHard = listenersCalls.getOrDefault(ls, null);
+                            if( cntrHard != null ){
+                                cntrHard = cntrHard - 1;
+                                listenersCalls.put(ls, cntrHard);
+                                if( cntrHard <= 0 ){
+                                    if( removeListeners == null ){
+                                        removeListeners = new HashSet<>();
+                                    }
+                                    removeListeners.add(ls);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } finally {
+            if( removeListeners!=null ){
+                final Collection<ListenerType> removeSet = removeListeners;
+                writeLock( ()->{
+                    for( ListenerType ls : removeSet ){
+                        listeners.remove(ls);
+                        weakListeners.remove(ls);
+                    }
+                });
             }
         }
     }
@@ -298,7 +384,8 @@ public class ListenersHelper<ListenerType,EventType> implements ReadWriteLockSup
     }
     //</editor-fold>
 
-    private static Map<Class,WeakHashMap<Object,ListenersHelper>> eventListeners = new WeakHashMap<>();
+    @SuppressWarnings("rawtypes")
+    private static final Map<Class,WeakHashMap<Object,ListenersHelper>> eventListeners = new WeakHashMap<>();
 
     /**
      * Поддержка в реализации подписчиков на события
@@ -309,7 +396,8 @@ public class ListenersHelper<ListenerType,EventType> implements ReadWriteLockSup
      * @param <EV> Тип уведомления
      * @return Помошник в реализции Listener
      */
-    public static <LS,EV> ListenersHelper<LS,EV> get(Class cls,Object inst,BiConsumer<LS,EV> invoker){
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static <LS,EV> ListenersHelper<LS,EV> get(Class cls, Object inst, BiConsumer<LS,EV> invoker){
         if( cls == null )throw new IllegalArgumentException( "cls == null" );
         if( inst == null )throw new IllegalArgumentException( "inst == null" );
         if( invoker == null )throw new IllegalArgumentException( "invoker == null" );
