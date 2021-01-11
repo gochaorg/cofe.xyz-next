@@ -7,6 +7,7 @@
     <body>
         <menu name="Overview">
             <item name="fn interfaces" href="fn.html" />
+            <item name="iterators" href="iter.md" />
             <!-- <item name="FAQ" href="faq.html" /> -->
         </menu>
         <menu ref="reports"/>
