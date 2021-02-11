@@ -152,8 +152,9 @@ public class ContentBufferInputStream extends InputStream
         byte[] bb = contentBuffer.get(pointer, len);
         if( bb==null || bb.length==0 )return -1;
 
-        System.arraycopy(bb, 0, b, off, bb.length);
-        pointer += bb.length;
+        int readSize = Math.min(bb.length, b.length);
+        System.arraycopy(bb, 0, b, off, readSize);
+        pointer += readSize;
 
         return bb.length;
     }
