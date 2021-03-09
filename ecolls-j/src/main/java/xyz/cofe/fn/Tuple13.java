@@ -184,4 +184,14 @@ public interface Tuple13<A,B,C,D,E,F,G,H,I,J,K,L,M> {
             k(),l(),m()
         );
     }
+
+    /**
+     * Создает новый котреж добавляя текущее и указанное значение
+     * @param n значение
+     * @param <N> тип значения
+     * @return Кортэж
+     */
+    default <N> Tuple14<A,B,C,D,E,F,G,H,I,J,K,L,M,N> add(N n){
+        return Tuple.of(a(),b(),c(),d(),e(),f(),g(),h(),i(),j(),k(),l(),m(),n);
+    }
 }

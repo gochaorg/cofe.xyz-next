@@ -111,4 +111,14 @@ public interface Tuple6<A,B,C,D,E,F> {
             f()
         );
     }
+
+    /**
+     * Создает новый котреж добавляя текущее и указанное значение
+     * @param g значение
+     * @param <G> тип значения
+     * @return Кортэж
+     */
+    default <G> Tuple7<A,B,C,D,E,F,G> add(G g){
+        return Tuple.of(a(),b(),c(),d(),e(),f(),g);
+    }
 }

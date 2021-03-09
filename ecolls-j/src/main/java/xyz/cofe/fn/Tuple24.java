@@ -300,4 +300,14 @@ public interface Tuple24<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X> {
             u(),v(),w(),x()
         );
     }
+
+    /**
+     * Создает новый котреж добавляя текущее и указанное значение
+     * @param y значение
+     * @param <Y> тип значения
+     * @return Кортэж
+     */
+    default <Y> Tuple25<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y> add(Y y){
+        return Tuple.of(a(),b(),c(),d(),e(),f(),g(),h(),i(),j(),k(),l(),m(),n(),o(),p(),q(),r(),s(),t(),u(),v(),w(),x(),y);
+    }
 }

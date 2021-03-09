@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * Функция от 11ти аргументов
  * @param <A> Первый аргумент
@@ -15,7 +17,7 @@ package xyz.cofe.fn;
  * @param <K> Одинацетый аргумент
  * @param <Z> Результат
  */
-public interface Fn11<A,B,C,D,E,F,G,H,I,J,K,Z> {
+public interface Fn11<A,B,C,D,E,F,G,H,I,J,K,Z> extends Serializable {
     /**
      * Вызов функции
      * @param a Первый аргумент

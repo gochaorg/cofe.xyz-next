@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * Четверка параметров
  * @param <A> Тип первого значения
@@ -7,7 +9,7 @@ package xyz.cofe.fn;
  * @param <C> Тип третьего значения
  * @param <D> Тип четвертого значения
  */
-public interface Quadruple<A,B,C,D> {
+public interface Quadruple<A,B,C,D> extends Serializable {
     /**
      * Возвращает первый элемент четверки
      * @return первый элемент четверки

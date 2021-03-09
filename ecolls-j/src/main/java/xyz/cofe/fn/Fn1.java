@@ -1,5 +1,6 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
 import java.util.function.Function;
 
 /**
@@ -7,5 +8,5 @@ import java.util.function.Function;
  * @param <A> аргумент
  * @param <Z> результат
  */
-public interface Fn1<A,Z> extends Function<A,Z> {
+public interface Fn1<A,Z> extends Function<A,Z>, Serializable {
 }

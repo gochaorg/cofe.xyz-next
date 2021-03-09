@@ -164,4 +164,14 @@ public interface Tuple11<A,B,C,D,E,F,G,H,I,J,K> {
             k()
         );
     }
+
+    /**
+     * Создает новый котреж добавляя текущее и указанное значение
+     * @param l значение
+     * @param <L> тип значения
+     * @return Кортэж
+     */
+    default <L> Tuple12<A,B,C,D,E,F,G,H,I,J,K,L> add(L l){
+        return Tuple.of(a(),b(),c(),d(),e(),f(),g(),h(),i(),j(),k(),l);
+    }
 }

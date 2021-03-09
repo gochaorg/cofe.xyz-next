@@ -217,4 +217,14 @@ public interface Tuple16<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P> {
             p()
         );
     }
+
+    /**
+     * Создает новый котреж добавляя текущее и указанное значение
+     * @param q значение
+     * @param <Q> тип значения
+     * @return Кортэж
+     */
+    default <Q> Tuple17<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q> add(Q q){
+        return Tuple.of(a(),b(),c(),d(),e(),f(),g(),h(),i(),j(),k(),l(),m(),n(),o(),p(),q);
+    }
 }

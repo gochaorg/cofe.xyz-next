@@ -237,4 +237,14 @@ public interface Tuple18<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R> {
             p(),q(),r()
         );
     }
+
+    /**
+     * Создает новый котреж добавляя текущее и указанное значение
+     * @param s значение
+     * @param <S> тип значения
+     * @return Кортэж
+     */
+    default <S> Tuple19<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S> add(S s){
+        return Tuple.of(a(),b(),c(),d(),e(),f(),g(),h(),i(),j(),k(),l(),m(),n(),o(),p(),q(),r(),s);
+    }
 }

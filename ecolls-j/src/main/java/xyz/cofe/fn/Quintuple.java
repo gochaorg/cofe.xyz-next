@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * Пятерка параметров
  * @param <A> Тип первого значения
@@ -8,7 +10,7 @@ package xyz.cofe.fn;
  * @param <D> Тип четвертого значения
  * @param <E> Тип пятого значения
  */
-public interface Quintuple<A,B,C,D,E> {
+public interface Quintuple<A,B,C,D,E> extends Serializable {
     /**
      * Возвращает первый элемент
      * @return первый элемент

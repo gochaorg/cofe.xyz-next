@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * Потребитель данных от 23 значений
  * @param <A> Тип первого значения
@@ -26,7 +28,7 @@ package xyz.cofe.fn;
  * @param <V> Тип 22го значения
  * @param <W> Тип 23го значения
  */
-public interface Consumer23<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W> {
+public interface Consumer23<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W> extends Serializable {
     /**
      * Получает значение
      * @param a первое значение

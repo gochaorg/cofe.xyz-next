@@ -141,4 +141,14 @@ public interface Tuple9<A,B,C,D,E,F,G,H,I> {
             f(),g(),h(),i()
         );
     }
+
+    /**
+     * Создает новый котреж добавляя текущее и указанное значение
+     * @param j значение
+     * @param <J> тип значения
+     * @return Кортэж
+     */
+    default <J> Tuple10<A,B,C,D,E,F,G,H,I,J> add(J j){
+        return Tuple.of(a(),b(),c(),d(),e(),f(),g(),h(),i(),j);
+    }
 }

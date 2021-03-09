@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * Потребитель данных от 5 значений
  * @param <A> Тип первого значения
@@ -8,7 +10,7 @@ package xyz.cofe.fn;
  * @param <D> Тип 4го значения
  * @param <E> Тип 5го значения
  */
-public interface QuintConsumer<A,B,C,D,E> {
+public interface QuintConsumer<A,B,C,D,E> extends Serializable {
     /**
      * Получает значение
      * @param a первое значение

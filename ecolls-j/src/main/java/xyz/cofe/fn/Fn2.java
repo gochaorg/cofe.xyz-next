@@ -1,5 +1,6 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
 import java.util.function.BiFunction;
 
 /**
@@ -8,7 +9,7 @@ import java.util.function.BiFunction;
  * @param <B> аргумент
  * @param <Z> результат
  */
-public interface Fn2<A,B,Z> extends BiFunction<A,B,Z> {
+public interface Fn2<A,B,Z> extends BiFunction<A,B,Z>, Serializable {
     /**
      * Вызов функции
      * @param a аргумент

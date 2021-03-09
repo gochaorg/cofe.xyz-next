@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * Потребитель данных от 9 значений
  * @param <A> Тип первого значения
@@ -12,7 +14,7 @@ package xyz.cofe.fn;
  * @param <H> Тип 8го значения
  * @param <I> Тип 9го значения
  */
-public interface Consumer9<A,B,C,D,E,F,G,H,I> {
+public interface Consumer9<A,B,C,D,E,F,G,H,I> extends Serializable {
     /**
      * Получает значение
      * @param a первое значение
