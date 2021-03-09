@@ -156,7 +156,7 @@ public class ContentBufferInputStream extends InputStream
         System.arraycopy(bb, 0, b, off, readSize);
         pointer += readSize;
 
-        return bb.length;
+        return readSize;
     }
 
     @Override

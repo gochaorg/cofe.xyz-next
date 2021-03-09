@@ -12,7 +12,7 @@
     </parent>
 
     <artifactId>cbuffer</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 
     <name>cbuffer</name>
     <description>byte array manipulations, data paging</description>
