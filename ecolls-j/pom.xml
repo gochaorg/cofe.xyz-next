@@ -13,7 +13,7 @@
     <description>common lib for any platform</description>
 
     <artifactId>ecolls</artifactId>
-    <version>1.9-SNAPSHOT</version>
+    <version>1.10-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <!-- Подключение git для хранения исходников -->
