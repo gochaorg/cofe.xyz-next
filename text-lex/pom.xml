@@ -7,7 +7,7 @@
     <parent>
         <artifactId>next-parent</artifactId>
         <groupId>xyz.cofe</groupId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.2</version>
         <relativePath>../next-parent</relativePath>
     </parent>
 
