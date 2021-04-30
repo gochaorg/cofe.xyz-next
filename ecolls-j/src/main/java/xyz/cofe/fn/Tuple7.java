@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * 7ка значений
  * @param <A> тип первого значения
@@ -54,6 +56,42 @@ public interface Tuple7<A,B,C,D,E,F,G> {
     G g();
 
     /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple7Impl<A,B,C,D,E,F,G> implements Tuple7<A,B,C,D,E,F,G>, Serializable {
+        private final A a;
+        private final B b;
+        private final C c;
+        private final D d;
+        private final E e;
+        private final F f;
+        private final G g;
+
+        public Tuple7Impl(
+            A a, B b, C c, D d, E e,
+            F f, G g
+        ){
+            this.a = a;this.b = b;this.c = c;this.d = d;this.e = e;
+            this.f = f;this.g = g;
+        }
+
+        @Override public A a(){ return a; }
+        @Override public B b(){ return b; }
+        @Override public C c(){ return c; }
+        @Override public D d(){ return d; }
+        @Override public E e(){ return e; }
+        @Override public F f(){ return f; }
+        @Override public G g(){ return g; }
+
+        public String toString(){
+            return "(a="+a+",b="+b+",c="+c+",d="+d+",e="+e+
+                ",f="+f+",g="+g+
+                ")";
+        }
+    }
+
+    /**
      * Возвращает 7ку значений
      * @param a первый элемент
      * @param b второй элемент
@@ -76,19 +114,10 @@ public interface Tuple7<A,B,C,D,E,F,G> {
         A a, B b, C c, D d, E e,
         F f, G g
     ){
-        return new Tuple7<A,B,C,D,E,F,G>() {
-            @Override public A a() {
-                return a;
-            }
-            @Override public B b() {
-                return b;
-            }
-            @Override public C c() { return c; }
-            @Override public D d() { return d; }
-            @Override public E e() { return e; }
-            @Override public F f() { return f; }
-            @Override public G g() { return g; }
-        };
+        return new Tuple7Impl<>(
+            a,b,c,d,e,
+            f,g
+        );
     }
 
     /**

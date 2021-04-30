@@ -1,5 +1,6 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -22,6 +23,29 @@ public interface Tuple2<A,B> {
     B b();
 
     /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple2Impl<A,B> implements Tuple2<A,B>, Serializable {
+        private final A a;
+        private final B b;
+
+        public Tuple2Impl(
+            A a, B b
+        ){
+            this.a = a;this.b = b;
+        }
+
+        @Override public A a(){ return a; }
+        @Override public B b(){ return b; }
+
+        public String toString(){
+            return "(a="+a+",b="+b+
+                ")";
+        }
+    }
+
+    /**
      * Врзвращает пару
      * @param a первый элемент
      * @param b второй элемент
@@ -30,17 +54,7 @@ public interface Tuple2<A,B> {
      * @return пара значений
      */
     static <A,B> Tuple2<A,B> of(A a, B b){
-        return new Tuple2<A, B>() {
-            @Override
-            public A a() {
-                return a;
-            }
-
-            @Override
-            public B b() {
-                return b;
-            }
-        };
+        return new Tuple2Impl<>(a,b);
     }
 
     /**

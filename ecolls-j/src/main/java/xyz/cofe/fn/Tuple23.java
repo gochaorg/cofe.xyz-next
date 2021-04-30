@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * 23ка значений
  * @param <A> тип первого значения
@@ -166,6 +168,83 @@ public interface Tuple23<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W> {
     W w();
 
     /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple23Impl<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y> implements Tuple23<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W>, Serializable {
+        private final A a;
+        private final B b;
+        private final C c;
+        private final D d;
+        private final E e;
+        private final F f;
+        private final G g;
+        private final H h;
+        private final I i;
+        private final J j;
+        private final K k;
+        private final L l;
+        private final M m;
+        private final N n;
+        private final O o;
+        private final P p;
+        private final Q q;
+        private final R r;
+        private final S s;
+        private final T t;
+        private final U u;
+        private final V v;
+        private final W w;
+
+        public Tuple23Impl(
+            A a, B b, C c, D d, E e,
+            F f, G g, H h, I i, J j,
+            K k, L l, M m, N n, O o,
+            P p, Q q, R r, S s, T t,
+            U u, V v, W w
+        ){
+            this.a = a;this.b = b;this.c = c;this.d = d;this.e = e;
+            this.f = f;this.g = g;this.h = h;this.i = i;this.j = j;
+            this.k = k;this.l = l;this.m = m;this.n = n;this.o = o;
+            this.p = p;this.q = q;this.r = r;this.s = s;this.t = t;
+            this.u = u;this.v = v;this.w = w;
+        }
+
+        @Override public A a(){ return a; }
+        @Override public B b(){ return b; }
+        @Override public C c(){ return c; }
+        @Override public D d(){ return d; }
+        @Override public E e(){ return e; }
+        @Override public F f(){ return f; }
+        @Override public G g(){ return g; }
+        @Override public H h(){ return h; }
+        @Override public I i(){ return i; }
+        @Override public J j(){ return j; }
+        @Override public K k(){ return k; }
+        @Override public L l(){ return l; }
+        @Override public M m(){ return m; }
+        @Override public N n(){ return n; }
+        @Override public O o(){ return o; }
+        @Override public P p(){ return p; }
+        @Override public Q q(){ return q; }
+        @Override public R r(){ return r; }
+        @Override public S s(){ return s; }
+        @Override public T t(){ return t; }
+        @Override public U u(){ return u; }
+        @Override public V v(){ return v; }
+        @Override public W w(){ return w; }
+
+        public String toString(){
+            return "(a="+a+",b="+b+",c="+c+",d="+d+",e="+e+
+                ",f="+f+",g="+g+",h="+h+",i="+i+",j="+j+
+                ",k="+k+",l="+l+",m="+m+",n="+n+",o="+o+
+                ",p="+p+",q="+q+",r="+r+",s="+s+",t="+t+
+                ",u="+u+",v="+v+",w="+w+
+                ")";
+        }
+    }
+
+    /**
      * Возвращает 23ку значений
      * @param a первый элемент
      * @param b второй элемент
@@ -223,35 +302,13 @@ public interface Tuple23<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W> {
         P p, Q q, R r, S s, T t,
         U u, V v, W w
     ){
-        return new Tuple23<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W>() {
-            @Override public A a() {
-                return a;
-            }
-            @Override public B b() {
-                return b;
-            }
-            @Override public C c() { return c; }
-            @Override public D d() { return d; }
-            @Override public E e() { return e; }
-            @Override public F f() { return f; }
-            @Override public G g() { return g; }
-            @Override public H h() { return h; }
-            @Override public I i() { return i; }
-            @Override public J j() { return j; }
-            @Override public K k() { return k; }
-            @Override public L l() { return l; }
-            @Override public M m() { return m; }
-            @Override public N n() { return n; }
-            @Override public O o() { return o; }
-            @Override public P p() { return p; }
-            @Override public Q q() { return q; }
-            @Override public R r() { return r; }
-            @Override public S s() { return s; }
-            @Override public T t() { return t; }
-            @Override public U u() { return u; }
-            @Override public V v() { return v; }
-            @Override public W w() { return w; }
-        };
+        return new Tuple23Impl<>(
+            a,b,c,d,e,
+            f,g,h,i,j,
+            k,l,m,n,o,
+            p,q,r,s,t,
+            u,v,w
+        );
     }
 
     /**

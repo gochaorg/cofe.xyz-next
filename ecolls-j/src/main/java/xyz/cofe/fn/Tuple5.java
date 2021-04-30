@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * 5ка значений
  * @param <A> тип первого значения
@@ -40,6 +42,35 @@ public interface Tuple5<A,B,C,D,E> {
     E e();
 
     /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple5Impl<A,B,C,D,E> implements Tuple5<A,B,C,D,E>, Serializable {
+        private final A a;
+        private final B b;
+        private final C c;
+        private final D d;
+        private final E e;
+
+        public Tuple5Impl(
+            A a, B b, C c, D d, E e
+        ){
+            this.a = a;this.b = b;this.c = c;this.d = d;this.e = e;
+        }
+
+        @Override public A a(){ return a; }
+        @Override public B b(){ return b; }
+        @Override public C c(){ return c; }
+        @Override public D d(){ return d; }
+        @Override public E e(){ return e; }
+
+        public String toString(){
+            return "(a="+a+",b="+b+",c="+c+",d="+d+",e="+e+
+                ")";
+        }
+    }
+
+    /**
      * Возвращает 5ку значений
      * @param a первый элемент
      * @param b второй элемент
@@ -54,17 +85,9 @@ public interface Tuple5<A,B,C,D,E> {
      * @return 4ка значений
      */
     static <A,B,C,D,E> Tuple5<A,B, C, D, E> of( A a, B b, C c, D d, E e ){
-        return new Tuple5<A, B, C, D, E>() {
-            @Override public A a() {
-                return a;
-            }
-            @Override public B b() {
-                return b;
-            }
-            @Override public C c() { return c; }
-            @Override public D d() { return d; }
-            @Override public E e() { return e; }
-        };
+        return new Tuple5Impl<>(
+            a,b,c,d,e
+        );
     }
 
     /**

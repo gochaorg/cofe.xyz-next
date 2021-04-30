@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * 16ка значений
  * @param <A> тип первого значения
@@ -117,6 +119,66 @@ public interface Tuple16<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P> {
     P p();
 
     /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple16Impl<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P> implements Tuple16<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P>, Serializable {
+        private final A a;
+        private final B b;
+        private final C c;
+        private final D d;
+        private final E e;
+        private final F f;
+        private final G g;
+        private final H h;
+        private final I i;
+        private final J j;
+        private final K k;
+        private final L l;
+        private final M m;
+        private final N n;
+        private final O o;
+        private final P p;
+
+        public Tuple16Impl(
+            A a, B b, C c, D d, E e,
+            F f, G g, H h, I i, J j,
+            K k, L l, M m, N n, O o,
+            P p
+        ){
+            this.a = a;this.b = b;this.c = c;this.d = d;this.e = e;
+            this.f = f;this.g = g;this.h = h;this.i = i;this.j = j;
+            this.k = k;this.l = l;this.m = m;this.n = n;this.o = o;
+            this.p = p;
+        }
+
+        @Override public A a(){ return a; }
+        @Override public B b(){ return b; }
+        @Override public C c(){ return c; }
+        @Override public D d(){ return d; }
+        @Override public E e(){ return e; }
+        @Override public F f(){ return f; }
+        @Override public G g(){ return g; }
+        @Override public H h(){ return h; }
+        @Override public I i(){ return i; }
+        @Override public J j(){ return j; }
+        @Override public K k(){ return k; }
+        @Override public L l(){ return l; }
+        @Override public M m(){ return m; }
+        @Override public N n(){ return n; }
+        @Override public O o(){ return o; }
+        @Override public P p(){ return p; }
+
+        public String toString(){
+            return "(a="+a+",b="+b+",c="+c+",d="+d+",e="+e+
+                ",f="+f+",g="+g+",h="+h+",i="+i+",j="+j+
+                ",k="+k+",l="+l+",m="+m+",n="+n+",o="+o+
+                ",p="+p+
+                ")";
+        }
+    }
+
+    /**
      * Возвращает 16ку значений
      * @param a первый элемент
      * @param b второй элемент
@@ -159,28 +221,12 @@ public interface Tuple16<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P> {
         K k, L l, M m, N n, O o,
         P p
     ){
-        return new Tuple16<A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P>() {
-            @Override public A a() {
-                return a;
-            }
-            @Override public B b() {
-                return b;
-            }
-            @Override public C c() { return c; }
-            @Override public D d() { return d; }
-            @Override public E e() { return e; }
-            @Override public F f() { return f; }
-            @Override public G g() { return g; }
-            @Override public H h() { return h; }
-            @Override public I i() { return i; }
-            @Override public J j() { return j; }
-            @Override public K k() { return k; }
-            @Override public L l() { return l; }
-            @Override public M m() { return m; }
-            @Override public N n() { return n; }
-            @Override public O o() { return o; }
-            @Override public P p() { return p; }
-        };
+        return new Tuple16Impl<>(
+            a,b,c,d,e,
+            f,g,h,i,j,
+            k,l,m,n,o,
+            p
+        );
     }
 
     /**

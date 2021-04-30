@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * 4ка значений
  * @param <A> тип первого значения
@@ -33,6 +35,33 @@ public interface Tuple4<A,B,C,D> {
     D d();
 
     /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple4Impl<A,B,C,D> implements Tuple4<A,B,C,D>, Serializable {
+        private final A a;
+        private final B b;
+        private final C c;
+        private final D d;
+
+        public Tuple4Impl(
+            A a, B b, C c, D d
+        ){
+            this.a = a;this.b = b;this.c = c;this.d = d;
+        }
+
+        @Override public A a(){ return a; }
+        @Override public B b(){ return b; }
+        @Override public C c(){ return c; }
+        @Override public D d(){ return d; }
+
+        public String toString(){
+            return "(a="+a+",b="+b+",c="+c+",d="+d+
+                ")";
+        }
+    }
+
+    /**
      * Возвращает 4ку значений
      * @param a первый элемент
      * @param b второй элемент
@@ -45,16 +74,9 @@ public interface Tuple4<A,B,C,D> {
      * @return 4ка значений
      */
     static <A,B,C,D> Tuple4<A,B, C, D> of( A a, B b, C c, D d ){
-        return new Tuple4<A, B, C, D>() {
-            @Override public A a() {
-                return a;
-            }
-            @Override public B b() {
-                return b;
-            }
-            @Override public C c() { return c; }
-            @Override public D d() { return d; }
-        };
+        return new Tuple4Impl<>(
+            a,b,c,d
+        );
     }
 
     /**

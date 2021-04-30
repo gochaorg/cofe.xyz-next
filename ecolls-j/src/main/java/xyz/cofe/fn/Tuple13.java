@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * 13ка значений
  * @param <A> тип первого значения
@@ -96,6 +98,57 @@ public interface Tuple13<A,B,C,D,E,F,G,H,I,J,K,L,M> {
     M m();
 
     /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple13Impl<A,B,C,D,E,F,G,H,I,J,K,L,M> implements Tuple13<A,B,C,D,E,F,G,H,I,J,K,L,M>, Serializable {
+        private final A a;
+        private final B b;
+        private final C c;
+        private final D d;
+        private final E e;
+        private final F f;
+        private final G g;
+        private final H h;
+        private final I i;
+        private final J j;
+        private final K k;
+        private final L l;
+        private final M m;
+
+        public Tuple13Impl(
+            A a, B b, C c, D d, E e,
+            F f, G g, H h, I i, J j,
+            K k, L l, M m
+        ){
+            this.a = a;this.b = b;this.c = c;this.d = d;this.e = e;
+            this.f = f;this.g = g;this.h = h;this.i = i;this.j = j;
+            this.k = k;this.l = l;this.m = m;
+        }
+
+        @Override public A a(){ return a; }
+        @Override public B b(){ return b; }
+        @Override public C c(){ return c; }
+        @Override public D d(){ return d; }
+        @Override public E e(){ return e; }
+        @Override public F f(){ return f; }
+        @Override public G g(){ return g; }
+        @Override public H h(){ return h; }
+        @Override public I i(){ return i; }
+        @Override public J j(){ return j; }
+        @Override public K k(){ return k; }
+        @Override public L l(){ return l; }
+        @Override public M m(){ return m; }
+
+        public String toString(){
+            return "(a="+a+",b="+b+",c="+c+",d="+d+",e="+e+
+                ",f="+f+",g="+g+",h="+h+",i="+i+",j="+j+
+                ",k="+k+",l="+l+",m="+m+
+                ")";
+        }
+    }
+
+    /**
      * Возвращает 16ку значений
      * @param a первый элемент
      * @param b второй элемент
@@ -131,25 +184,11 @@ public interface Tuple13<A,B,C,D,E,F,G,H,I,J,K,L,M> {
         F f, G g, H h, I i, J j,
         K k, L l, M m
     ){
-        return new Tuple13<A,B,C,D,E,F,G,H,I,J,K,L,M>() {
-            @Override public A a() {
-                return a;
-            }
-            @Override public B b() {
-                return b;
-            }
-            @Override public C c() { return c; }
-            @Override public D d() { return d; }
-            @Override public E e() { return e; }
-            @Override public F f() { return f; }
-            @Override public G g() { return g; }
-            @Override public H h() { return h; }
-            @Override public I i() { return i; }
-            @Override public J j() { return j; }
-            @Override public K k() { return k; }
-            @Override public L l() { return l; }
-            @Override public M m() { return m; }
-        };
+        return new Tuple13Impl<>(
+            a,b,c,d,e,
+            f,g,h,i,j,
+            k,l,m
+        );
     }
 
     /**

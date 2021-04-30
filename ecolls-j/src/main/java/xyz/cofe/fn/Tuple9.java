@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * 9ка значений
  * @param <A> тип первого значения
@@ -68,6 +70,46 @@ public interface Tuple9<A,B,C,D,E,F,G,H,I> {
     I i();
 
     /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple9Impl<A,B,C,D,E,F,G,H,I> implements Tuple9<A,B,C,D,E,F,G,H,I>, Serializable {
+        private final A a;
+        private final B b;
+        private final C c;
+        private final D d;
+        private final E e;
+        private final F f;
+        private final G g;
+        private final H h;
+        private final I i;
+
+        public Tuple9Impl(
+            A a, B b, C c, D d, E e,
+            F f, G g, H h, I i
+        ){
+            this.a = a;this.b = b;this.c = c;this.d = d;this.e = e;
+            this.f = f;this.g = g;this.h = h;this.i = i;
+        }
+
+        @Override public A a(){ return a; }
+        @Override public B b(){ return b; }
+        @Override public C c(){ return c; }
+        @Override public D d(){ return d; }
+        @Override public E e(){ return e; }
+        @Override public F f(){ return f; }
+        @Override public G g(){ return g; }
+        @Override public H h(){ return h; }
+        @Override public I i(){ return i; }
+
+        public String toString(){
+            return "(a="+a+",b="+b+",c="+c+",d="+d+",e="+e+
+                ",f="+f+",g="+g+",h="+h+",i="+i+
+                ")";
+        }
+    }
+
+    /**
      * Возвращает 9ку значений
      * @param a первый элемент
      * @param b второй элемент
@@ -94,21 +136,10 @@ public interface Tuple9<A,B,C,D,E,F,G,H,I> {
         A a, B b, C c, D d, E e,
         F f, G g, H h, I i
     ){
-        return new Tuple9<A,B,C,D,E,F,G,H,I>() {
-            @Override public A a() {
-                return a;
-            }
-            @Override public B b() {
-                return b;
-            }
-            @Override public C c() { return c; }
-            @Override public D d() { return d; }
-            @Override public E e() { return e; }
-            @Override public F f() { return f; }
-            @Override public G g() { return g; }
-            @Override public H h() { return h; }
-            @Override public I i() { return i; }
-        };
+        return new Tuple9Impl<>(
+            a,b,c,d,e,
+            f,g,h,i
+        );
     }
 
     /**

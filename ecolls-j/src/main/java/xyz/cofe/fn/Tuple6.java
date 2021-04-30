@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * 6ка значений
  * @param <A> тип первого значения
@@ -47,6 +49,40 @@ public interface Tuple6<A,B,C,D,E,F> {
     F f();
 
     /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple6Impl<A,B,C,D,E,F> implements Tuple6<A,B,C,D,E,F>, Serializable {
+        private final A a;
+        private final B b;
+        private final C c;
+        private final D d;
+        private final E e;
+        private final F f;
+
+        public Tuple6Impl(
+            A a, B b, C c, D d, E e,
+            F f
+        ){
+            this.a = a;this.b = b;this.c = c;this.d = d;this.e = e;
+            this.f = f;
+        }
+
+        @Override public A a(){ return a; }
+        @Override public B b(){ return b; }
+        @Override public C c(){ return c; }
+        @Override public D d(){ return d; }
+        @Override public E e(){ return e; }
+        @Override public F f(){ return f; }
+
+        public String toString(){
+            return "(a="+a+",b="+b+",c="+c+",d="+d+",e="+e+
+                ",f="+f+
+                ")";
+        }
+    }
+
+    /**
      * Возвращает 6ку значений
      * @param a первый элемент
      * @param b второй элемент
@@ -67,18 +103,10 @@ public interface Tuple6<A,B,C,D,E,F> {
         A a, B b, C c, D d, E e,
         F f
     ){
-        return new Tuple6<A,B,C,D,E,F>() {
-            @Override public A a() {
-                return a;
-            }
-            @Override public B b() {
-                return b;
-            }
-            @Override public C c() { return c; }
-            @Override public D d() { return d; }
-            @Override public E e() { return e; }
-            @Override public F f() { return f; }
-        };
+        return new Tuple6Impl<>(
+            a,b,c,d,e,
+            f
+        );
     }
 
     /**

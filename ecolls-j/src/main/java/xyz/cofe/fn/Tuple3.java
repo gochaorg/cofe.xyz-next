@@ -1,5 +1,7 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
+
 /**
  * 3ка значений
  * @param <A> тип первого значения
@@ -26,6 +28,31 @@ public interface Tuple3<A,B,C> {
     C c();
 
     /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple3Impl<A,B,C> implements Tuple3<A,B,C>, Serializable {
+        private final A a;
+        private final B b;
+        private final C c;
+
+        public Tuple3Impl(
+            A a, B b, C c
+        ){
+            this.a = a;this.b = b;this.c = c;
+        }
+
+        @Override public A a(){ return a; }
+        @Override public B b(){ return b; }
+        @Override public C c(){ return c; }
+
+        public String toString(){
+            return "(a="+a+",b="+b+",c="+c+
+                ")";
+        }
+    }
+
+    /**
      * Возвращает тройку значений
      * @param a первый элемент
      * @param b второй элемент
@@ -36,15 +63,7 @@ public interface Tuple3<A,B,C> {
      * @return пара значений
      */
     static <A,B,C> Tuple3<A,B, C> of( A a, B b, C c ){
-        return new Tuple3<A, B, C>() {
-            @Override public A a() {
-                return a;
-            }
-            @Override public B b() {
-                return b;
-            }
-            @Override public C c() { return c; }
-        };
+        return new Tuple3Impl<>(a,b,c);
     }
 
     /**

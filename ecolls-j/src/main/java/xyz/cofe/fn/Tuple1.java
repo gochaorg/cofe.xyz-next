@@ -1,5 +1,6 @@
 package xyz.cofe.fn;
 
+import java.io.Serializable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -7,12 +8,33 @@ import java.util.function.Function;
  * Значение - кортэаж из одного элемента
  * @param <A> тип значения
  */
-public interface Tuple1<A> {
+public interface Tuple1<A>  {
     /**
      * Возвращает значение
      * @return значение
      */
     A a();
+
+    /**
+     * Реализация кортежа
+     * @param <A> тип значения
+     */
+    public static class Tuple1Impl<A> implements Tuple1<A>, Serializable {
+        private final A a;
+
+        public Tuple1Impl(A a){
+            this.a = a;
+        }
+
+        @Override
+        public A a(){
+            return a;
+        }
+
+        public String toString(){
+            return "(a="+a+")";
+        }
+    }
 
     /**
      * Врзвращает пару
@@ -21,12 +43,7 @@ public interface Tuple1<A> {
      * @return пара значений
      */
     static <A> Tuple1<A> of( A a ){
-        return new Tuple1<A>() {
-            @Override
-            public A a() {
-                return a;
-            }
-        };
+        return new Tuple1Impl<>(a);
     }
 
     /**
