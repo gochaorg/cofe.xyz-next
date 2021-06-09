@@ -33,6 +33,7 @@
         <module>sql</module>
         <module>next-parent</module>
         <module>types-parent</module>
+        <module>udp-atom</module>
     </modules>
 
     <build>
