@@ -35,8 +35,8 @@ import java.util.stream.Collectors;
  *     public void test03(){
  *         var str = Template
  *             .parse("a=${a} b=${b}",Item.class)
- *             .bind("a", v->""+v.a )
- *             .bind("b", v->""+v.b )
+ *             .bind("a", v-&gt;""+v.a )
+ *             .bind("b", v-&gt;""+v.b )
  *             .eval(new Item(1,3));
  *
  *         System.out.println(str);

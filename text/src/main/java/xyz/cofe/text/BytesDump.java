@@ -19,10 +19,10 @@ import xyz.cofe.fn.Tuple3;
  *     "0123456789abcdef _ABCDEFG"
  * ).getBytes(StandardCharsets.ISO_8859_1);
  *
- * BytesDump dump = new BytesDump.Builder().relative( decoder -> {
+ * BytesDump dump = new BytesDump.Builder().relative( decoder -&gt; {
  *     decoder
  *         .name(0, 2, "head")
- *         .decode(4, bytes1 -> new String(bytes1,StandardCharsets.ISO_8859_1));
+ *         .decode(4, bytes1 -&gt; new String(bytes1,StandardCharsets.ISO_8859_1));
  * }).build();
  *
  * System.out.println(dump.dump(bytes));
@@ -253,7 +253,7 @@ public class BytesDump {
      * Указывает функцию дешифровки порции байт.
      *
      * <pre>
-     * dump.setPreview( d -> {
+     * dump.setPreview( d -&gt; {
      *     if( d.getPointer()==2 ) return d.respone(2,"2 chars: "+new String(d.getBytes(),d.getPointer(),2,StandardCharsets.ISO_8859_1));
      *     if( d.getPointer()==4 ) return d.respone(4,"4 chars: "+new String(d.getBytes(),d.getPointer(),4,StandardCharsets.ISO_8859_1));
      *     return Optional.empty();
