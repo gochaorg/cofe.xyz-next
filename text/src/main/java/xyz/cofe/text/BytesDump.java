@@ -572,7 +572,7 @@ public class BytesDump {
             }
 
             public NextDecoder intValue( boolean BE, Function<Integer,String> toString ){
-                return decode( 8, bytes -> {
+                return decode( 4, bytes -> {
                     int off = 0;
                     int s = 1;
 
@@ -601,7 +601,7 @@ public class BytesDump {
             }
 
             public NextDecoder shortValue( boolean BE, Function<Integer,String> toString ){
-                return decode( 8, bytes -> {
+                return decode( 2, bytes -> {
                     int off = 0;
                     int s = 1;
 
