@@ -519,6 +519,105 @@ public class BytesDump {
 
                 return new NextDecoder( builder, map, off, len );
             }
+
+            public NextDecoder byteValue(){
+                return byteValue(null);
+            }
+
+            public NextDecoder byteValue( Function<Integer,String> toString ){
+                return decode( 1, bytes -> {
+                    return toString!=null ? toString.apply((int)bytes[0]) : Integer.toString((int)bytes[0]);
+                });
+            }
+
+            public NextDecoder longValue(){
+                return longValue( true, null );
+            }
+
+            public NextDecoder longValue( Function<Long,String> toString ){
+                return longValue( true, toString );
+            }
+
+            public NextDecoder longValue( boolean BE, Function<Long,String> toString ){
+                return decode( 8, bytes -> {
+                    int off = 0;
+                    int s = 1;
+
+                    if( !BE ){
+                        off = 7;
+                        s = -1;
+                    }
+
+                    long v = 0;
+                    v = v | ((long) (bytes[off] & 0xFF) << 8 * 7); off += s;
+                    v = v | ((long) (bytes[off] & 0xFF) << 8 * 6); off += s;
+                    v = v | ((long) (bytes[off] & 0xFF) << 8 * 5); off += s;
+                    v = v | ((long) (bytes[off] & 0xFF) << 8 * 4); off += s;
+                    v = v | ((long) (bytes[off] & 0xFF) << 8 * 3); off += s;
+                    v = v | ((long) (bytes[off] & 0xFF) << 8 * 2); off += s;
+                    v = v | ((long) (bytes[off] & 0xFF) << 8);     off += s;
+                    v = v | ((long) (bytes[off] & 0xFF));          off += s;
+
+                    return
+                        toString!=null ? toString.apply(v) : Long.toString(v);
+                });
+            }
+
+            public NextDecoder intValue(){
+                return intValue( true, null );
+            }
+
+            public NextDecoder intValue( Function<Integer,String> toString ){
+                return intValue( true, toString );
+            }
+
+            public NextDecoder intValue( boolean BE, Function<Integer,String> toString ){
+                return decode( 8, bytes -> {
+                    int off = 0;
+                    int s = 1;
+
+                    if( !BE ){
+                        off = 3;
+                        s = -1;
+                    }
+
+                    int v = 0;
+                    v = v | ((int) (bytes[off] & 0xFF) << 8 * 3); off += s;
+                    v = v | ((int) (bytes[off] & 0xFF) << 8 * 2); off += s;
+                    v = v | ((int) (bytes[off] & 0xFF) << 8);     off += s;
+                    v = v | ((int) (bytes[off] & 0xFF));          off += s;
+
+                    return
+                        toString!=null ? toString.apply(v) : Integer.toString(v);
+                });
+            }
+
+            public NextDecoder shortValue(){
+                return shortValue( true, null );
+            }
+
+            public NextDecoder shortValue( Function<Integer,String> toString ){
+                return shortValue( true, toString );
+            }
+
+            public NextDecoder shortValue( boolean BE, Function<Integer,String> toString ){
+                return decode( 8, bytes -> {
+                    int off = 0;
+                    int s = 1;
+
+                    if( !BE ){
+                        off = 1;
+                        s = -1;
+                    }
+
+                    int v = 0;
+                    v = v | ((int) (bytes[off] & 0xFF) << 8);     off += s;
+                    v = v | ((int) (bytes[off] & 0xFF));          off += s;
+
+                    return
+                        toString!=null ? toString.apply(v) : Integer.toString(v);
+                });
+            }
         }
 
         /**
