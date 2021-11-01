@@ -28,7 +28,7 @@ package xyz.cofe.cbuffer;
  * Байтовый буфер
  * @author Kamnev Georgiy (nt.gocha@gmail.com)
  */
-public interface ContentBuffer {
+public interface ContentBuffer extends Flushable, Cleanable {
     /**
      * Возвращает размер буфера в байтах
      * @return кол-во байт в буфере
