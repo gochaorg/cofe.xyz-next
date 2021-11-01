@@ -5,6 +5,7 @@ import xyz.cofe.cbuffer.page.PDLogger;
 import xyz.cofe.cbuffer.page.PageDataImpl;
 import xyz.cofe.fn.Consumer4;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Буфер с поддержкой кеширования в "оперативной" памяти.
@@ -228,7 +229,7 @@ public class CachePageBuffer implements AutoCloseable, ContentBuffer {
         if(closed)throw new IllegalStateException("PageBuffer is closed");
         hiBuffer.flush();
 
-        for( var e : pageDataImpl.dirtyFastPages.entrySet() ){
+        for( Map.Entry<Integer,Boolean> e : pageDataImpl.dirtyFastPages.entrySet() ){
             int fastPage = e.getKey();
             if( e.getValue() ){
                 pageDataImpl.saveFastPage(fastPage);
