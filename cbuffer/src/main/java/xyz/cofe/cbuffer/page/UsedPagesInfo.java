@@ -3,7 +3,7 @@ package xyz.cofe.cbuffer.page;
 /**
  * Информация о памяти
  */
-public interface UsedPagesInfo {
+public interface UsedPagesInfo extends Cloneable {
     /**
      * Кол-во доступных страниц
      *
@@ -48,6 +48,11 @@ public interface UsedPagesInfo {
             @Override
             public int pageSize() {
                 return pageSize;
+            }
+
+            @Override
+            public UsedPagesInfo clone() {
+                return this;
             }
         };
     }
