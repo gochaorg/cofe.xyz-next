@@ -1,17 +1,29 @@
 package xyz.cofe.cbuffer.page;
 
+import xyz.cofe.fn.Consumer1;
 import xyz.cofe.fn.Tuple2;
 
 import java.util.Arrays;
 
 /**
- * Обвертка над {@link PagedData} с учетом грязных страниц
+ * Обвертка над {@link PagedData} с учетом грязных/чистых страниц.
  */
 public class DirtyPagedData implements ResizablePages {
     protected ResizablePages pagedData;
 
+    /**
+     * Отмечает время вызова {@link #flushPage(int)}
+     */
     protected long[] flushTime;
+
+    /**
+     * Отмечает время вызова {@link #writePage(int, byte[])}
+     */
     protected long[] writeTime;
+
+    /**
+     * Отмечает время вызова {@link #readPage(int)}
+     */
     protected long[] readTime;
 
     public DirtyPagedData(ResizablePages pagedData){
@@ -30,10 +42,48 @@ public class DirtyPagedData implements ResizablePages {
 
     protected long now(){ return System.nanoTime(); }
 
+    /**
+     * Отмечает страницу как чистую.
+     *
+     * <p>
+     * Обновляет <code>flushTime[page] = now()</code>
+     * @param page индекс страницы
+     */
     public void flushPage( int page ){
         if( page<0 )throw new IllegalArgumentException( "page(="+page+" <0) out of range" );
         if( page<flushTime.length ){
             flushTime[page] = now();
+        }
+    }
+
+    /**
+     * Проверяет что страница "грязная".
+     * @param page страница
+     * @return true - грязная - т.е. <code>flushTime[page] &lt;= writeTime[page]</code>
+     */
+    public boolean dirty( int page ){
+        if( page<0 )throw new IllegalArgumentException( "page(="+page+" <0) out of range" );
+        if( page<flushTime.length ){
+            long ft = flushTime[page];
+            long wt = writeTime[page];
+            return ft<=wt;
+        }
+        throw new IllegalArgumentException( "page(="+page+") out of range" );
+    }
+
+    /**
+     * Обход всех грязных страниц
+     * @param dirtyPage грязная страница
+     */
+    public void dirtyPages(Consumer1<Integer> dirtyPage){
+        if( dirtyPage==null )throw new IllegalArgumentException( "dirtyPage==null" );
+        int pc = Math.min(flushTime.length, writeTime.length);
+        for( int i=0; i<pc; i++ ){
+            long ft = flushTime[i];
+            long wt = writeTime[i];
+            if( ft<=wt ){
+                dirtyPage.accept(i);
+            }
         }
     }
 
@@ -42,6 +92,14 @@ public class DirtyPagedData implements ResizablePages {
         return pagedData.memoryInfo();
     }
 
+    /**
+     * Чтение страницы.
+     *
+     * <p>
+     * Обновляет <code>readTime[page] = now()</code>
+     * @param page индекс страницы, от 0 и более
+     * @return массив байтов, по размеру равный {@link UsedPagesInfo#pageSize()} или меньше, если последняя страница
+     */
     @Override
     public byte[] readPage(int page) {
         byte[] data = pagedData.readPage(page);
@@ -51,6 +109,13 @@ public class DirtyPagedData implements ResizablePages {
         return data;
     }
 
+    /**
+     * Запись страницы
+     * <p>
+     * Обновляет <code>writeTime[page] = now()</code>
+     * @param page индекс страницы, от 0 и более
+     * @param data массив байтов, размер не должен превышать {@link UsedPagesInfo#pageSize()}
+     */
     @Override
     public void writePage(int page, byte[] data) {
         pagedData.writePage(page, data);
