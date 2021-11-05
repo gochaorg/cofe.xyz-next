@@ -97,43 +97,16 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  */
 public class CachePagedData implements ResizablePages, Flushable {
-    /**
-     * Кеш страниц (быстрая)
-     */
-    protected DirtyPagedData cachePages;
+    protected final CachePagedState state;
 
     /**
-     * Основная|Постоянная память (медленная)
+     * Конструктор
+     * @param state внутреннее состояние
      */
-    protected ResizablePages persistentPages;
-
-    /**
-     * Отображение кеша страниц на основную память.
-     *
-     * <p>
-     * Семантика:
-     * <code>{@link #cache2prst}[ cache_page_index ] = hard_pages_index</code>
-     *
-     * <p>
-     * Значение (hard_pages_index):
-     * <ul>
-     *     <li> <b>-1 или меньше</b> - нет отображения</li>
-     *     <li>
-     *         <b>0 или больше</b> - отображение есть
-     *         <p>
-     *             страница может быть чистой или грязной:
-     *             {@link DirtyPagedData#dirty(int)} - где аргумент <i>hard_pages_index</i>
-     *     </li>
-     * </ul>
-     */
-    @SuppressWarnings({"SpellCheckingInspection"})
-    protected int[] cache2prst;
-
-    /**
-     * отображение страниц основной памяти на кеш
-     */
-    @SuppressWarnings({"SpellCheckingInspection"})
-    protected Map<Integer,Integer> prst2cache;
+    protected CachePagedData( CachePagedState state ){
+        if( state==null )throw new IllegalArgumentException( "state==null" );
+        this.state = state;
+    }
 
     /**
      * Конструктор
@@ -146,29 +119,29 @@ public class CachePagedData implements ResizablePages, Flushable {
         if( cachePages.memoryInfo().pageSize()!= persistentPages.memoryInfo().pageSize() ){
             throw new IllegalArgumentException( "different page size between cachePages and hardPages" );
         }
-        this.cachePages = cachePages;
-        this.persistentPages = persistentPages;
+
+        state = CachePagedState.nonSafe();
+
+        state.cachePages(cachePages);
+        state.persistentPages(persistentPages);
 
         int pc = cachePages.memoryInfo().pageCount();
 
-        cache2prst = new int[pc];
+        int[] cache2prst = new int[pc];
         Arrays.fill(cache2prst,-1);
+        state.cache2prst(cache2prst);
 
-        prst2cache = new HashMap<>();
+        state.prst2cache(new HashMap<>());
     }
 
     protected boolean isClosed(){
-        if( cachePages==null )return true;
-        if( persistentPages==null )return true;
-        if( cache2prst==null )return true;
-        if( prst2cache==null )return true;
-        return false;
+        return state.isClosed();
     }
 
     @Override
     public UsedPagesInfo memoryInfo() {
         if( isClosed() )throw new IllegalStateException("closed");
-        return persistentPages.memoryInfo();
+        return state.persistentPages().memoryInfo();
     }
 
     /**
@@ -178,7 +151,7 @@ public class CachePagedData implements ResizablePages, Flushable {
      */
     protected int persist2cache( int persistPage ){
         if( persistPage<0 )throw new IllegalArgumentException( "persistPage<0" );
-        Integer c_idx = prst2cache.get(persistPage);
+        Integer c_idx = state.prst2cache().get(persistPage);
         return c_idx!=null ? c_idx : -1;
     }
 
@@ -189,7 +162,8 @@ public class CachePagedData implements ResizablePages, Flushable {
      */
     protected int cache2persist( int cachePage ){
         arg_cachePage_range(cachePage);
-        return cache2prst[cachePage];
+        int[] c2p = state.cache2prst();
+        return c2p[cachePage];
     }
 
     /**
@@ -198,7 +172,9 @@ public class CachePagedData implements ResizablePages, Flushable {
      */
     private void arg_cachePage_range(int cachePage ){
         if( cachePage<0 )throw new IllegalArgumentException( "cachePage out of range: cachePage<0" );
-        if( cachePage>=cache2prst.length )throw new IllegalArgumentException( "cachePage out of range: cachePage>=cache2prst.length" );
+
+        int[] c2p = state.cache2prst();
+        if( cachePage>=c2p.length )throw new IllegalArgumentException( "cachePage out of range: cachePage>=cache2prst.length" );
     }
 
     /**
@@ -208,7 +184,7 @@ public class CachePagedData implements ResizablePages, Flushable {
      */
     protected boolean dirty( int cachePage ){
         arg_cachePage_range(cachePage);
-        return cachePages.dirty(cachePage);
+        return state.cachePages().dirty(cachePage);
     }
 
     /**
@@ -232,8 +208,8 @@ public class CachePagedData implements ResizablePages, Flushable {
         int persistPage = cache2persist(cachePage);
         if( persistPage<0 )return persistPage;
 
-        persistentPages.writePage( persistPage, cachePages.readPage(cachePage) );
-        cachePages.flushPage(cachePage);
+        state.persistentPages().writePage( persistPage, state.cachePages().readPage(cachePage) );
+        state.cachePages().flushPage(cachePage);
 
         return persistPage;
     }
@@ -241,7 +217,8 @@ public class CachePagedData implements ResizablePages, Flushable {
     @Override
     public void flush() {
         if( isClosed() )throw new IllegalStateException("closed");
-        for( int cache_page=0; cache_page<cache2prst.length; cache_page++ ){
+        int[] c2p = state.cache2prst();
+        for( int cache_page=0; cache_page<c2p.length; cache_page++ ){
             flush(cache_page);
         }
     }
@@ -262,8 +239,11 @@ public class CachePagedData implements ResizablePages, Flushable {
         int persistPage = cache2persist(cachePage);
         if( persistPage<0 )return persistPage;
 
-        prst2cache.remove(persistPage);
-        cache2prst[cachePage] = -1;
+        state.prst2cache().remove(persistPage);
+
+        int[] c2p = state.cache2prst();
+        c2p[cachePage] = -1;
+        state.cache2prst(c2p);
 
         return persistPage;
     }
@@ -273,9 +253,10 @@ public class CachePagedData implements ResizablePages, Flushable {
      * @return чистые/грязные страницы (cachePage)
      */
     protected Tuple2<List<Integer>,List<Integer>> cleanDirtyPages(){
-        List<Integer> cleanPages = new ArrayList<>(cache2prst.length);
-        List<Integer> dirtyPages = new ArrayList<>(cache2prst.length);
-        for (int p : cache2prst) {
+        int[] c2p = state.cache2prst();
+        List<Integer> cleanPages = new ArrayList<>(c2p.length);
+        List<Integer> dirtyPages = new ArrayList<>(c2p.length);
+        for (int p : c2p) {
             if (p < 0) {
                 cleanPages.add(p);
             } else {
@@ -310,12 +291,13 @@ public class CachePagedData implements ResizablePages, Flushable {
      * @return индекс страницы
      */
     protected int allocCachePage(){
-        int cachePagesCount = cachePages.memoryInfo().pageCount();
+        int cachePagesCount = state.cachePages().memoryInfo().pageCount();
         if( cachePagesCount<1 )throw new IllegalStateException("cachePages pages not exists, call resizeCachePages");
 
         // В кеше есть еще не размеченная область cache2prst[x] < 0
-        for( int i=0; i<cache2prst.length; i++ ){
-            int x = cache2prst[i];
+        int[] c2p = state.cache2prst();
+        for( int i=0; i<c2p.length; i++ ){
+            int x = c2p[i];
             if( x<0 )return i;
         }
 
@@ -354,8 +336,8 @@ public class CachePagedData implements ResizablePages, Flushable {
         if( isClosed() )throw new IllegalStateException("closed");
         arg_cachePage_range(cachePage);
 
-        int prst_p_cnt = persistentPages.memoryInfo().pageCount();
-        int cche_p_cnt = cachePages.memoryInfo().pageCount();
+        int prst_p_cnt = state.persistentPages().memoryInfo().pageCount();
+        int cche_p_cnt = state.cachePages().memoryInfo().pageCount();
 
         if( cachePage<0 || cachePage>=cche_p_cnt ){
             throw new IllegalArgumentException("cachePage<0 || cachePage>=cche_p_cnt; cachePage="+cachePage+" cche_p_cnt="+cche_p_cnt);
@@ -367,12 +349,15 @@ public class CachePagedData implements ResizablePages, Flushable {
         int mapped_prst_page = cache2persist(cachePage);
         if( mapped_prst_page>=0 )unmap(mapped_prst_page);
 
-        byte[] buff = persistentPages.readPage(persistPage);
-        cachePages.writePage(cachePage,buff);
-        cachePages.flushPage(cachePage);
+        byte[] buff = state.persistentPages().readPage(persistPage);
+        state.cachePages().writePage(cachePage,buff);
+        state.cachePages().flushPage(cachePage);
 
-        cache2prst[cachePage] = persistPage;
-        prst2cache.put(persistPage, cachePage);
+        int[] c2p = state.cache2prst();
+        c2p[cachePage] = persistPage;
+        state.cache2prst(c2p);
+
+        state.prst2cache().put(persistPage, cachePage);
 
         return buff;
     }
@@ -385,7 +370,7 @@ public class CachePagedData implements ResizablePages, Flushable {
         int cidx = persist2cache(page);
         if( cidx>=0 ){
             // Страница спроецирована
-            return cachePages.readPage(cidx);
+            return state.cachePages().readPage(cidx);
         }else{
             // Страница не спроецирована
             // необходимо - выделить свободную страницу в кеше
@@ -403,7 +388,7 @@ public class CachePagedData implements ResizablePages, Flushable {
     public void writePage(int page, byte[] data) {
         if( isClosed() )throw new IllegalStateException("closed");
 
-        int page_size = cachePages.memoryInfo().pageSize();
+        int page_size = state.cachePages().memoryInfo().pageSize();
         if( data.length>page_size )throw new IllegalArgumentException("data.length(="+data.length+") > page_size(="+page_size+")");
 
         int cidx = persist2cache(page);
@@ -411,7 +396,7 @@ public class CachePagedData implements ResizablePages, Flushable {
             // Страница спроецирована
             // изменить страницу в кеше
             // отметить страницу как dirty (auto)
-            persistentPages.writePage(cidx, data);
+            state.persistentPages().writePage(cidx, data);
         }else{
             // Страница не спроецирована
             // необходимо - выделить свободную страницу в кеше
@@ -427,9 +412,9 @@ public class CachePagedData implements ResizablePages, Flushable {
             byte[] buff = map(cache_page, page);
             if( buff.length>data.length ){
                 System.arraycopy(data,0, buff,0, data.length);
-                cachePages.writePage(cache_page, buff);
+                state.cachePages().writePage(cache_page, buff);
             }else{
-                cachePages.writePage(cache_page, data);
+                state.cachePages().writePage(cache_page, data);
             }
         }
     }
@@ -440,12 +425,12 @@ public class CachePagedData implements ResizablePages, Flushable {
         if( pages<0 )throw new IllegalArgumentException( "pages<0" );
         if( pages==0 ){
             return Tuple2.of(
-                persistentPages.memoryInfo(),
-                persistentPages.memoryInfo()
+                state.persistentPages().memoryInfo(),
+                state.persistentPages().memoryInfo()
             );
         }
 
-        return persistentPages.extendPages(pages);
+        return state.persistentPages().extendPages(pages);
     }
 
     @Override
@@ -454,8 +439,8 @@ public class CachePagedData implements ResizablePages, Flushable {
         if( pages<0 )throw new IllegalArgumentException( "pages<0" );
         if( pages==0 ){
             return Tuple2.of(
-                persistentPages.memoryInfo(),
-                persistentPages.memoryInfo()
+                state.persistentPages().memoryInfo(),
+                state.persistentPages().memoryInfo()
             );
         }
 
@@ -469,20 +454,21 @@ public class CachePagedData implements ResizablePages, Flushable {
         //   cache2prst[_] = -1
         //   prst2cache[_] = -1
 
-        int curr_pages = persistentPages.memoryInfo().pageCount();
+        int curr_pages = state.persistentPages().memoryInfo().pageCount();
         int next_pages = curr_pages - pages;
         if( next_pages<0 ){
             throw new IllegalArgumentException("reduce pages to big");
         }
 
-        for( int c_page=0; c_page<cache2prst.length; c_page++ ){
+        int[] c2p = state.cache2prst();
+        for( int c_page=0; c_page<c2p.length; c_page++ ){
             int p_page = cache2persist(c_page);
             if( p_page>=next_pages ){
                 unmap(c_page);
             }
         }
 
-        return persistentPages.reducePages(pages);
+        return state.persistentPages().reducePages(pages);
     }
 
     /**
@@ -495,26 +481,29 @@ public class CachePagedData implements ResizablePages, Flushable {
         if( isClosed() )throw new IllegalStateException("closed");
         if( pages<0 )throw new IllegalArgumentException( "pages<0" );
 
-        int curr_pages = cache2prst.length;
+        int[] c2p = state.cache2prst();
+        int curr_pages = c2p.length;
         int diff = pages-curr_pages;
         if( diff==0 ){
-            return Tuple2.of(cachePages.memoryInfo(), cachePages.memoryInfo());
+            return Tuple2.of(state.cachePages().memoryInfo(), state.cachePages().memoryInfo());
         }else if( diff>0 ){
-            Tuple2<UsedPagesInfo, UsedPagesInfo> res = cachePages.resizePages(pages);
-            int before_pages = cache2prst.length;
-            cache2prst = Arrays.copyOf(cache2prst, pages);
+            Tuple2<UsedPagesInfo, UsedPagesInfo> res = state.cachePages().resizePages(pages);
+            int before_pages = c2p.length;
+            c2p = Arrays.copyOf(c2p, pages);
             for( int cache_page=before_pages;cache_page<pages;cache_page++ ){
-                cache2prst[cache_page] = -1;
+                c2p[cache_page] = -1;
             }
+            state.cache2prst(c2p);
             return res;
         }else{
-            for( int cache_page=0; cache_page<cache2prst.length; cache_page++ ){
+            for( int cache_page=0; cache_page<c2p.length; cache_page++ ){
                 if( cache_page>=pages ){
                     unmap(cache_page);
                 }
             }
-            cache2prst = Arrays.copyOf(cache2prst, pages);
-            return cachePages.resizePages(pages);
+            c2p = Arrays.copyOf(c2p, pages);
+            state.cache2prst(c2p);
+            return state.cachePages().resizePages(pages);
         }
     }
 }
