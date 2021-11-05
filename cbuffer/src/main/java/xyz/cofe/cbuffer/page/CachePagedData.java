@@ -113,25 +113,36 @@ public class CachePagedData implements ResizablePages, Flushable {
      * @param cachePages Кеш память (быстрая)
      * @param persistentPages Постоянная (медленная)
      */
-    public CachePagedData( DirtyPagedData cachePages, ResizablePages persistentPages ){
+    protected CachePagedData( DirtyPagedData cachePages, ResizablePages persistentPages, CachePagedState state ){
         if( cachePages==null )throw new IllegalArgumentException( "cachePages==null" );
         if( persistentPages ==null )throw new IllegalArgumentException( "hardPages==null" );
         if( cachePages.memoryInfo().pageSize()!= persistentPages.memoryInfo().pageSize() ){
             throw new IllegalArgumentException( "different page size between cachePages and hardPages" );
         }
+        if( state==null )throw new IllegalArgumentException( "state==null" );
 
-        state = CachePagedState.nonSafe();
+        this.state = state;
 
-        state.cachePages(cachePages);
-        state.persistentPages(persistentPages);
+        this.state.cachePages(cachePages);
+        this.state.persistentPages(persistentPages);
 
         int pc = cachePages.memoryInfo().pageCount();
 
         int[] cache2prst = new int[pc];
         Arrays.fill(cache2prst,-1);
-        state.cache2prst(cache2prst);
+//        this.state.cache2prst(cache2prst);
+        this.state.cache2prst_replace(arr -> cache2prst);
 
-        state.prst2cache(new HashMap<>());
+        this.state.prst2cache(new HashMap<>());
+    }
+
+    /**
+     * Конструктор
+     * @param cachePages Кеш память (быстрая)
+     * @param persistentPages Постоянная (медленная)
+     */
+    public CachePagedData( DirtyPagedData cachePages, ResizablePages persistentPages ){
+        this( cachePages, persistentPages, CachePagedState.nonSafe() );
     }
 
     protected boolean isClosed(){
@@ -162,8 +173,7 @@ public class CachePagedData implements ResizablePages, Flushable {
      */
     protected int cache2persist( int cachePage ){
         arg_cachePage_range(cachePage);
-        int[] c2p = state.cache2prst();
-        return c2p[cachePage];
+        return state.cache2prst_read(arr -> arr.get(cachePage));
     }
 
     /**
@@ -173,8 +183,8 @@ public class CachePagedData implements ResizablePages, Flushable {
     private void arg_cachePage_range(int cachePage ){
         if( cachePage<0 )throw new IllegalArgumentException( "cachePage out of range: cachePage<0" );
 
-        int[] c2p = state.cache2prst();
-        if( cachePage>=c2p.length )throw new IllegalArgumentException( "cachePage out of range: cachePage>=cache2prst.length" );
+        int cnt = state.cache2prst_read(IntArrayReadOnly::length);
+        if( cachePage>=cnt )throw new IllegalArgumentException( "cachePage out of range: cachePage>=cache2prst.length" );
     }
 
     /**
@@ -217,8 +227,8 @@ public class CachePagedData implements ResizablePages, Flushable {
     @Override
     public void flush() {
         if( isClosed() )throw new IllegalStateException("closed");
-        int[] c2p = state.cache2prst();
-        for( int cache_page=0; cache_page<c2p.length; cache_page++ ){
+        int cnt = state.cache2prst_read(IntArrayReadOnly::length);
+        for( int cache_page=0; cache_page<cnt; cache_page++ ){
             flush(cache_page);
         }
     }
@@ -241,9 +251,10 @@ public class CachePagedData implements ResizablePages, Flushable {
 
         state.prst2cache().remove(persistPage);
 
-        int[] c2p = state.cache2prst();
-        c2p[cachePage] = -1;
-        state.cache2prst(c2p);
+//        int[] c2p = state.cache2prst();
+//        c2p[cachePage] = -1;
+//        state.cache2prst(c2p);
+        state.cache2prst_write0( arr->arr.set(cachePage,-1) );
 
         return persistPage;
     }
@@ -253,17 +264,32 @@ public class CachePagedData implements ResizablePages, Flushable {
      * @return чистые/грязные страницы (cachePage)
      */
     protected Tuple2<List<Integer>,List<Integer>> cleanDirtyPages(){
-        int[] c2p = state.cache2prst();
-        List<Integer> cleanPages = new ArrayList<>(c2p.length);
-        List<Integer> dirtyPages = new ArrayList<>(c2p.length);
-        for (int p : c2p) {
-            if (p < 0) {
-                cleanPages.add(p);
-            } else {
-                dirtyPages.add(p);
-            }
-        }
-        return Tuple2.of(cleanPages,dirtyPages);
+        Tuple2<List<Integer>,List<Integer>> res =
+            state.cache2prst_read( arr -> {
+                List<Integer> cleanPages = new ArrayList<>(arr.length());
+                List<Integer> dirtyPages = new ArrayList<>(arr.length());
+                for( int i=0; i<arr.length(); i++ ){
+                    int p = arr.get(i);
+                    if (p < 0) {
+                        cleanPages.add(i);
+                    } else {
+                        dirtyPages.add(i);
+                    }
+                }
+                return Tuple2.of(cleanPages,dirtyPages);
+            });
+        return res;
+//        int[] c2p = state.cache2prst();
+//        List<Integer> cleanPages = new ArrayList<>(c2p.length);
+//        List<Integer> dirtyPages = new ArrayList<>(c2p.length);
+//        for (int p : c2p) {
+//            if (p < 0) {
+//                cleanPages.add(p);
+//            } else {
+//                dirtyPages.add(p);
+//            }
+//        }
+//        return Tuple2.of(cleanPages,dirtyPages);
     }
 
     /**
@@ -295,11 +321,19 @@ public class CachePagedData implements ResizablePages, Flushable {
         if( cachePagesCount<1 )throw new IllegalStateException("cachePages pages not exists, call resizeCachePages");
 
         // В кеше есть еще не размеченная область cache2prst[x] < 0
-        int[] c2p = state.cache2prst();
-        for( int i=0; i<c2p.length; i++ ){
-            int x = c2p[i];
-            if( x<0 )return i;
-        }
+//        int[] c2p = state.cache2prst();
+//        for( int i=0; i<c2p.length; i++ ){
+//            int x = c2p[i];
+//            if( x<0 )return i;
+//        }
+        int unmappedCachePage = state.cache2prst_read(arr -> {
+            for( int i=0; i<arr.length(); i++ ){
+                int x = arr.get(i);
+                if( x<0 )return i;
+            }
+            return -1;
+        });
+        if( unmappedCachePage>=0 )return unmappedCachePage;
 
         // В кеше есть чистые страницы которые можно занять
         Tuple2<List<Integer>,List<Integer>> cleanDirtyPages = cleanDirtyPages();
@@ -353,9 +387,12 @@ public class CachePagedData implements ResizablePages, Flushable {
         state.cachePages().writePage(cachePage,buff);
         state.cachePages().flushPage(cachePage);
 
-        int[] c2p = state.cache2prst();
-        c2p[cachePage] = persistPage;
-        state.cache2prst(c2p);
+//        int[] c2p = state.cache2prst();
+//        c2p[cachePage] = persistPage;
+//        state.cache2prst(c2p);
+        state.cache2prst_write0(arr -> {
+            arr.set(cachePage,persistPage);
+        });
 
         state.prst2cache().put(persistPage, cachePage);
 
@@ -460,13 +497,22 @@ public class CachePagedData implements ResizablePages, Flushable {
             throw new IllegalArgumentException("reduce pages to big");
         }
 
-        int[] c2p = state.cache2prst();
-        for( int c_page=0; c_page<c2p.length; c_page++ ){
-            int p_page = cache2persist(c_page);
-            if( p_page>=next_pages ){
-                unmap(c_page);
+        state.cache2prst_write0( arr -> {
+            for( int c_page=0; c_page<arr.length(); c_page++ ){
+                int p_page = cache2persist(c_page);
+                if( p_page>=next_pages ){
+                    unmap(c_page);
+                }
             }
-        }
+        });
+
+//        int[] c2p = state.cache2prst();
+//        for( int c_page=0; c_page<c2p.length; c_page++ ){
+//            int p_page = cache2persist(c_page);
+//            if( p_page>=next_pages ){
+//                unmap(c_page);
+//            }
+//        }
 
         return state.persistentPages().reducePages(pages);
     }
@@ -481,28 +527,52 @@ public class CachePagedData implements ResizablePages, Flushable {
         if( isClosed() )throw new IllegalStateException("closed");
         if( pages<0 )throw new IllegalArgumentException( "pages<0" );
 
-        int[] c2p = state.cache2prst();
-        int curr_pages = c2p.length;
-        int diff = pages-curr_pages;
+        //int[] c2p = state.cache2prst();
+        int c2p_len = state.cache2prst_read(IntArrayReadOnly::length);
+
+        int diff = pages-c2p_len;
         if( diff==0 ){
             return Tuple2.of(state.cachePages().memoryInfo(), state.cachePages().memoryInfo());
         }else if( diff>0 ){
             Tuple2<UsedPagesInfo, UsedPagesInfo> res = state.cachePages().resizePages(pages);
-            int before_pages = c2p.length;
-            c2p = Arrays.copyOf(c2p, pages);
-            for( int cache_page=before_pages;cache_page<pages;cache_page++ ){
-                c2p[cache_page] = -1;
-            }
-            state.cache2prst(c2p);
+
+//            int before_pages = c2p_len;
+//            c2p = Arrays.copyOf(c2p, pages);
+//            for( int cache_page=before_pages;cache_page<pages;cache_page++ ){
+//                c2p[cache_page] = -1;
+//            }
+//            state.cache2prst(c2p);
+
+            state.cache2prst_replace( arr -> {
+                int[] n_arr = arr.toArray();
+                n_arr = Arrays.copyOf(n_arr, pages);
+                for(int cache_page = c2p_len; cache_page<pages; cache_page++ ){
+                    n_arr[cache_page] = -1;
+                }
+                return n_arr;
+            });
+
             return res;
         }else{
-            for( int cache_page=0; cache_page<c2p.length; cache_page++ ){
-                if( cache_page>=pages ){
-                    unmap(cache_page);
+//            for( int cache_page=0; cache_page<c2p.length; cache_page++ ){
+//                if( cache_page>=pages ){
+//                    unmap(cache_page);
+//                }
+//            }
+//            c2p = Arrays.copyOf(c2p, pages);
+//            state.cache2prst(c2p);
+//
+            state.cache2prst_replace( arr -> {
+                int[] n_arr = arr.toArray();
+                for( int cache_page=0; cache_page<n_arr.length; cache_page++ ){
+                    if( cache_page>=pages ){
+                        unmap(cache_page);
+                    }
                 }
-            }
-            c2p = Arrays.copyOf(c2p, pages);
-            state.cache2prst(c2p);
+                n_arr = Arrays.copyOf(n_arr, pages);
+                return n_arr;
+            });
+
             return state.cachePages().resizePages(pages);
         }
     }

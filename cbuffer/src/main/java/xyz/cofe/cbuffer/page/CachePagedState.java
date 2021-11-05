@@ -1,6 +1,8 @@
 package xyz.cofe.cbuffer.page;
 
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Состояние объекта {@link CachePagedData}
@@ -41,6 +43,31 @@ public interface CachePagedState {
      */
     int[] cache2prst();
     void cache2prst(int[] map);
+    default <R> R cache2prst_read(Function<IntArrayReadOnly,R> code){
+        if( code==null )throw new IllegalArgumentException( "code==null" );
+        return code.apply(IntArrayReadOnly.of(cache2prst()));
+    }
+    default <R> R cache2prst_write(Function<IntArrayMutable,R> code){
+        if( code==null )throw new IllegalArgumentException( "code==null" );
+        int[] buff = cache2prst();
+        R res = code.apply(IntArrayMutable.of(buff));
+        cache2prst(buff);
+        return res;
+    }
+    default void cache2prst_write0(Consumer<IntArrayMutable> code){
+        if( code==null )throw new IllegalArgumentException( "code==null" );
+        cache2prst_write(arr -> {
+            code.accept(arr);
+            return null;
+        });
+    }
+    default void cache2prst_replace(Function<IntArrayReadOnly,int[]> code){
+        if( code==null )throw new IllegalArgumentException( "code==null" );
+        int[] arr = cache2prst();
+        IntArrayReadOnly i_arr = IntArrayReadOnly.of(arr);
+        int[] r_arr = code.apply(i_arr);
+        cache2prst(r_arr);
+    }
 
     /**
      * отображение страниц основной памяти на кеш
