@@ -73,7 +73,19 @@ public interface CachePagedState {
      * отображение страниц основной памяти на кеш
      */
     Map<Integer,Integer> prst2cache();
+    default <R> R prst2cache_read(Function<MapReadonly<Integer,Integer>,R> code){
+        if( code==null )throw new IllegalArgumentException( "code==null" );
+        Map<Integer,Integer> map = prst2cache();
+        return code.apply(MapReadonly.of(map));
+    }
+
     void prst2cache(Map<Integer,Integer> map);
+    default <R> R prst2cache_write(Function<MapMutable<Integer,Integer>,R> code){
+        Map<Integer,Integer> map = prst2cache();
+        R r = code.apply(MapMutable.of(map));
+        prst2cache(map);
+        return r;
+    }
 
     boolean isClosed();
     void close();
