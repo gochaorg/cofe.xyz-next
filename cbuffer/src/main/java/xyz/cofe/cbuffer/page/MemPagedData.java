@@ -17,8 +17,16 @@ public class MemPagedData implements PagedData, ExtendablePages, ReduciblePages,
     public MemPagedData(int pageSize, int capacity, byte[] buffer, int dataSize){
         if( pageSize<1 )throw new IllegalArgumentException( "pageSize<1" );
         if( capacity<1 )throw new IllegalArgumentException( "capacity<1" );
+
+        int ext = capacity % pageSize;
+        if( ext>0 )throw new IllegalArgumentException(
+            "capacity(="+capacity+") not align by pageSize(="+pageSize+"); " +
+                "capacity % pageSize = "+ext+" > 0"
+        );
+
         if( dataSize<0 )throw new IllegalArgumentException( "dataSize<0" );
         if( dataSize>capacity )throw new IllegalArgumentException( "dataSize>capacity" );
+
         if( buffer!=null ){
             if( buffer.length!=capacity ){
                 throw new IllegalArgumentException( "buffer.length!=capacity" );
@@ -35,6 +43,13 @@ public class MemPagedData implements PagedData, ExtendablePages, ReduciblePages,
     public MemPagedData(int pageSize, int capacity){
         if( pageSize<1 )throw new IllegalArgumentException( "pageSize<1" );
         if( capacity<1 )throw new IllegalArgumentException( "capacity<1" );
+
+        int ext = capacity % pageSize;
+        if( ext>0 )throw new IllegalArgumentException(
+            "capacity(="+capacity+") not align by pageSize(="+pageSize+"); " +
+                "capacity % pageSize = "+ext+" > 0"
+        );
+
         this.buffer = new byte[capacity];
         this.pageSize = pageSize;
         this.dataSize = 0;
