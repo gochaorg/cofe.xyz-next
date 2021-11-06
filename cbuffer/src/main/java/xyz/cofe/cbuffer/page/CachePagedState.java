@@ -1,11 +1,12 @@
 package xyz.cofe.cbuffer.page;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Состояние объекта {@link CachePagedData}
+ * Состояние объекта {@link BaseCachePagedData}
  * Предполагается наличие 2ух реализаций,
  * для Non Thread safe и Thread safe
  */
@@ -27,7 +28,7 @@ public interface CachePagedState {
      *
      * <p>
      * Семантика:
-     * <code>{@link #cache2prst}[ cache_page_index ] = hard_pages_index</code>
+     * <code>cache2prst[ cache_page_index ] = hard_pages_index</code>
      *
      * <p>
      * Значение (hard_pages_index):
@@ -41,33 +42,9 @@ public interface CachePagedState {
      *     </li>
      * </ul>
      */
-    int[] cache2prst();
-    void cache2prst(int[] map);
-    default <R> R cache2prst_read(Function<IntArrayReadOnly,R> code){
-        if( code==null )throw new IllegalArgumentException( "code==null" );
-        return code.apply(IntArrayReadOnly.of(cache2prst()));
-    }
-    default <R> R cache2prst_write(Function<IntArrayMutable,R> code){
-        if( code==null )throw new IllegalArgumentException( "code==null" );
-        int[] buff = cache2prst();
-        R res = code.apply(IntArrayMutable.of(buff));
-        cache2prst(buff);
-        return res;
-    }
-    default void cache2prst_write0(Consumer<IntArrayMutable> code){
-        if( code==null )throw new IllegalArgumentException( "code==null" );
-        cache2prst_write(arr -> {
-            code.accept(arr);
-            return null;
-        });
-    }
-    default void cache2prst_replace(Function<IntArrayReadOnly,int[]> code){
-        if( code==null )throw new IllegalArgumentException( "code==null" );
-        int[] arr = cache2prst();
-        IntArrayReadOnly i_arr = IntArrayReadOnly.of(arr);
-        int[] r_arr = code.apply(i_arr);
-        cache2prst(r_arr);
-    }
+    <R> R cache2prst_read(Function<IntArrayReadOnly,R> code);
+    void cache2prst_write(Consumer<IntArrayMutable> code);
+    void cache2prst_replace(Function<IntArrayReadOnly,int[]> code);
 
     /**
      * отображение страниц основной памяти на кеш
@@ -94,15 +71,15 @@ public interface CachePagedState {
      * Создание состояния - Non Thread safe
      * @return состояние
      */
-    public static CachePagedState nonSafe(){
+    public static NonThreadSafe nonSafe(){
         return new NonThreadSafe();
     }
 
     public static class NonThreadSafe implements CachePagedState {
         private DirtyPagedData cachePages;
         private ResizablePages persistentPages;
-        private int[] cache2prst;
-        private Map<Integer,Integer> prst2cache;
+        private int[] cache2prst = new int[0];
+        private Map<Integer,Integer> prst2cache = new HashMap<>();
 
         @Override
         public DirtyPagedData cachePages() {
@@ -129,16 +106,26 @@ public interface CachePagedState {
         }
 
         @Override
-        public int[] cache2prst() {
-            if( closed )throw new IllegalStateException("CachePagedData closed");
-            return cache2prst;
+        public <R> R cache2prst_read(Function<IntArrayReadOnly, R> code) {
+            if( code==null )throw new IllegalArgumentException( "code==null" );
+            return code.apply(IntArrayReadOnly.of(cache2prst));
         }
 
         @Override
-        public void cache2prst(int[] map) {
-            if( closed )throw new IllegalStateException("CachePagedData closed");
-            this.cache2prst = map;
+        public void cache2prst_write(Consumer<IntArrayMutable> code) {
+            if( code==null )throw new IllegalArgumentException( "code==null" );
+            code.accept(IntArrayMutable.of(cache2prst));
         }
+
+        @Override
+        public void cache2prst_replace(Function<IntArrayReadOnly, int[]> code) {
+            if( code==null )throw new IllegalArgumentException( "code==null" );
+            int[] res = code.apply(IntArrayReadOnly.of(cache2prst==null ? new int[0] : cache2prst));
+            if( res==null )throw new IllegalStateException("cache2prst_replace(code), code - return null");
+            cache2prst = res;
+        }
+
+        /////////////////////////////
 
         @Override
         public Map<Integer, Integer> prst2cache() {

@@ -2,19 +2,73 @@ package xyz.cofe.cbuffer.page;
 
 import xyz.cofe.fn.Tuple2;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class CCachePagedData extends CachePagedData {
-    protected static class State implements CachePagedState {
-        private DirtyPagedData cachePages;
-        private ResizablePages persistentPages;
-        private int[] cache2prst;
-        private Map<Integer, Integer> prst2cache;
-        private volatile boolean closed = false;
+public class CCachePagedData extends BaseCachePagedData<CCachePagedData.State> {
+    public static class State implements CachePagedState {
+        protected DirtyPagedData cachePages;
+        protected ResizablePages persistentPages;
+        protected int[] cache2prst;
+        protected Map<Integer, Integer> prst2cache;
+        protected volatile boolean closed = false;
+
+        protected volatile ReadWriteLock[] cachePageLocks = new ReadWriteLock[0];
+
+        public Optional<ReadWriteLock> cachePageRWLock(int cache_page) {
+            if (cache_page < 0) throw new IllegalArgumentException("cache_page<0");
+
+            ReadWriteLock[] cp = cachePageLocks;
+            if (cp == null) return Optional.empty();
+            if (cache_page >= cp.length) {
+                throw new IllegalArgumentException("cache_page>=" + cp.length + "; out of range");
+            }
+            ReadWriteLock rwLock = cp[cache_page];
+            if (rwLock != null) return Optional.of(rwLock);
+            return Optional.empty();
+        }
+
+        // В теории может потребоваться блокировка write
+        // Зависит от cacheLock
+        public <R> R cachePageReadLock( int cache_page, Supplier<R> code ){
+            if( code==null )throw new IllegalArgumentException( "code==null" );
+            Optional<ReadWriteLock> rwOpt = cachePageRWLock(cache_page);
+            if( rwOpt.isPresent() ){
+                ReadWriteLock rwLock = rwOpt.get();
+                try {
+                    rwLock.readLock().lock();
+                    return code.get();
+                } finally {
+                    rwLock.readLock().unlock();
+                }
+            }else{
+                return code.get();
+            }
+        }
+
+        public <R> R cachePageWriteLock( int cache_page, Supplier<R> code ){
+            if( code==null )throw new IllegalArgumentException( "code==null" );
+            Optional<ReadWriteLock> rwOpt = cachePageRWLock(cache_page);
+            if( rwOpt.isPresent() ){
+                ReadWriteLock rwLock = rwOpt.get();
+                try {
+                    rwLock.writeLock().lock();
+                    return code.get();
+                } finally {
+                    rwLock.writeLock().unlock();
+                }
+            }else{
+                return code.get();
+            }
+        }
 
         @Override
         public DirtyPagedData cachePages() {
@@ -37,13 +91,41 @@ public class CCachePagedData extends CachePagedData {
         }
 
         @Override
-        public int[] cache2prst() {
-            return cache2prst;
+        public <R> R cache2prst_read(Function<IntArrayReadOnly, R> code) {
+            if (code == null) throw new IllegalArgumentException("code==null");
+            return code.apply(IntArrayReadOnly.of(cache2prst));
         }
 
         @Override
-        public void cache2prst(int[] map) {
-            cache2prst = map;
+        public void cache2prst_write(Consumer<IntArrayMutable> code) {
+            if (code == null) throw new IllegalArgumentException("code==null");
+            code.accept(IntArrayMutable.of(cache2prst));
+        }
+
+        @Override
+        public void cache2prst_replace(Function<IntArrayReadOnly, int[]> code) {
+            if (code == null) throw new IllegalArgumentException("code==null");
+
+            ReadWriteLock[] cachePageLocks = this.cachePageLocks;
+            List<Lock> writeLocks = new ArrayList<>();
+            if (cachePageLocks != null) {
+                for (ReadWriteLock rwLock : cachePageLocks) {
+                    if (rwLock == null) continue;
+                    Lock lock = rwLock.writeLock();
+                    lock.lock();
+                    writeLocks.add(lock);
+                }
+            }
+
+            try {
+                int[] res = code.apply(IntArrayReadOnly.of(cache2prst == null ? new int[0] : cache2prst));
+                if (res == null) throw new IllegalStateException("cache2prst_replace(code), code - return null");
+                cache2prst = res;
+            } finally {
+                for (Lock lock : writeLocks) {
+                    lock.unlock();
+                }
+            }
         }
 
         @Override
@@ -61,31 +143,78 @@ public class CCachePagedData extends CachePagedData {
             return closed;
         }
 
+        private volatile int closeCall = 0;
+
         @Override
         public synchronized void close() {
-            if( !closed ){
-                if( persistentPages instanceof AutoCloseable ){
+            try {
+                closeCall++;
+                int closeCall_v = closeCall;
+                if (closeCall_v > 1) throw new IllegalStateException("illegal cycle call close()");
+
+                if (!closed) {
+                    ReadWriteLock[] cachePageLocks = this.cachePageLocks;
+                    List<Lock> writeLocks = new ArrayList<>();
+                    if (cachePageLocks != null) {
+                        for (ReadWriteLock rwLock : cachePageLocks) {
+                            if (rwLock == null) continue;
+                            Lock lock = rwLock.writeLock();
+                            lock.lock();
+                            writeLocks.add(lock);
+                        }
+                    }
+                    /////////////
                     try {
-                        ((AutoCloseable) persistentPages).close();
-                    } catch (Exception e) {
-                        throw new Error(e);
+                        if (persistentPages instanceof AutoCloseable) {
+                            try {
+                                ((AutoCloseable) persistentPages).close();
+                            } catch (Exception e) {
+                                throw new Error(e);
+                            }
+                        }
+                        persistentPages = null;
+
+                        if (cachePages instanceof AutoCloseable) {
+                            try {
+                                ((AutoCloseable) cachePages).close();
+                            } catch (Exception e) {
+                                throw new Error(e);
+                            }
+                        }
+                        cachePages = null;
+
+                        cache2prst = null;
+                        prst2cache = null;
+                    } finally {
+                        for (Lock lock : writeLocks) {
+                            lock.unlock();
+                        }
                     }
                 }
-                persistentPages = null;
-
-                if( cachePages instanceof AutoCloseable ){
-                    try {
-                        ((AutoCloseable) cachePages).close();
-                    } catch (Exception e) {
-                        throw new Error(e);
-                    }
-                }
-                cachePages = null;
-
-                cache2prst = null;
-                prst2cache = null;
+                closed = true;
+            } finally {
+                closeCall--;
             }
-            closed = true;
+        }
+
+        public final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+
+        public <R> R globalCacheLock(boolean write, Supplier<R> code) {
+            if (write) {
+                try {
+                    cacheLock.writeLock().lock();
+                    return code.get();
+                } finally {
+                    cacheLock.writeLock().unlock();
+                }
+            } else {
+                try {
+                    cacheLock.readLock().lock();
+                    return code.get();
+                } finally {
+                    cacheLock.readLock().unlock();
+                }
+            }
         }
     }
 
@@ -106,133 +235,135 @@ public class CCachePagedData extends CachePagedData {
         }
     }
 
-    public void close(){
+    public void close() {
         synchronized (closeSync) {
             state.close();
         }
     }
 
-    private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
-    private <R> R lock(ReadWriteLock lock, boolean write, Supplier<R> code){
-        if( write ){
-            try {
-                lock.writeLock().lock();
-                return code.get();
-            } finally {
-                lock.writeLock().unlock();
-            }
-        }else{
-            try {
-                lock.readLock().lock();
-                return code.get();
-            } finally {
-                lock.readLock().unlock();
-            }
-        }
-    }
-
-    private <R> R cacheLock( int cache_page, boolean write, Supplier<R> code ){
-        return code.get();
-    }
-    private <R> R persistLock( int persist_page, boolean write, Supplier<R> code ){
-        return code.get();
-    }
-
     @Override
     public UsedPagesInfo memoryInfo() {
-        return lock( cacheLock, false, super::memoryInfo);
+        return state.globalCacheLock(false, super::memoryInfo);
     }
 
     @Override
     protected int persist2cache(int persistPage) {
-        return lock( cacheLock, false, ()->super.persist2cache(persistPage) );
+        return state.globalCacheLock(false, () -> super.persist2cache(persistPage));
     }
 
     @Override
     protected int cache2persist(int cachePage) {
-        return lock( cacheLock, false, ()->super.cache2persist(cachePage) );
+        return state.globalCacheLock(false, () -> super.cache2persist(cachePage));
     }
 
     @Override
     protected boolean dirty(int cachePage) {
-        return lock( cacheLock, false, ()->super.dirty(cachePage) );
+        return state.globalCacheLock(false,
+            ()->state.cachePageReadLock(
+                cachePage,()->super.dirty(cachePage)));
     }
 
     @Override
     protected boolean clean(int cachePage) {
-        return lock( cacheLock, false, ()->super.clean(cachePage) );
+        return state.globalCacheLock(false,
+            ()->state.cachePageReadLock(
+                cachePage, ()->super.clean(cachePage)));
     }
 
     @Override
     protected int flush(int cachePage) {
-        return lock( cacheLock, false, ()->super.flush(cachePage) );
+        return state.globalCacheLock(false,
+            ()->state.cachePageReadLock(
+                cachePage, ()->super.flush(cachePage)));
     }
 
     @Override
     public void flush() {
-        lock( cacheLock, false, ()->{
+        state.globalCacheLock(false, () -> {
+            List<Lock> locked = state.cache2prst_read( arr -> {
+                List<Lock> locks = new ArrayList<>();
+                for( int cache_page=0; cache_page<arr.length(); cache_page++ ){
+                    Optional<ReadWriteLock> rwLock = state.cachePageRWLock(cache_page);
+                    if( rwLock.isPresent() ){
+                        Lock lock = rwLock.get().readLock();
+                        lock.lock();
+                        locks.add(lock);
+                    }
+                }
+                return locks;
+            });
+
             super.flush();
+
+            for( Lock lock : locked ){
+                lock.unlock();
+            }
             return null;
         });
     }
 
     @Override
     protected int unmap(int cachePage) {
-        return lock( cacheLock, false, ()->super.unmap(cachePage) );
+        if( cachePage<0 )throw new IllegalArgumentException( "cachePage<0" );
+        return state.globalCacheLock(false,
+            ()->state.cachePageWriteLock(cachePage,
+                ()->super.unmap(cachePage)));
     }
 
     @Override
     protected Tuple2<List<Integer>, List<Integer>> cleanDirtyPages() {
-        return lock( cacheLock, false, super::cleanDirtyPages);
+        return state.globalCacheLock(false, super::cleanDirtyPages);
     }
 
     @Override
     protected int unmapCandidate(List<Integer> pages, boolean clean) {
-        return lock( cacheLock, false, ()->super.unmapCandidate(pages, clean) );
+        return state.globalCacheLock(false, () -> super.unmapCandidate(pages, clean));
     }
 
     @Override
     protected int allocCachePage() {
-        return lock( cacheLock, false, super::allocCachePage);
+        return state.globalCacheLock(false, super::allocCachePage);
     }
 
     @Override
     protected byte[] map(int cachePage, int persistPage) {
-        return lock( cacheLock, false, ()->super.map(cachePage, persistPage) );
+        if( cachePage<0 )throw new IllegalArgumentException( "cachePage<0" );
+        state.cachePageRWLock(cachePage);
+        return state.globalCacheLock(false, () -> super.map(cachePage, persistPage));
     }
 
     @Override
     public byte[] readPage(int page) {
-        return lock( cacheLock, false, ()->super.readPage(page) );
+        return state.globalCacheLock(false, () -> super.readPage(page));
     }
 
     @Override
     public void writePage(int page, byte[] data) {
-        lock( cacheLock, false, ()->{
+        state.globalCacheLock(false, () -> {
             super.writePage(page, data);
             return null;
         });
     }
 
-    //region изменение размера кеша resizeCachePages, resizePages, extendPages, reducePages
+    //region изменение размера кеша resizeCachePages, resizePages, extendPages, reducePages - глобальное exclusive cacheLock
     @Override
     public Tuple2<UsedPagesInfo, UsedPagesInfo> extendPages(int pages) {
-        return lock( cacheLock, true, ()->super.extendPages(pages) );
+        return state.globalCacheLock(true, () -> super.extendPages(pages));
     }
 
     @Override
     public Tuple2<UsedPagesInfo, UsedPagesInfo> reducePages(int pages) {
-        return lock( cacheLock, true, ()->super.reducePages(pages) );
+        return state.globalCacheLock(true, () -> super.reducePages(pages));
     }
 
     @Override
     public Tuple2<UsedPagesInfo, UsedPagesInfo> resizeCachePages(int pages) {
-        return lock( cacheLock, true, ()->super.resizeCachePages(pages) );
+        return state.globalCacheLock(true, () -> super.resizeCachePages(pages));
     }
 
     @Override
     public Tuple2<UsedPagesInfo, UsedPagesInfo> resizePages(int pages) {
-        return lock( cacheLock, true, ()->super.resizePages(pages) );
+        return state.globalCacheLock(true, () -> super.resizePages(pages));
     }
     //endregion
 }
