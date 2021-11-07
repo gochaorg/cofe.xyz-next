@@ -1,5 +1,7 @@
 package xyz.cofe.cbuffer;
 
+import xyz.cofe.cbuffer.ContentBuffer;
+import xyz.cofe.cbuffer.Flushable;
 import xyz.cofe.cbuffer.page.PageLock;
 import xyz.cofe.cbuffer.page.ResizablePages;
 import xyz.cofe.cbuffer.page.UsedPagesInfo;
@@ -109,7 +111,7 @@ public class PagesBuffer implements ContentBuffer {
             }
         };
 
-        if( pages instanceof PageLock ){
+        if( pages instanceof PageLock){
             ((PageLock) pages).writePageLock((int)page_from, (int)page_to, write);
         }else{
             write.run();
@@ -185,7 +187,7 @@ public class PagesBuffer implements ContentBuffer {
 
     @Override
     public void flush() {
-        if( pages instanceof Flushable ){
+        if( pages instanceof Flushable){
             ((Flushable) pages).flush();
         }
     }

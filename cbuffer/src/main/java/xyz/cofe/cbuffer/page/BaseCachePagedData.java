@@ -180,6 +180,11 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
         return state.cache2prst_read(arr -> arr.get(cachePage));
     }
 
+    protected int cache2persist_mut( int cachePage ){
+        arg_cachePage_range(cachePage);
+        return state.cache2prst_read(arr -> arr.get(cachePage));
+    }
+
     /**
      * Проверка, что страница указано в допустимых диапазонах, иначе генерирует IllegalArgumentException
      * @param cachePage кешированная страница, допустимые значения: от 0 и более
@@ -191,7 +196,7 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
         if( cachePage>=cnt )throw new IllegalArgumentException( "cachePage out of range: cachePage>=cache2prst.length" );
     }
 
-    // используется в clean, unmap
+    // используется в unmap
     /**
      * Проверка, что страница является "грязной"
      * @param cachePage индекс страницы кеша
@@ -202,14 +207,9 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
         return state.cachePages().dirty(cachePage);
     }
 
-    // используется в clean
-    /**
-     * Проверка, что страница является "чистой"
-     * @param cachePage индекс страницы кеша
-     * @return true - данные страницы сохранены в persistent
-     */
-    protected boolean clean( int cachePage ){
-        return !dirty(cachePage);
+    protected boolean dirty_mut( int cachePage ){
+        arg_cachePage_range(cachePage);
+        return state.cachePages().dirty(cachePage);
     }
 
     // используется в flush, unmap
@@ -219,8 +219,16 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
      * @return индекс persistentPage или значение меньше 0
      */
     protected int flush( int cachePage ){
+        return flush0(cachePage);
+    }
+
+    protected int flush_mut( int cachePage ){
+        return flush0(cachePage);
+    }
+
+    private int flush0( int cachePage ){
         arg_cachePage_range(cachePage);
-        if( clean(cachePage) )return -1;
+        if( !dirty(cachePage) )return -1;
 
         int persistPage = cache2persist(cachePage);
         if( persistPage<0 )return persistPage;
@@ -252,9 +260,9 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
         // убрать связь cache2prst, prst2cache
 
         arg_cachePage_range(cachePage);
-        if( dirty(cachePage) )flush(cachePage);
+        if( dirty_mut(cachePage) )flush_mut(cachePage);
 
-        int persistPage = cache2persist(cachePage);
+        int persistPage = cache2persist_mut(cachePage);
         if( persistPage<0 )return persistPage;
 
         state.prst2cache_write(map->map.remove(persistPage));
@@ -310,6 +318,9 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
      *     <li>В кеше есть чистые страницы которые можно занять</li>
      *     <li>В кеше нет чистых страниц, необходимо выгружать страницу</li>
      * </ul>
+     *
+     * <p>
+     *     Используется в {@link #readPage_alloc(int)}, {@link #writePage_alloc(int, byte[])}
      * @return индекс страницы
      */
     protected int allocCachePage(){
@@ -372,7 +383,7 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
             throw new IllegalArgumentException("persistPage<0 || persistPage>=prst_p_cnt; persistPage="+persistPage+" prst_p_cnt="+prst_p_cnt);
         }
 
-        int mapped_prst_page = cache2persist(cachePage);
+        int mapped_prst_page = cache2persist_mut(cachePage);
         if( mapped_prst_page>=0 )unmap(mapped_prst_page);
 
         byte[] buff = state.persistentPages().readPage(persistPage);
@@ -558,7 +569,7 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
 
         state.cache2prst_write(arr -> {
             for( int c_page=0; c_page<arr.length(); c_page++ ){
-                int p_page = cache2persist(c_page);
+                int p_page = cache2persist_mut(c_page);
                 if( p_page>=next_pages ){
                     unmap(c_page);
                 }

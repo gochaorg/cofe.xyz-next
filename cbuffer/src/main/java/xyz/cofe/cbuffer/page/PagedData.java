@@ -1,6 +1,8 @@
 package xyz.cofe.cbuffer.page;
 
 
+import xyz.cofe.cbuffer.page.UsedPagesInfo;
+
 /**
  * Страничная организация памяти
  */

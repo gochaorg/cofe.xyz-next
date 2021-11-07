@@ -2,10 +2,7 @@ package xyz.cofe.cbuffer.page;
 
 import xyz.cofe.fn.Tuple2;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -13,7 +10,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class CCachePagedData extends BaseCachePagedData<CCachePagedData.State> {
+/**
+ * Кеш страниц, с разделением на быструю и медленную память
+ * с поддержкой многопоточности
+ */
+public class CCachePagedData extends BaseCachePagedData<CCachePagedData.State>
+implements PageLock
+{
     public static class State implements CachePagedState {
         protected DirtyPagedData cachePages;
         protected ResizablePages persistentPages;
@@ -226,7 +229,7 @@ public class CCachePagedData extends BaseCachePagedData<CCachePagedData.State> {
         super(cachePages, persistentPages, new State());
     }
 
-    private final Object closeSync = new Object();
+    protected final Object closeSync = new Object();
 
     @Override
     protected boolean isClosed() {
@@ -246,16 +249,28 @@ public class CCachePagedData extends BaseCachePagedData<CCachePagedData.State> {
         return state.globalCacheLock(false, super::memoryInfo);
     }
 
+    //region persist2cache()
     @Override
     protected int persist2cache(int persistPage) {
         return state.globalCacheLock(false, () -> super.persist2cache(persistPage));
     }
 
+    protected int persist2cache_mut(int persistPage) {
+        return state.globalCacheLock(true, () -> super.persist2cache(persistPage));
+    }
+    //endregion
+    //region cache2persist()
     @Override
     protected int cache2persist(int cachePage) {
         return state.globalCacheLock(false, () -> super.cache2persist(cachePage));
     }
 
+    @Override
+    protected int cache2persist_mut(int cachePage) {
+        return state.globalCacheLock(true, () -> super.cache2persist_mut(cachePage));
+    }
+    //endregion
+    //region dirty()
     @Override
     protected boolean dirty(int cachePage) {
         return state.globalCacheLock(false,
@@ -264,12 +279,13 @@ public class CCachePagedData extends BaseCachePagedData<CCachePagedData.State> {
     }
 
     @Override
-    protected boolean clean(int cachePage) {
-        return state.globalCacheLock(false,
-            ()->state.cachePageReadLock(
-                cachePage, ()->super.clean(cachePage)));
+    protected boolean dirty_mut(int cachePage) {
+        return state.globalCacheLock(true,
+            ()->state.cachePageWriteLock(
+                cachePage,()->super.dirty(cachePage)));
     }
-
+    //endregion
+    //region flush()
     @Override
     protected int flush(int cachePage) {
         return state.globalCacheLock(false,
@@ -278,72 +294,191 @@ public class CCachePagedData extends BaseCachePagedData<CCachePagedData.State> {
     }
 
     @Override
-    public void flush() {
-        state.globalCacheLock(false, () -> {
-            List<Lock> locked = state.cache2prst_read( arr -> {
-                List<Lock> locks = new ArrayList<>();
-                for( int cache_page=0; cache_page<arr.length(); cache_page++ ){
-                    Optional<ReadWriteLock> rwLock = state.cachePageRWLock(cache_page);
-                    if( rwLock.isPresent() ){
-                        Lock lock = rwLock.get().readLock();
-                        lock.lock();
-                        locks.add(lock);
-                    }
-                }
-                return locks;
-            });
+    protected int flush_mut(int cachePage) {
+        return state.globalCacheLock(true,
+            ()->state.cachePageWriteLock(
+                cachePage, ()->super.flush_mut(cachePage)));
+    }
 
-            super.flush();
-
+    private static class LockAll {
+        private final List<Lock> locked;
+        public LockAll(List<Lock> locked){
+            this.locked = locked;
+        }
+        public void release(){
             for( Lock lock : locked ){
                 lock.unlock();
             }
+            locked.clear();
+        }
+    }
+    private LockAll lockAll(){
+        List<Lock> locked = state.cache2prst_read( arr -> {
+            List<Lock> locks = new ArrayList<>();
+            for( int cache_page=0; cache_page<arr.length(); cache_page++ ){
+                Optional<ReadWriteLock> rwLock = state.cachePageRWLock(cache_page);
+                if( rwLock.isPresent() ){
+                    Lock lock = rwLock.get().readLock();
+                    lock.lock();
+                    locks.add(lock);
+                }
+            }
+            return locks;
+        });
+
+        return new LockAll(locked);
+    }
+
+    @Override
+    public void flush() {
+        state.globalCacheLock(false, () -> {
+            LockAll lockAll = lockAll();
+            super.flush();
+            lockAll.release();
             return null;
         });
     }
+    //endregion
 
     @Override
     protected int unmap(int cachePage) {
         if( cachePage<0 )throw new IllegalArgumentException( "cachePage<0" );
-        return state.globalCacheLock(false,
+        return state.globalCacheLock(true,
             ()->state.cachePageWriteLock(cachePage,
                 ()->super.unmap(cachePage)));
     }
 
     @Override
     protected Tuple2<List<Integer>, List<Integer>> cleanDirtyPages() {
-        return state.globalCacheLock(false, super::cleanDirtyPages);
+        return state.globalCacheLock(true, super::cleanDirtyPages);
     }
 
     @Override
     protected int unmapCandidate(List<Integer> pages, boolean clean) {
-        return state.globalCacheLock(false, () -> super.unmapCandidate(pages, clean));
+        return state.globalCacheLock(true, () -> super.unmapCandidate(pages, clean));
     }
 
     @Override
     protected int allocCachePage() {
-        return state.globalCacheLock(false, super::allocCachePage);
+        return state.globalCacheLock(true, ()->{
+            //noinspection UnnecessaryLocalVariable
+            int cache_page = super.allocCachePage();
+            return cache_page;
+        });
     }
 
     @Override
     protected byte[] map(int cachePage, int persistPage) {
         if( cachePage<0 )throw new IllegalArgumentException( "cachePage<0" );
-        state.cachePageRWLock(cachePage);
-        return state.globalCacheLock(false, () -> super.map(cachePage, persistPage));
+        return state.globalCacheLock(true, () -> super.map(cachePage, persistPage));
     }
 
+    //region readPage()
     @Override
     public byte[] readPage(int page) {
-        return state.globalCacheLock(false, () -> super.readPage(page));
+        if( isClosed() )throw new IllegalStateException("closed");
+        if( page<0 )throw new IllegalArgumentException( "page<0" );
+
+        boolean readLock_unlock = true;
+        try {
+            // глобальная блокировка.
+            state.cacheLock.readLock().lock();
+
+            int cidx = persist2cache(page);
+            if( cidx>=0 ){
+                return readPage_mapped(cidx, page);
+            }else{
+                // Глобальная блокировка.
+                //   Повышаем до exclusive.
+                state.cacheLock.readLock().unlock();
+                readLock_unlock = false;
+
+                try {
+                    state.cacheLock.writeLock().lock();
+                    // Тут имеем global exclusive -
+                    // возможность перераспределить новый участок памяти
+                    // повторная проверка, возможно уже страница была спроецирована
+                    cidx = persist2cache_mut(page);
+                    if( cidx>=0 ){
+                        return readPage_mapped(cidx, page);
+                    }
+
+                    return readPage_alloc(page);
+                } finally {
+                    state.cacheLock.writeLock().unlock();
+                }
+            }
+        } finally {
+            if( readLock_unlock )state.cacheLock.readLock().unlock();
+        }
     }
 
     @Override
+    protected byte[] readPage_mapped(int cidx, int page) {
+        return state.cachePageReadLock( cidx, ()->super.readPage_mapped(cidx, page) );
+    }
+
+    @Override
+    protected byte[] readPage_alloc(int page) {
+        return super.readPage_alloc(page);
+    }
+    //endregion
+    //region writePage()
+    @Override
     public void writePage(int page, byte[] data) {
-        state.globalCacheLock(false, () -> {
-            super.writePage(page, data);
+        if( isClosed() )throw new IllegalStateException("closed");
+        if( page<0 )throw new IllegalArgumentException( "page<0" );
+
+        boolean readLock_unlock = true;
+        try {
+            // глобальная блокировка.
+            state.cacheLock.readLock().lock();
+
+            int page_size = state.cachePages().memoryInfo().pageSize();
+            if( data.length>page_size )throw new IllegalArgumentException("data.length(="+data.length+") > page_size(="+page_size+")");
+
+            int cidx = persist2cache(page);
+            if( cidx>=0 ){
+                writePage_mapped(cidx, page, data);
+            }else{
+                // Глобальная блокировка.
+                //   Повышаем до exclusive.
+                state.cacheLock.readLock().unlock();
+                readLock_unlock = false;
+
+                try {
+                    state.cacheLock.writeLock().lock();
+                    // Тут имеем global exclusive -
+                    // возможность перераспределить новый участок памяти
+                    // повторная проверка, возможно уже страница была спроецирована
+                    cidx = persist2cache_mut(page);
+                    if( cidx>=0 ){
+                        writePage_mapped(cidx, page, data);
+                    }else {
+                        writePage_alloc(page, data);
+                    }
+                } finally {
+                    state.cacheLock.writeLock().unlock();
+                }
+            }
+        } finally {
+            if( readLock_unlock )state.cacheLock.readLock().unlock();
+        }
+    }
+
+    @Override
+    protected void writePage_mapped(int cidx, int page, byte[] data) {
+        state.cachePageWriteLock(cidx, ()->{
+            super.writePage_mapped(cidx, page, data);
             return null;
         });
     }
+
+    @Override
+    protected void writePage_alloc(int page, byte[] data) {
+        super.writePage_alloc(page, data);
+    }
+    //endregion
 
     //region изменение размера кеша resizeCachePages, resizePages, extendPages, reducePages - глобальное exclusive cacheLock
     @Override
@@ -366,4 +501,17 @@ public class CCachePagedData extends BaseCachePagedData<CCachePagedData.State> {
         return state.globalCacheLock(true, () -> super.resizePages(pages));
     }
     //endregion
+
+
+    @Override
+    public void writePageLock(int from, int toExc, Runnable code) {
+        if( code==null )throw new IllegalArgumentException( "code==null" );
+        Set<Integer> cache_pages = new LinkedHashSet<>();
+    }
+
+    @Override
+    public void readPageLock(int from, int toExc, Runnable code) {
+        if( code==null )throw new IllegalArgumentException( "code==null" );
+        Set<Integer> cache_pages = new LinkedHashSet<>();
+    }
 }

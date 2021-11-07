@@ -4,4 +4,5 @@ open module xyz.cofe.cbuffer {
     requires transitive xyz.cofe.io.fn;
     requires transitive xyz.cofe.ecolls;
     exports xyz.cofe.cbuffer;
+    exports xyz.cofe.cbuffer.page;
 }
