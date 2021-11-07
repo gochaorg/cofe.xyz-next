@@ -163,8 +163,6 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
      */
     protected int persist2cache( int persistPage ){
         if( persistPage<0 )throw new IllegalArgumentException( "persistPage<0" );
-//        Integer c_idx = state.prst2cache().get(persistPage);
-//        return c_idx!=null ? c_idx : -1;
         Integer c_i = state.prst2cache_read( map -> map.get(persistPage));
         return c_i!=null ? c_i : -1;
     }

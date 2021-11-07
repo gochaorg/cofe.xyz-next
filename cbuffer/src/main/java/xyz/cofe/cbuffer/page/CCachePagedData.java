@@ -99,12 +99,14 @@ implements PageLock
             return code.apply(IntArrayReadOnly.of(cache2prst));
         }
 
+        // глобальная мутация
         @Override
         public void cache2prst_write(Consumer<IntArrayMutable> code) {
             if (code == null) throw new IllegalArgumentException("code==null");
             code.accept(IntArrayMutable.of(cache2prst));
         }
 
+        // глобальная мутация
         @Override
         public void cache2prst_replace(Function<IntArrayReadOnly, int[]> code) {
             if (code == null) throw new IllegalArgumentException("code==null");
