@@ -20,7 +20,7 @@ implements PageLock
     public static class State implements CachePagedState {
         protected DirtyPagedData cachePages;
         protected ResizablePages persistentPages;
-        protected int[] cache2prst;
+        protected volatile int[] cache2prst;
         protected Map<Integer, Integer> prst2cache;
         protected volatile boolean closed = false;
 
@@ -126,6 +126,12 @@ implements PageLock
                 int[] res = code.apply(IntArrayReadOnly.of(cache2prst == null ? new int[0] : cache2prst));
                 if (res == null) throw new IllegalStateException("cache2prst_replace(code), code - return null");
                 cache2prst = res;
+
+                ReadWriteLock[] locks = new ReadWriteLock[res.length];
+                for( int i=0; i<this.cachePageLocks.length; i++ ){
+                    locks[i] = new ReentrantReadWriteLock();
+                }
+                this.cachePageLocks = locks;
             } finally {
                 for (Lock lock : writeLocks) {
                     lock.unlock();
@@ -504,16 +510,59 @@ implements PageLock
     }
     //endregion
 
+    protected List<Lock> lockPersistPages( int from, int toExc, Function<ReadWriteLock,Lock> lockType ){
+        return state.globalCacheLock(true,()->{
+            List<Lock> lcks = new ArrayList<>();
+
+            Set<Integer> cache_pages = state.prst2cache_read( map -> {
+                Set<Integer> cache_pages_1 = new TreeSet<>();
+                int p_from = Math.max(Math.min(from,toExc),0);
+                int p_to = Math.max(Math.max(from,toExc),0);
+                for( int p_i=p_from; p_i<p_to; p_i++ ){
+                    Integer c_idx = map.get(p_i);
+                    if( c_idx!=null ){
+                        cache_pages_1.add(c_idx);
+                    }
+                }
+                return cache_pages_1;
+            });
+
+            for( Integer cache_page : cache_pages ){
+                Optional<ReadWriteLock> rwLock = state.cachePageRWLock(cache_page);
+                if( rwLock.isPresent() ){
+                    Lock lock = lockType.apply(rwLock.get());
+                    lock.lock();
+                    lcks.add(lock);
+                }
+            }
+
+            return lcks;
+        });
+    }
 
     @Override
     public void writePageLock(int from, int toExc, Runnable code) {
         if( code==null )throw new IllegalArgumentException( "code==null" );
-        Set<Integer> cache_pages = new LinkedHashSet<>();
+        List<Lock> locks = lockPersistPages(from,toExc, ReadWriteLock::writeLock);
+        try {
+            code.run();
+        } finally {
+            for( Lock lock : locks ){
+                lock.unlock();
+            }
+        }
     }
 
     @Override
     public void readPageLock(int from, int toExc, Runnable code) {
         if( code==null )throw new IllegalArgumentException( "code==null" );
-        Set<Integer> cache_pages = new LinkedHashSet<>();
+        List<Lock> locks = lockPersistPages(from,toExc, ReadWriteLock::readLock);
+        try {
+            code.run();
+        } finally {
+            for( Lock lock : locks ){
+                lock.unlock();
+            }
+        }
     }
 }
