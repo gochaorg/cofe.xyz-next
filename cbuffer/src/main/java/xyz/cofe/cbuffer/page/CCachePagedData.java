@@ -3,6 +3,7 @@ package xyz.cofe.cbuffer.page;
 import xyz.cofe.fn.Tuple2;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -23,8 +24,20 @@ implements PageLock
         protected volatile int[] cache2prst;
         protected Map<Integer, Integer> prst2cache;
         protected volatile boolean closed = false;
-
         protected volatile ReadWriteLock[] cachePageLocks = new ReadWriteLock[0];
+        protected final AtomicLong statCacheHit = new AtomicLong(0);
+        protected final AtomicLong statCacheMiss = new AtomicLong(0);
+
+        @Override
+        public void statCacheHitMiss(boolean hit) {
+            AtomicLong a = hit ? statCacheHit : statCacheMiss;
+            a.incrementAndGet();
+        }
+
+        @Override
+        public Tuple2<Long, Long> statCacheHitMiss() {
+            return Tuple2.of(statCacheHit.get(), statCacheMiss.get());
+        }
 
         public Optional<ReadWriteLock> cachePageRWLock(int cache_page) {
             if (cache_page < 0) throw new IllegalArgumentException("cache_page<0");

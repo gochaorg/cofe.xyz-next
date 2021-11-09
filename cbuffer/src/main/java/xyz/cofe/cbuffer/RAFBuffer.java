@@ -558,7 +558,7 @@ public class RAFBuffer
             lock.unlock();
         }
     }
-//</editor-fold>
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="releaseRaf">
     protected boolean releaseRaf = true;

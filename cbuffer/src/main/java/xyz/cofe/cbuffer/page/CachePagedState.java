@@ -1,5 +1,7 @@
 package xyz.cofe.cbuffer.page;
 
+import xyz.cofe.fn.Tuple2;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -67,6 +69,9 @@ public interface CachePagedState {
     boolean isClosed();
     void close();
 
+    void statCacheHitMiss( boolean hit );
+    Tuple2<Long,Long> statCacheHitMiss();
+
     /**
      * Создание состояния - Non Thread safe
      * @return состояние
@@ -80,6 +85,24 @@ public interface CachePagedState {
         private ResizablePages persistentPages;
         private int[] cache2prst = new int[0];
         private Map<Integer,Integer> prst2cache = new HashMap<>();
+        private boolean closed = false;
+
+        private long stateCacheHit = 0;
+        private long stateCacheMiss = 0;
+
+        @Override
+        public void statCacheHitMiss(boolean hit) {
+            if( hit ){
+                stateCacheHit++;
+            }else {
+                stateCacheMiss++;
+            }
+        }
+
+        @Override
+        public Tuple2<Long, Long> statCacheHitMiss() {
+            return Tuple2.of(stateCacheHit,stateCacheMiss);
+        }
 
         @Override
         public DirtyPagedData cachePages() {
@@ -138,8 +161,6 @@ public interface CachePagedState {
             if( closed )throw new IllegalStateException("CachePagedData closed");
             prst2cache = map;
         }
-
-        private boolean closed = false;
 
         @Override
         public boolean isClosed() {

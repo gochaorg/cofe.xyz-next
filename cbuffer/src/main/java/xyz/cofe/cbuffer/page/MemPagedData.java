@@ -194,6 +194,7 @@ public class MemPagedData implements PagedData, ExtendablePages, ReduciblePages,
         if( (maxPages>0 && nextPages>maxPages) )throw new OutOfMemoryError("can't extend, limit by maxPages");
 
         buffer = Arrays.copyOf(buffer, (int)nextSize);
+        dataSize = (int) nextSize;
         return Tuple2.of(beforeChange,memInfo);
     }
 
@@ -210,6 +211,7 @@ public class MemPagedData implements PagedData, ExtendablePages, ReduciblePages,
 
         long nextSize = nextPages * pageSize;
         buffer = Arrays.copyOf(buffer, (int)nextSize);
+        dataSize = (int) nextSize;
 
         return Tuple2.of(beforeChange,memInfo);
     }

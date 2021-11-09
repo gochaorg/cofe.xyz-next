@@ -77,13 +77,16 @@ public class MemContentBuffer
     public MemContentBuffer(byte[] sourceData){
         if( sourceData==null )throw new IllegalArgumentException( "sourceData==null" );
         this.data = sourceData;
+        this.dataSize = data.length;
     }
 
     protected volatile byte[] data = new byte[]{};
+    protected volatile int dataSize = 0;
+    protected volatile int extendSize = 1024*1024;
 
     @Override
     public long getSize() {
-        return data.length;
+        return dataSize;
     }
 
     @Override
@@ -92,16 +95,23 @@ public class MemContentBuffer
         if( size>Integer.MAX_VALUE )throw new IllegalArgumentException("size>Integer.MAX_VALUE");
         if( data==null ){
             data = new byte[(int)size];
-            fireEvent(new SizeChangedEvent(this, 0, size));
+            dataSize = (int)size;
+            fireEvent(new SizeChangedEvent(this, 0, dataSize));
         }else{
-            if( data.length > size ){
-                long old = data.length;
-                data = Arrays.copyOf(data, (int)size);
-                fireEvent(new SizeChangedEvent(this, old, size));
-            }else if( data.length < size ){
-                long old = data.length;
-                data = Arrays.copyOf(data, (int)size);
-                fireEvent(new SizeChangedEvent(this, old, size));
+            if( dataSize > size ){
+                long old = dataSize;
+                //data = Arrays.copyOf(data, (int)size);
+                dataSize = (int)size;
+                fireEvent(new SizeChangedEvent(this, old, dataSize));
+            }else if( dataSize < size ){
+                long old = dataSize;
+                if( data.length < size ){
+                    int ext = (int)size % extendSize;
+                    int targetSize = ((int)size / extendSize) * (extendSize + (ext>0 ? 1 : 0));
+                    data = Arrays.copyOf(data, targetSize);
+                }
+                dataSize = (int)size;
+                fireEvent(new SizeChangedEvent(this, old, dataSize));
             }
         }
     }
@@ -115,46 +125,27 @@ public class MemContentBuffer
         if( offset<0 )throw new IllegalArgumentException( "offset<0" );
         if( offset>Integer.MAX_VALUE )throw new IllegalArgumentException( "offset>Integer.MAX_VALUE" );
 
-        if( this.data==null )this.data = new byte[]{};
-        long oldSize = this.data.length;
-
         int targetSize = (int)offset + dataLen;
-        if( targetSize>this.data.length )this.data = Arrays.copyOf(this.data, targetSize);
+        if( targetSize>dataSize ){
+            setSize(targetSize);
+        }
 
         System.arraycopy(data, dataOffset, this.data, (int)offset, dataLen);
-
-        long newSize = this.data.length;
-
-        if( oldSize != newSize ){
-            fireEvent(new SizeChangedEvent(this, oldSize, newSize));
-        }
     }
 
     @Override
     public byte[] get(long offset, int dataLen) {
         if( offset>Integer.MAX_VALUE )return new byte[]{};
-        if( dataLen>Integer.MAX_VALUE )throw new IllegalArgumentException( "dataLen>Integer.MAX_VALUE" );
 
         if( this.data==null )return new byte[]{};
-        if( (int)offset >= this.data.length )return new byte[]{};
-        if( this.data.length<1 )return new byte[]{};
-
-        long oldSize = this.data.length;
+        if( (int)offset >= dataSize )return new byte[]{};
+        if( dataSize<1 )return new byte[]{};
 
         int minIdx = (int)offset;
-        int dataSize = this.data.length;
         int targetEnd = (int)offset + ((int)dataLen);
         if( targetEnd > dataSize )targetEnd = dataSize;
 
-        long newSize = this.data.length;
-
-        byte[] res = Arrays.copyOfRange(this.data, minIdx, targetEnd);
-
-        if( oldSize != newSize ){
-            fireEvent(new SizeChangedEvent(this, oldSize, newSize));
-        }
-
-        return res;
+        return Arrays.copyOfRange(this.data, minIdx, targetEnd);
     }
 
     @Override
@@ -164,7 +155,7 @@ public class MemContentBuffer
 
     @Override
     public ContentBuffer clone() {
-        return new MemContentBuffer(data==null ? new byte[]{} : Arrays.copyOf(data, data.length));
+        return new MemContentBuffer(data==null ? new byte[]{} : Arrays.copyOf(data, dataSize));
     }
 
     @Override

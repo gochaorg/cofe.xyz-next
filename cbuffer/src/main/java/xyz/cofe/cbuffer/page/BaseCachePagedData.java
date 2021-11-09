@@ -145,6 +145,8 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
         this( cachePages, persistentPages, (S)CachePagedState.nonSafe() );
     }
 
+    public Tuple2<Long,Long> cacheHitMiss(){ return state.statCacheHitMiss(); }
+
     protected boolean isClosed(){
         return state.isClosed();
     }
@@ -431,6 +433,7 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
 
     protected byte[] readPage_mapped( int cidx, int page ){
         // Страница спроецирована
+        state.statCacheHitMiss(true);
         return state.cachePages().readPage(cidx);
     }
 
@@ -443,6 +446,7 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
         int cache_page = allocCachePage();
         if( cache_page<0 )throw new IllegalStateException("can't allocate page in cache");
 
+        state.statCacheHitMiss(false);
         return map(cache_page, page);
     }
 
@@ -501,6 +505,7 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
         // Страница спроецирована
         // изменить страницу в кеше
         // отметить страницу как dirty (auto)
+        state.statCacheHitMiss(true);
         state.persistentPages().writePage(cidx, data);
     }
 
@@ -514,6 +519,7 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
         //   считать страницу из persist в cache
         // изменить страницу в кеше
         // отметить страницу как dirty (auto)
+        state.statCacheHitMiss(false);
         int cache_page = allocCachePage();
         byte[] buff = map(cache_page, page);
         if( buff.length>data.length ){
