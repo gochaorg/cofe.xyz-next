@@ -9,94 +9,15 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Кеширование страниц.
  *
- * <h2>Состояния страниц</h2>
- * <table border="1">
- *     <tr style="vertical-align: top;">
- *         <td style="vertical-align: top; font-weight: bold">
- *             state
- *         </td>
- *         <td style="vertical-align: top; font-weight: bold">
- *             hard
- *         </td>
- *         <td style="vertical-align: top; font-weight: bold">
- *             cache
- *         </td>
- *         <td style="vertical-align: top; font-weight: bold">
- *             clean / dirty
- *         </td>
- *         <td style="vertical-align: top; font-weight: bold">
- *             read()
- *         </td>
- *         <td style="vertical-align: top; font-weight: bold">
- *             write()
- *         </td>
- *         <td style="vertical-align: top; font-weight: bold">
- *             flush()
- *         </td>
- *         <td style="vertical-align: top; font-weight: bold">
- *             reduce()
- *         </td>
- *     </tr>
- *
- *     <tr>
- *         <td style="color: gray"> none </td>
- *         <td style="color: gray"> ? </td>
- *         <td style="color: gray"> ? </td>
- *         <td style="color: gray"> ? </td>
- *         <td style="color: gray"> none </td>
- *         <td style="color: gray"> none </td>
- *         <td style="color: gray"> none </td>
- *         <td style="color: gray"> none </td>
- *     </tr>
- *
- *     <tr>
- *         <td style="color: gray"> bug </td>
- *         <td> ? </td>
- *         <td> cache </td>
- *         <td> any </td>
- *         <td style="color: gray"> bug </td>
- *         <td style="color: gray"> bug </td>
- *         <td style="color: gray"> bug </td>
- *         <td style="color: gray"> bug </td>
- *     </tr>
- *
- *     <tr>
- *         <td> # </td>
- *         <td> hard </td>
- *         <td style="color: gray"> none </td>
- *         <td style="color: gray"> none </td>
- *         <td> → map() </td>
- *         <td> → map() <br> → write() <br> → dirty</td>
- *         <td style="color: gray"> none </td>
- *         <td style="color: gray"> none </td>
- *     </tr>
- *
- *     <tr>
- *         <td> # </td>
- *         <td> hard </td>
- *         <td> cache </td>
- *         <td> clean </td>
- *         <td style="color: gray"> no change </td>
- *         <td> → dirty </td>
- *         <td style="color: gray"> no change </td>
- *         <td> unlink() </td>
- *     </tr>
- *
- *     <tr>
- *         <td> # </td>
- *         <td> hard </td>
- *         <td> cache </td>
- *         <td> dirty </td>
- *         <td style="color: gray"> no change </td>
- *         <td> → dirty </td>
- *         <td> → flush() <br> → clean </td>
- *         <td> store() <br> unlink() </td>
- *     </tr>
- *
- * </table>
- *
+ * @param <S> Состояние CachePagedDataBase
+ * @param <M> Информация о памяти
+ * @param <D> Информация о грязных страницах
  */
-public class CachePagedDataBase<S extends CachePagedState<M, D>, M extends UsedPagesInfo, D extends DirtyPagedDataBase<M>> implements ResizablePages<M>, Flushable {
+public class CachePagedDataBase<
+    S extends CachePagedState<M, D>,
+    M extends UsedPagesInfo,
+    D extends DirtyPagedDataBase<M, ? extends DirtyPagedState>
+    > implements ResizablePages<M>, Flushable {
     protected final S state;
 
     /**

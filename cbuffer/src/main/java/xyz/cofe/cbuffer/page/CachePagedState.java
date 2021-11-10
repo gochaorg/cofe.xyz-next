@@ -12,7 +12,7 @@ import java.util.function.Function;
  * Предполагается наличие 2ух реализаций,
  * для Non Thread safe и Thread safe
  */
-public interface CachePagedState<M extends UsedPagesInfo, D extends DirtyPagedDataBase<M>> {
+public interface CachePagedState<M extends UsedPagesInfo, D extends DirtyPagedDataBase<M,? extends DirtyPagedState>> {
     /**
      * Кеш страниц (быстрая)
      */
@@ -80,8 +80,12 @@ public interface CachePagedState<M extends UsedPagesInfo, D extends DirtyPagedDa
         return new NonThreadSafe();
     }
 
-    public static class NonThreadSafe implements CachePagedState<UsedPagesInfo, DirtyPagedDataBase<UsedPagesInfo>> {
-        private DirtyPagedDataBase<UsedPagesInfo> cachePages;
+    public static class NonThreadSafe implements CachePagedState<
+        UsedPagesInfo,
+        DirtyPagedDataBase<UsedPagesInfo,DirtyPagedState.NonThreadSafe>
+        >
+    {
+        private DirtyPagedDataBase<UsedPagesInfo,DirtyPagedState.NonThreadSafe> cachePages;
         private ResizablePages<UsedPagesInfo> persistentPages;
         private int[] cache2prst = new int[0];
         private Map<Integer,Integer> prst2cache = new HashMap<>();
@@ -105,13 +109,13 @@ public interface CachePagedState<M extends UsedPagesInfo, D extends DirtyPagedDa
         }
 
         @Override
-        public DirtyPagedDataBase<UsedPagesInfo> cachePages() {
+        public DirtyPagedDataBase<UsedPagesInfo,DirtyPagedState.NonThreadSafe> cachePages() {
             if( closed )throw new IllegalStateException("CachePagedData closed");
             return cachePages;
         }
 
         @Override
-        public void cachePages(DirtyPagedDataBase<UsedPagesInfo> pages) {
+        public void cachePages(DirtyPagedDataBase<UsedPagesInfo,DirtyPagedState.NonThreadSafe> pages) {
             if( closed )throw new IllegalStateException("CachePagedData closed");
             this.cachePages = pages;
         }

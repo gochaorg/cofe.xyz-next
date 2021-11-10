@@ -5,23 +5,11 @@ import xyz.cofe.fn.Tuple2;
 
 import java.util.Arrays;
 
-public class DirtyPagedDataBase<M extends UsedPagesInfo> implements ResizablePages<M> {
+public abstract class DirtyPagedDataBase<M extends UsedPagesInfo, S extends DirtyPagedState> implements ResizablePages<M> {
     protected ResizablePages<M> pagedData;
 
-    /**
-     * Отмечает время вызова {@link #flushPage(int)}
-     */
-    protected long[] flushTime;
+    protected abstract S state();
 
-    /**
-     * Отмечает время вызова {@link #writePage(int, byte[])}
-     */
-    protected long[] writeTime;
-
-    /**
-     * Отмечает время вызова {@link #readPage(int)}
-     */
-    protected long[] readTime;
 
     public DirtyPagedDataBase(ResizablePages<M> pagedData){
         if( pagedData==null )throw new IllegalArgumentException( "pagedData==null" );
@@ -29,12 +17,17 @@ public class DirtyPagedDataBase<M extends UsedPagesInfo> implements ResizablePag
 
         UsedPagesInfo minf = pagedData.memoryInfo();
         int pageCnt = minf.pageCount();
-        flushTime = new long[pageCnt];
-        writeTime = new long[pageCnt];
-        readTime = new long[pageCnt];
+
+        long[] flushTime = new long[pageCnt];
+        long[] writeTime = new long[pageCnt];
+        long[] readTime = new long[pageCnt];
         Arrays.fill(flushTime,0);
         Arrays.fill(writeTime,0);
         Arrays.fill(readTime,0);
+
+        state().flushTime(flushTime);
+        state().writeTime(writeTime);
+        state().readTime(readTime);
     }
 
     protected long now(){ return System.nanoTime(); }
@@ -48,8 +41,10 @@ public class DirtyPagedDataBase<M extends UsedPagesInfo> implements ResizablePag
      */
     public void flushPage( int page ){
         if( page<0 )throw new IllegalArgumentException( "page(="+page+" <0) out of range" );
+        long[] flushTime = state().flushTime();
         if( page<flushTime.length ){
             flushTime[page] = now();
+            state().flushTime(flushTime);
         }
     }
 
@@ -60,6 +55,8 @@ public class DirtyPagedDataBase<M extends UsedPagesInfo> implements ResizablePag
      */
     public boolean dirty( int page ){
         if( page<0 )throw new IllegalArgumentException( "page(="+page+" <0) out of range" );
+        long[] flushTime = state().flushTime();
+        long[] writeTime = state().writeTime();
         if( page<flushTime.length ){
             long ft = flushTime[page];
             long wt = writeTime[page];
@@ -74,6 +71,8 @@ public class DirtyPagedDataBase<M extends UsedPagesInfo> implements ResizablePag
      */
     public void dirtyPages(Consumer1<Integer> dirtyPage){
         if( dirtyPage==null )throw new IllegalArgumentException( "dirtyPage==null" );
+        long[] flushTime = state().flushTime();
+        long[] writeTime = state().writeTime();
         int pc = Math.min(flushTime.length, writeTime.length);
         for( int i=0; i<pc; i++ ){
             long ft = flushTime[i];
@@ -100,9 +99,11 @@ public class DirtyPagedDataBase<M extends UsedPagesInfo> implements ResizablePag
     @Override
     public byte[] readPage(int page) {
         byte[] data = pagedData.readPage(page);
+        long[] readTime = state().readTime();
         if( page>=0 && page<readTime.length ){
             readTime[page] = now();
         }
+        state().readTime(readTime);
         return data;
     }
 
@@ -116,9 +117,11 @@ public class DirtyPagedDataBase<M extends UsedPagesInfo> implements ResizablePag
     @Override
     public void writePage(int page, byte[] data) {
         pagedData.writePage(page, data);
+        long[] writeTime = state().writeTime();
         if( page>=0 && page<writeTime.length ){
             writeTime[page] = now();
         }
+        state().writeTime(writeTime);
     }
 
     protected void onChangeResizePages(Tuple2<UsedPagesInfo, UsedPagesInfo> changes){
@@ -126,10 +129,16 @@ public class DirtyPagedDataBase<M extends UsedPagesInfo> implements ResizablePag
         UsedPagesInfo before = changes.a();
         UsedPagesInfo now = changes.b();
         int pc = now.pageCount();
+        long[] flushTime = state().flushTime();
+        long[] writeTime = state().writeTime();
+        long[] readTime = state().readTime();
+
         flushTime = Arrays.copyOf(flushTime, pc);
         writeTime = Arrays.copyOf(writeTime, pc);
         readTime = Arrays.copyOf(readTime, pc);
+
         int extCnt = now.pageCount() - before.pageCount();
+
         if( extCnt>0 ){
             for( int i=before.pageCount(); i<now.pageCount(); i++ ){
                 flushTime[i] = 0;
@@ -137,6 +146,10 @@ public class DirtyPagedDataBase<M extends UsedPagesInfo> implements ResizablePag
                 readTime[i] = 0;
             }
         }
+
+        state().writeTime(writeTime);
+        state().flushTime(flushTime);
+        state().readTime(readTime);
     }
 
     @Override
