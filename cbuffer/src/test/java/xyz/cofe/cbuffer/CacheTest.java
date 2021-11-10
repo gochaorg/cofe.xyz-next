@@ -5,7 +5,6 @@ import xyz.cofe.cbuffer.page.*;
 import xyz.cofe.fn.Tuple2;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Random;
@@ -37,8 +36,8 @@ public class CacheTest {
                     System.out.print(" avg "+avg+" ms");
                 }
 
-                if( pagedData instanceof BaseCachePagedData ){
-                    Tuple2<Long,Long> hitMiss = ((BaseCachePagedData<?,?>) pagedData).cacheHitMiss();
+                if( pagedData instanceof CachePagedDataBase){
+                    Tuple2<Long,Long> hitMiss = ((CachePagedDataBase<?,?>) pagedData).cacheHitMiss();
                     long total = hitMiss.a()+hitMiss.b();
                     if( total>0 ){
                         double ratio = hitMiss.a() / (double)total;

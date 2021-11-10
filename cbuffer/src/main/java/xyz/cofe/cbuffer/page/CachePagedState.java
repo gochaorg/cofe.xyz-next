@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Состояние объекта {@link BaseCachePagedData}
+ * Состояние объекта {@link CachePagedDataBase}
  * Предполагается наличие 2ух реализаций,
  * для Non Thread safe и Thread safe
  */

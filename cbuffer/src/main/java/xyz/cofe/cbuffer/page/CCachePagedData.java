@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  * Кеш страниц, с разделением на быструю и медленную память
  * с поддержкой многопоточности
  */
-public class CCachePagedData extends BaseCachePagedData<CCachePagedData.State, UsedPagesInfo>
+public class CCachePagedData extends CachePagedDataBase<CCachePagedData.State, UsedPagesInfo>
 implements PageLock
 {
     public static class State implements CachePagedState<UsedPagesInfo> {

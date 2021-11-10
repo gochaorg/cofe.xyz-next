@@ -1,6 +1,6 @@
 package xyz.cofe.cbuffer.page;
 
-public class CachePagedData extends BaseCachePagedData<CachePagedState<UsedPagesInfo>, UsedPagesInfo> {
+public class CachePagedData extends CachePagedDataBase<CachePagedState<UsedPagesInfo>, UsedPagesInfo> {
     protected CachePagedData(CachePagedState<UsedPagesInfo> state) {
         super(state);
     }

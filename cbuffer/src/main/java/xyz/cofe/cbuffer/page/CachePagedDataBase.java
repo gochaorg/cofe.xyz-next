@@ -96,14 +96,14 @@ import java.util.concurrent.ThreadLocalRandom;
  * </table>
  *
  */
-public class BaseCachePagedData<S extends CachePagedState<M>, M extends UsedPagesInfo> implements ResizablePages<M>, Flushable {
+public class CachePagedDataBase<S extends CachePagedState<M>, M extends UsedPagesInfo> implements ResizablePages<M>, Flushable {
     protected final S state;
 
     /**
      * Конструктор
      * @param state внутреннее состояние
      */
-    protected BaseCachePagedData(S state ){
+    protected CachePagedDataBase(S state ){
         if( state==null )throw new IllegalArgumentException( "state==null" );
         this.state = state;
     }
@@ -113,7 +113,7 @@ public class BaseCachePagedData<S extends CachePagedState<M>, M extends UsedPage
      * @param cachePages Кеш память (быстрая)
      * @param persistentPages Постоянная (медленная)
      */
-    protected BaseCachePagedData(DirtyPagedData cachePages, ResizablePages persistentPages, S state ){
+    protected CachePagedDataBase(DirtyPagedData cachePages, ResizablePages persistentPages, S state ){
         if( cachePages==null )throw new IllegalArgumentException( "cachePages==null" );
         if( persistentPages ==null )throw new IllegalArgumentException( "hardPages==null" );
         if( cachePages.memoryInfo().pageSize()!= persistentPages.memoryInfo().pageSize() ){
@@ -141,7 +141,7 @@ public class BaseCachePagedData<S extends CachePagedState<M>, M extends UsedPage
      * @param cachePages Кеш память (быстрая)
      * @param persistentPages Постоянная (медленная)
      */
-    public BaseCachePagedData(DirtyPagedData cachePages, ResizablePages persistentPages ){
+    public CachePagedDataBase(DirtyPagedData cachePages, ResizablePages persistentPages ){
         this( cachePages, persistentPages, (S)CachePagedState.nonSafe() );
     }
 
