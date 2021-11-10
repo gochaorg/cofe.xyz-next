@@ -12,12 +12,12 @@ import java.util.function.Function;
  * Предполагается наличие 2ух реализаций,
  * для Non Thread safe и Thread safe
  */
-public interface CachePagedState<M extends UsedPagesInfo> {
+public interface CachePagedState<M extends UsedPagesInfo, D extends DirtyPagedDataBase<M>> {
     /**
      * Кеш страниц (быстрая)
      */
-    DirtyPagedDataBase<M> cachePages();
-    void cachePages( DirtyPagedDataBase<M> pages );
+    D cachePages();
+    void cachePages( D pages );
 
     /**
      * Основная|Постоянная память (медленная)
@@ -80,7 +80,7 @@ public interface CachePagedState<M extends UsedPagesInfo> {
         return new NonThreadSafe();
     }
 
-    public static class NonThreadSafe implements CachePagedState<UsedPagesInfo> {
+    public static class NonThreadSafe implements CachePagedState<UsedPagesInfo, DirtyPagedDataBase<UsedPagesInfo>> {
         private DirtyPagedDataBase<UsedPagesInfo> cachePages;
         private ResizablePages<UsedPagesInfo> persistentPages;
         private int[] cache2prst = new int[0];

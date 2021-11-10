@@ -15,11 +15,11 @@ import java.util.function.Supplier;
  * Кеш страниц, с разделением на быструю и медленную память
  * с поддержкой многопоточности
  */
-public class CCachePagedData extends CachePagedDataBase<CCachePagedData.State, UsedPagesInfo>
+public class CCachePagedData extends CachePagedDataBase<CCachePagedData.State, UsedPagesInfo, DirtyPagedData>
 implements PageLock
 {
-    public static class State implements CachePagedState<UsedPagesInfo> {
-        protected DirtyPagedDataBase<UsedPagesInfo> cachePages;
+    public static class State implements CachePagedState<UsedPagesInfo, DirtyPagedData> {
+        protected DirtyPagedData cachePages;
         protected ResizablePages<UsedPagesInfo> persistentPages;
         protected volatile int[] cache2prst;
         protected Map<Integer, Integer> prst2cache;
@@ -87,12 +87,12 @@ implements PageLock
         }
 
         @Override
-        public DirtyPagedDataBase<UsedPagesInfo> cachePages() {
+        public DirtyPagedData cachePages() {
             return cachePages;
         }
 
         @Override
-        public void cachePages(DirtyPagedDataBase<UsedPagesInfo> pages) {
+        public void cachePages(DirtyPagedData pages) {
             cachePages = pages;
         }
 

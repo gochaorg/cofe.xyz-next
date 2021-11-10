@@ -37,7 +37,7 @@ public class CacheTest {
                 }
 
                 if( pagedData instanceof CachePagedDataBase){
-                    Tuple2<Long,Long> hitMiss = ((CachePagedDataBase<?,?>) pagedData).cacheHitMiss();
+                    Tuple2<Long,Long> hitMiss = ((CachePagedDataBase<?,?,?>) pagedData).cacheHitMiss();
                     long total = hitMiss.a()+hitMiss.b();
                     if( total>0 ){
                         double ratio = hitMiss.a() / (double)total;
