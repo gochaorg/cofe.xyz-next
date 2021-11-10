@@ -15,11 +15,11 @@ import java.util.function.Supplier;
  * Кеш страниц, с разделением на быструю и медленную память
  * с поддержкой многопоточности
  */
-public class CCachePagedData extends CachePagedDataBase<CCachePagedData.State, UsedPagesInfo, DirtyPagedData>
+public class CCachePagedData extends CachePagedDataBase<CCachePagedData.State, UsedPagesInfo, DirtyPagedDataSafe>
 implements PageLock
 {
-    public static class State implements CachePagedState<UsedPagesInfo, DirtyPagedData> {
-        protected DirtyPagedData cachePages;
+    public static class State implements CachePagedState<UsedPagesInfo, DirtyPagedDataSafe> {
+        protected DirtyPagedDataSafe cachePages;
         protected ResizablePages<UsedPagesInfo> persistentPages;
         protected volatile int[] cache2prst;
         protected Map<Integer, Integer> prst2cache;
@@ -87,22 +87,22 @@ implements PageLock
         }
 
         @Override
-        public DirtyPagedData cachePages() {
+        public DirtyPagedDataSafe cachePages() {
             return cachePages;
         }
 
         @Override
-        public void cachePages(DirtyPagedData pages) {
+        public void cachePages(DirtyPagedDataSafe pages) {
             cachePages = pages;
         }
 
         @Override
-        public ResizablePages persistentPages() {
+        public ResizablePages<UsedPagesInfo> persistentPages() {
             return persistentPages;
         }
 
         @Override
-        public void persistentPages(ResizablePages pages) {
+        public void persistentPages(ResizablePages<UsedPagesInfo> pages) {
             persistentPages = pages;
         }
 
@@ -242,11 +242,11 @@ implements PageLock
         }
     }
 
-    protected CCachePagedData(CachePagedState state) {
-        super(new State());
+    protected CCachePagedData(State state) {
+        super(state);
     }
 
-    public CCachePagedData(DirtyPagedData cachePages, ResizablePages persistentPages) {
+    public CCachePagedData(DirtyPagedDataSafe cachePages, ResizablePages<UsedPagesInfo> persistentPages) {
         super(cachePages, persistentPages, new State());
     }
 
