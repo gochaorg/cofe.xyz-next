@@ -5,7 +5,7 @@ import xyz.cofe.fn.Tuple2;
 /**
  * Уменьшение кол-ва используемых страниц
  */
-public interface ReduciblePages extends PagedData {
+public interface ReduciblePages<MEM extends UsedPagesInfo> extends PagedData<MEM> {
     /**
      * Уменьшение кол-ва используемых страниц
      * @param pages сколько страниц нужно убрать

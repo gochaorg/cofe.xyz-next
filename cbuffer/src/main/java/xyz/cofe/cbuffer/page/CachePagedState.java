@@ -12,7 +12,7 @@ import java.util.function.Function;
  * Предполагается наличие 2ух реализаций,
  * для Non Thread safe и Thread safe
  */
-public interface CachePagedState {
+public interface CachePagedState<M extends UsedPagesInfo> {
     /**
      * Кеш страниц (быстрая)
      */
@@ -22,8 +22,8 @@ public interface CachePagedState {
     /**
      * Основная|Постоянная память (медленная)
      */
-    ResizablePages persistentPages();
-    void persistentPages( ResizablePages pages );
+    ResizablePages<M> persistentPages();
+    void persistentPages( ResizablePages<M> pages );
 
     /**
      * Отображение кеша страниц на основную память.
@@ -80,9 +80,9 @@ public interface CachePagedState {
         return new NonThreadSafe();
     }
 
-    public static class NonThreadSafe implements CachePagedState {
+    public static class NonThreadSafe implements CachePagedState<UsedPagesInfo> {
         private DirtyPagedData cachePages;
-        private ResizablePages persistentPages;
+        private ResizablePages<UsedPagesInfo> persistentPages;
         private int[] cache2prst = new int[0];
         private Map<Integer,Integer> prst2cache = new HashMap<>();
         private boolean closed = false;

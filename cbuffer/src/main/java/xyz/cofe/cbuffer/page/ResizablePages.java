@@ -5,7 +5,7 @@ import xyz.cofe.fn.Tuple2;
 /**
  * Изменение кол-ва выделенных страниц
  */
-public interface ResizablePages extends PagedData, ReduciblePages, ExtendablePages {
+public interface ResizablePages<MEM extends UsedPagesInfo> extends PagedData<MEM>, ReduciblePages<MEM>, ExtendablePages<MEM> {
     /**
      * Изменение кол-ва выделенных страниц
      * @param pages целевое кол-во страниц

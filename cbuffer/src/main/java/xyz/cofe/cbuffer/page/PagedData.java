@@ -6,13 +6,13 @@ import xyz.cofe.cbuffer.page.UsedPagesInfo;
 /**
  * Страничная организация памяти
  */
-public interface PagedData {
+public interface PagedData<MEMINFO extends UsedPagesInfo> {
 
     /**
      * Получение информации о памяти
      * @return Получение информации о памяти
      */
-    public UsedPagesInfo memoryInfo();
+    public MEMINFO memoryInfo();
 
     /**
      * Чтение страницы

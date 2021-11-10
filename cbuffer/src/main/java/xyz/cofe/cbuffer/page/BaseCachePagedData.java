@@ -96,7 +96,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * </table>
  *
  */
-public class BaseCachePagedData<S extends CachePagedState> implements ResizablePages, Flushable {
+public class BaseCachePagedData<S extends CachePagedState<M>, M extends UsedPagesInfo> implements ResizablePages<M>, Flushable {
     protected final S state;
 
     /**
@@ -152,7 +152,7 @@ public class BaseCachePagedData<S extends CachePagedState> implements ResizableP
     }
 
     @Override
-    public UsedPagesInfo memoryInfo() {
+    public M memoryInfo() {
         if( isClosed() )throw new IllegalStateException("closed");
         return state.persistentPages().memoryInfo();
     }

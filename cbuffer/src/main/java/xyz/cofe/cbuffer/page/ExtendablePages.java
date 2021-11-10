@@ -5,7 +5,7 @@ import xyz.cofe.fn.Tuple2;
 /**
  * Расширение кол-ва используемых страниц
  */
-public interface ExtendablePages extends PagedData {
+public interface ExtendablePages<MEM extends UsedPagesInfo> extends PagedData<MEM> {
     /**
      * Расширение кол-ва используемых страниц
      * @param pages сколько страниц нужно добавить

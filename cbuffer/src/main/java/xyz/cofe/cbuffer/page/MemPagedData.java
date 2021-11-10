@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Простая постраничная организация памяти
  */
-public class MemPagedData implements PagedData, ExtendablePages, ReduciblePages, ResizablePages {
+public class MemPagedData implements PagedData<UsedPagesInfo>, ExtendablePages<UsedPagesInfo>, ReduciblePages<UsedPagesInfo>, ResizablePages<UsedPagesInfo> {
     protected int pageSize;
     protected byte[] buffer;
     protected int dataSize;

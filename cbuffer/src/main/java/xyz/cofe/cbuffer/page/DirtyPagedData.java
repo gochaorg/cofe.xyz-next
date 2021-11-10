@@ -8,8 +8,8 @@ import java.util.Arrays;
 /**
  * Обвертка над {@link PagedData} с учетом грязных/чистых страниц.
  */
-public class DirtyPagedData implements ResizablePages {
-    protected ResizablePages pagedData;
+public class DirtyPagedData implements ResizablePages<UsedPagesInfo> {
+    protected ResizablePages<UsedPagesInfo> pagedData;
 
     /**
      * Отмечает время вызова {@link #flushPage(int)}
