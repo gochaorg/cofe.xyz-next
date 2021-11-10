@@ -113,7 +113,7 @@ public class CachePagedDataBase<S extends CachePagedState<M>, M extends UsedPage
      * @param cachePages Кеш память (быстрая)
      * @param persistentPages Постоянная (медленная)
      */
-    protected CachePagedDataBase(DirtyPagedData cachePages, ResizablePages persistentPages, S state ){
+    protected CachePagedDataBase(DirtyPagedDataBase<M> cachePages, ResizablePages<M> persistentPages, S state ){
         if( cachePages==null )throw new IllegalArgumentException( "cachePages==null" );
         if( persistentPages ==null )throw new IllegalArgumentException( "hardPages==null" );
         if( cachePages.memoryInfo().pageSize()!= persistentPages.memoryInfo().pageSize() ){
@@ -141,7 +141,7 @@ public class CachePagedDataBase<S extends CachePagedState<M>, M extends UsedPage
      * @param cachePages Кеш память (быстрая)
      * @param persistentPages Постоянная (медленная)
      */
-    public CachePagedDataBase(DirtyPagedData cachePages, ResizablePages persistentPages ){
+    public CachePagedDataBase(DirtyPagedDataBase<M> cachePages, ResizablePages<M> persistentPages ){
         this( cachePages, persistentPages, (S)CachePagedState.nonSafe() );
     }
 

@@ -16,8 +16,8 @@ public interface CachePagedState<M extends UsedPagesInfo> {
     /**
      * Кеш страниц (быстрая)
      */
-    DirtyPagedData cachePages();
-    void cachePages( DirtyPagedData pages );
+    DirtyPagedDataBase<M> cachePages();
+    void cachePages( DirtyPagedDataBase<M> pages );
 
     /**
      * Основная|Постоянная память (медленная)
@@ -81,7 +81,7 @@ public interface CachePagedState<M extends UsedPagesInfo> {
     }
 
     public static class NonThreadSafe implements CachePagedState<UsedPagesInfo> {
-        private DirtyPagedData cachePages;
+        private DirtyPagedDataBase<UsedPagesInfo> cachePages;
         private ResizablePages<UsedPagesInfo> persistentPages;
         private int[] cache2prst = new int[0];
         private Map<Integer,Integer> prst2cache = new HashMap<>();
@@ -105,13 +105,13 @@ public interface CachePagedState<M extends UsedPagesInfo> {
         }
 
         @Override
-        public DirtyPagedData cachePages() {
+        public DirtyPagedDataBase<UsedPagesInfo> cachePages() {
             if( closed )throw new IllegalStateException("CachePagedData closed");
             return cachePages;
         }
 
         @Override
-        public void cachePages(DirtyPagedData pages) {
+        public void cachePages(DirtyPagedDataBase<UsedPagesInfo> pages) {
             if( closed )throw new IllegalStateException("CachePagedData closed");
             this.cachePages = pages;
         }

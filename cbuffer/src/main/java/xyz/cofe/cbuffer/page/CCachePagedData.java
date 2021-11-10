@@ -19,8 +19,8 @@ public class CCachePagedData extends CachePagedDataBase<CCachePagedData.State, U
 implements PageLock
 {
     public static class State implements CachePagedState<UsedPagesInfo> {
-        protected DirtyPagedData cachePages;
-        protected ResizablePages persistentPages;
+        protected DirtyPagedDataBase<UsedPagesInfo> cachePages;
+        protected ResizablePages<UsedPagesInfo> persistentPages;
         protected volatile int[] cache2prst;
         protected Map<Integer, Integer> prst2cache;
         protected volatile boolean closed = false;
@@ -87,12 +87,12 @@ implements PageLock
         }
 
         @Override
-        public DirtyPagedData cachePages() {
+        public DirtyPagedDataBase<UsedPagesInfo> cachePages() {
             return cachePages;
         }
 
         @Override
-        public void cachePages(DirtyPagedData pages) {
+        public void cachePages(DirtyPagedDataBase<UsedPagesInfo> pages) {
             cachePages = pages;
         }
 
