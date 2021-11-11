@@ -354,8 +354,18 @@ implements PageLock
     public void flush() {
         state.globalCacheLock(false, () -> {
             LockAll lockAll = lockAll();
-            super.flush();
-            lockAll.release();
+            try {
+                if( isClosed() )throw new IllegalStateException("closed");
+
+                DirtyPagedDataSafe dirty = state.cachePages();
+                if( dirty==null ){
+                    throw new IllegalStateException("state.cachePages() is null");
+                }
+                dirty.dirtyPages(this::flush);
+            } finally {
+                lockAll.release();
+            }
+
             return null;
         });
     }

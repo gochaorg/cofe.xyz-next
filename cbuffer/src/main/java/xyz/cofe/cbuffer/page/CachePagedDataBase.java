@@ -51,7 +51,6 @@ public class CachePagedDataBase<
 
         int[] cache2prst = new int[pc];
         Arrays.fill(cache2prst,-1);
-//        this.state.cache2prst(cache2prst);
         this.state.cache2prst_replace(arr -> cache2prst);
 
         this.state.prst2cache(new HashMap<>());
@@ -140,16 +139,23 @@ public class CachePagedDataBase<
      * @return индекс persistentPage или значение меньше 0
      */
     protected int flush( int cachePage ){
-        return flush0(cachePage);
+        return flush0(cachePage, true,true);
     }
 
     protected int flush_mut( int cachePage ){
-        return flush0(cachePage);
+        return flush0(cachePage, true,true);
     }
 
-    private int flush0( int cachePage ){
-        arg_cachePage_range(cachePage);
-        if( !dirty(cachePage) )return -1;
+    /**
+     * Этим методом пользоваться аккуратно, его булевыми параметрами, сомневаетесь - тогда true
+     * @param cachePage номер страницы
+     * @param check_range проверка, что номер страницы указан в допустимом диапазоне
+     * @param check_dirty проверка, что страница грязная
+     * @return номер страницы в большой памяти
+     */
+    protected int flush0( int cachePage, boolean check_range, boolean check_dirty ){
+        if( check_range )arg_cachePage_range(cachePage);
+        if( check_dirty && !dirty(cachePage) )return -1;
 
         int persistPage = cache2persist(cachePage);
         if( persistPage<0 )return persistPage;
@@ -163,10 +169,12 @@ public class CachePagedDataBase<
     @Override
     public void flush() {
         if( isClosed() )throw new IllegalStateException("closed");
-        int cnt = state.cache2prst_read(IntArrayReadOnly::length);
-        for( int cache_page=0; cache_page<cnt; cache_page++ ){
-            flush(cache_page);
+
+        D dirty = state.cachePages();
+        if( dirty==null ){
+            throw new IllegalStateException("state.cachePages() is null");
         }
+        dirty.dirtyPages(this::flush);
     }
 
     // используется в allocCachePage, map, reducePages, resizeCachePages
