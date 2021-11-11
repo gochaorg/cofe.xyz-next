@@ -361,7 +361,7 @@ implements PageLock
                 if( dirty==null ){
                     throw new IllegalStateException("state.cachePages() is null");
                 }
-                dirty.dirtyPages(this::flush);
+                dirty.dirtyPages(page -> this.flush0(page,false,false));
             } finally {
                 lockAll.release();
             }
