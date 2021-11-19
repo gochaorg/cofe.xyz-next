@@ -33,6 +33,8 @@ public class CycleOperationData<
         this.limit = limit;
         counts = new HashMap<>();
         duration = new HashMap<>();
+        beginLastTime = new HashMap<>();
+        endLastTime = new HashMap<>();
     }
 
     public Map<DATA,Integer> counts(){ return counts; }

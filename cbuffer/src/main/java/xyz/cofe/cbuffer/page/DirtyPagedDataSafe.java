@@ -5,10 +5,15 @@ public class DirtyPagedDataSafe extends DirtyPagedDataBase<UsedPagesInfo, DirtyP
         super(pagedData);
     }
 
-    private final DirtyPagedState.VolatileState state = new DirtyPagedState.VolatileState();
+    private volatile DirtyPagedState.VolatileState state;
 
     @Override
     protected DirtyPagedState.VolatileState state() {
-        return state;
+        if( state!=null )return state;
+        synchronized (this) {
+            if( state!=null )return state;
+            state = new DirtyPagedState.VolatileState();
+            return state;
+        }
     }
 }

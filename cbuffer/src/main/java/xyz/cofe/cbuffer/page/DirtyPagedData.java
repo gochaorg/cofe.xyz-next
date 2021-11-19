@@ -13,10 +13,15 @@ public class DirtyPagedData extends DirtyPagedDataBase<UsedPagesInfo, DirtyPaged
         super(pagedData);
     }
 
-    private final DirtyPagedState.NonThreadSafe state = new DirtyPagedState.NonThreadSafe();
+    private volatile DirtyPagedState.NonThreadSafe state;
 
     @Override
     protected DirtyPagedState.NonThreadSafe state() {
-        return state;
+        if( state!=null )return state;
+        synchronized (this) {
+            if( state!=null )return state;
+            state = new DirtyPagedState.NonThreadSafe();
+            return state;
+        }
     }
 }
