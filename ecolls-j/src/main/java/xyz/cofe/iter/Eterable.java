@@ -294,4 +294,28 @@ public interface Eterable<A> extends Iterable<A> {
         });
         return result.get();
     }
+
+    /**
+     * Пропуск N элементов
+     * @param count сколько пропустить
+     * @return Итератор
+     */
+    default Eterable<A> skip( long count ){
+        Iterator<A> src = iterator();
+        return new Eterable<A>() {
+            @Override
+            public Iterator<A> iterator(){
+                return new SkipIterator<>(src, count);
+            }
+        };
+    }
+
+    /**
+     * Пропуск N элементов
+     * @param count сколько пропустить
+     * @return Итератор
+     */
+    default Eterable<A> skip( int count ){
+        return skip((long) count);
+    }
 }

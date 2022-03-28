@@ -1,6 +1,5 @@
-package xyz.cofe.cbuffer.page;
+package xyz.cofe.cbuffer.stat;
 
-import xyz.cofe.collection.IndexSet;
 import xyz.cofe.fn.Consumer3;
 import xyz.cofe.fn.Tuple2;
 

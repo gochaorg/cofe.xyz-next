@@ -1,4 +1,4 @@
-package xyz.cofe.cbuffer.page;
+package xyz.cofe.cbuffer.stat;
 
 import java.util.Objects;
 

@@ -1,4 +1,4 @@
-package xyz.cofe.cbuffer.page;
+package xyz.cofe.cbuffer.stat;
 
 public interface Duration<SELF extends Duration> {
     SELF add(SELF self);

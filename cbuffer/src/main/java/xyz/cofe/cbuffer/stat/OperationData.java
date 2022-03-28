@@ -1,6 +1,5 @@
-package xyz.cofe.cbuffer.page;
+package xyz.cofe.cbuffer.stat;
 
-import xyz.cofe.fn.Consumer2;
 import xyz.cofe.fn.Consumer3;
 import xyz.cofe.fn.Tuple2;
 
@@ -12,7 +11,7 @@ import java.util.*;
  * @param <DURATION> Продолжительность
  * @param <TIME> Время
  */
-public interface OperationData<DATA,DURATION extends Comparable<DURATION>, TIME extends Comparable<TIME> & Distance<TIME,DURATION> > {
+public interface OperationData<DATA,DURATION extends Comparable<DURATION>, TIME extends Comparable<TIME> & Distance<TIME,DURATION>> {
     /**
      * Регистрация данных
      * @param begin начало операции

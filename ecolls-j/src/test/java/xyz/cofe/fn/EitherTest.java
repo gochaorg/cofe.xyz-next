@@ -3,10 +3,9 @@ package xyz.cofe.fn;
 import org.junit.Test;
 
 public class EitherTest {
-    //@Test
+    @Test
     public void test01(){
-        Either<String,Integer> e = Either.left("a");
-        e.right().get();
-        e.left().get();
+        Either<Integer,String> et = Either.left(10);
+        et.left().map( x -> x*2 ).left().get();
     }
 }
