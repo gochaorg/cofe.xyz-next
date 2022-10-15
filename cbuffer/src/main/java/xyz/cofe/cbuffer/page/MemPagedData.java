@@ -14,15 +14,23 @@ public class MemPagedData implements PagedData<UsedPagesInfo>, ExtendablePages<U
     protected int dataSize;
     protected int maxPages = -1;
 
+    /**
+     * Конструктор
+     * @param pageSize размер страницы, мин 1
+     * @param capacity объем памяти в байтах,
+     *                 мин 1
+     * @param buffer буфер памяти или null
+     * @param dataSize размер используемой памяти, не должен превышать capacity
+     */
     public MemPagedData(int pageSize, int capacity, byte[] buffer, int dataSize){
         if( pageSize<1 )throw new IllegalArgumentException( "pageSize<1" );
         if( capacity<1 )throw new IllegalArgumentException( "capacity<1" );
 
-        int ext = capacity % pageSize;
-        if( ext>0 )throw new IllegalArgumentException(
-            "capacity(="+capacity+") not align by pageSize(="+pageSize+"); " +
-                "capacity % pageSize = "+ext+" > 0"
-        );
+//        int ext = capacity % pageSize;
+//        if( ext>0 )throw new IllegalArgumentException(
+//            "capacity(="+capacity+") not align by pageSize(="+pageSize+"); " +
+//                "capacity % pageSize = "+ext+" > 0"
+//        );
 
         if( dataSize<0 )throw new IllegalArgumentException( "dataSize<0" );
         if( dataSize>capacity )throw new IllegalArgumentException( "dataSize>capacity" );
@@ -44,18 +52,26 @@ public class MemPagedData implements PagedData<UsedPagesInfo>, ExtendablePages<U
         if( pageSize<1 )throw new IllegalArgumentException( "pageSize<1" );
         if( capacity<1 )throw new IllegalArgumentException( "capacity<1" );
 
-        int ext = capacity % pageSize;
-        if( ext>0 )throw new IllegalArgumentException(
-            "capacity(="+capacity+") not align by pageSize(="+pageSize+"); " +
-                "capacity % pageSize = "+ext+" > 0"
-        );
+//        int ext = capacity % pageSize;
+//        if( ext>0 )throw new IllegalArgumentException(
+//            "capacity(="+capacity+") not align by pageSize(="+pageSize+"); " +
+//                "capacity % pageSize = "+ext+" > 0"
+//        );
 
         this.buffer = new byte[capacity];
         this.pageSize = pageSize;
-        this.dataSize = 0;
+        this.dataSize = capacity;
     }
 
     //region memInfo, memoryInfo(),
+    private static String toString(UsedPagesInfo m){
+        return
+            "UsedPagesInfo {"+
+            " pageSize=" + m.pageSize() +
+            " pageCount=" + m.pageCount() +
+            " lastPageSize=" + m.lastPageSize()+
+            " }";
+    }
     protected class MemInfoUsed implements UsedPagesInfo, Capacity {
         @Override
         public int pageCount() {
@@ -83,6 +99,11 @@ public class MemPagedData implements PagedData<UsedPagesInfo>, ExtendablePages<U
         @Override
         public UsedPagesInfo clone() {
             return new MemInfoUsedClone(this);
+        }
+
+        @Override
+        public String toString() {
+            return MemPagedData.toString(this);
         }
     }
     protected static class MemInfoUsedClone implements UsedPagesInfo, Capacity {
@@ -138,6 +159,11 @@ public class MemPagedData implements PagedData<UsedPagesInfo>, ExtendablePages<U
         @Override
         public UsedPagesInfo clone() {
             return new MemInfoUsedClone(this);
+        }
+
+        @Override
+        public String toString() {
+            return MemPagedData.toString(this);
         }
     }
     protected MemInfoUsed memInfo = new MemInfoUsed();

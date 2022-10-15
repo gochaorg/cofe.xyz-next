@@ -2,6 +2,9 @@ package xyz.cofe.cbuffer.page;
 
 import xyz.cofe.fn.Tuple2;
 
+/**
+ * Страницы с искуственно медленной работой
+ */
 public class SlowPagedData implements ResizablePages<UsedPagesInfo> {
     protected final ResizablePages<UsedPagesInfo> target;
     protected final long delay;

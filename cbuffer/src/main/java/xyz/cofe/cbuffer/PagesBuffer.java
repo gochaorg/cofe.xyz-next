@@ -10,6 +10,49 @@ import java.util.Arrays;
 
 /**
  * Буфер страниц
+ *
+ * <p>Создание кеша с поддержкой файлового хранилища
+ *
+ * <pre>
+ * // Размер страницы
+ * int pageSize = 1024*64;
+ *
+ * // Открытие файла
+ * RandomAccessFile raf = new RandomAccessFile(...
+ * RAFBuffer rafBuffer = new RAFBuffer();
+ * rafBuffer.setRaf(raf);
+ *
+ * // поддержка страничного доступа к файлу
+ * ResizablePages slowPages =
+ *   new CBuffPagedData(
+ *     rafBuffer,
+ *     pageSize,
+ *     false,
+ *     -1
+ *   );
+ *
+ * // Сколько страниц хранить в оперативной памяти
+ * int cache_pages_max = (int)(slowPages.memoryInfo().pageCount() * 0.75);
+ *
+ * // страницы расположенные в оперативной памяти
+ * MemPagedData fastPages =
+ *   new MemPagedData(
+ *     pageSize,
+ *     pageSize*cache_pages_max
+ *   );
+ * DirtyPagedData dirtyPagedData = new DirtyPagedData(fastPages);
+ * dirtyPagedData.resizePages(cache_pages_max);
+ *
+ * // Создание кеша
+ * CachePagedData cachePages =
+ *   new CachePagedData(
+ *     dirtyPagedData,
+ *     slowPages
+ *   );
+ *
+ * // Создание прозрачного доступа
+ * new PagesBuffer(cachePages);
+ * </pre>
  */
 public class PagesBuffer implements ContentBuffer {
     protected final ResizablePages pages;

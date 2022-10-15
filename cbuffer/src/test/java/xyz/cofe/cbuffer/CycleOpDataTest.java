@@ -1,9 +1,9 @@
 package xyz.cofe.cbuffer;
 
 import org.junit.Test;
-import xyz.cofe.cbuffer.page.CycleOperationData;
-import xyz.cofe.cbuffer.page.NanoDuration;
-import xyz.cofe.cbuffer.page.NanoTime;
+import xyz.cofe.cbuffer.stat.CycleOperationData;
+import xyz.cofe.cbuffer.stat.NanoDuration;
+import xyz.cofe.cbuffer.stat.NanoTime;
 
 import java.util.Random;
 

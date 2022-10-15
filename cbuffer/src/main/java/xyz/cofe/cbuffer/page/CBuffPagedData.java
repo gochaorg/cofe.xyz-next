@@ -4,14 +4,24 @@ import xyz.cofe.cbuffer.ContentBuffer;
 import xyz.cofe.cbuffer.Flushable;
 import xyz.cofe.fn.Tuple2;
 
+/**
+ * Страничный буфер поверх обычного
+ */
 public class CBuffPagedData
 implements PagedData, Flushable, ResizablePages
 {
     protected final ContentBuffer cbuff;
     protected final int pageSize;
-    protected long maxSize = -1;
+    protected volatile long maxSize = -1;
     protected boolean resizeable = false;
 
+    /**
+     * Конструктор
+     * @param cbuff исходный буфер
+     * @param pageSize размер страницы
+     * @param resizeable возможно изменение размера страничного буфера
+     * @param maxSize максимальный размер или -1 без ограничения
+     */
     public CBuffPagedData(ContentBuffer cbuff, int pageSize, boolean resizeable, long maxSize){
         if( cbuff==null )throw new IllegalArgumentException( "cbuff==null" );
         if( pageSize<1 )throw new IllegalArgumentException( "pageSize<1" );
@@ -26,12 +36,12 @@ implements PagedData, Flushable, ResizablePages
 
     @Override
     public UsedPagesInfo memoryInfo() {
-        long s = cbuff.getSize();
-        if( s<=0 )return UsedPagesInfo.of(0,0,0);
-        long pc = s / pageSize;
+        long total = maxSize>=0 ? Math.min(cbuff.getSize(),maxSize) : cbuff.getSize();
+        if( total<=0 )return UsedPagesInfo.of(0,0,0);
+        long pc = total / pageSize;
         if( pc>Integer.MAX_VALUE )throw new IllegalStateException("pageCount more than Integer.MAX_VALUE");
 
-        long pc_1 = s % pageSize;
+        long pc_1 = total % pageSize;
         long c = (pc_1 > 0 ? pc+1 : pc);
         if( c>Integer.MAX_VALUE )throw new IllegalStateException("pageCount more than Integer.MAX_VALUE");
 
@@ -42,7 +52,7 @@ implements PagedData, Flushable, ResizablePages
     public byte[] readPage(int page) {
         if( page<0 )throw new IllegalArgumentException( "page<0" );
 
-        long total = cbuff.getSize();
+        long total = maxSize>=0 ? Math.min(cbuff.getSize(),maxSize) : cbuff.getSize();
         if( total<=0 )return new byte[0];
 
         int pages = memoryInfo().pageCount();
@@ -66,7 +76,7 @@ implements PagedData, Flushable, ResizablePages
 
         if( page<0 )throw new IllegalArgumentException( "page<0" );
 
-        long total = cbuff.getSize();
+        long total = maxSize>=0 ? Math.min(cbuff.getSize(),maxSize) : cbuff.getSize();
         if( total<=0 )throw new IllegalStateException( "pages not exists" );
 
         int pages = memoryInfo().pageCount();
@@ -74,7 +84,7 @@ implements PagedData, Flushable, ResizablePages
             if( !resizeable )throw new IllegalStateException("can't resize to "+(page+1)+" pages; not resizeable");
 
             long targetSize = ((long)pages * pageSize) + data.length;
-            if( targetSize>maxSize && maxSize>1 )throw new IllegalStateException("can't resize to "+(page+1)+" pages; limit by maxSize(="+maxSize+")");
+            if( targetSize>maxSize && maxSize>=0 )throw new IllegalStateException("can't resize to "+(page+1)+" pages; limit by maxSize(="+maxSize+")");
             long currSize = cbuff.getSize();
 
             if( currSize<targetSize )cbuff.setSize(targetSize);
@@ -107,7 +117,7 @@ implements PagedData, Flushable, ResizablePages
         if( targetPages>Integer.MAX_VALUE )throw new IllegalArgumentException("can't extend to "+targetPages+" pages; is more than Integer.MAX_VALUE");
 
         long targetSize = targetPages * pi.pageSize();
-        if( targetSize>maxSize && maxSize>0 )throw new IllegalArgumentException("can't extend to "+targetSize+" bytes; is more than maxSize(="+maxSize+")");
+        if( targetSize>maxSize && maxSize>=0 )throw new IllegalArgumentException("can't extend to "+targetSize+" bytes; is more than maxSize(="+maxSize+")");
 
         pi = pi.clone();
         cbuff.setSize(targetSize);

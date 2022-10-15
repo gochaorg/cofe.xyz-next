@@ -126,6 +126,8 @@ public class CacheTest {
             System.out.println(". . . . . . .");
             System.out.println("sum = "+cacheStat.a()+" cnt="+cacheStat.b()+" avg "+(cacheStat.a() / cacheStat.b().doubleValue())/1000_000.0);
 
+            new PagesBuffer(cachePages);
+
             raf.close();
         } catch (IOException e) {
             e.printStackTrace();
