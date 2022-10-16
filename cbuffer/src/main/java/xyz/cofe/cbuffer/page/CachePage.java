@@ -6,9 +6,32 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
 public class CachePage {
-    public CachePage(){
+    //#region listeners
+    private final PageListener.PageListenerSupport listeners = new PageListener.PageListenerSupport();
+
+    public void addListener(PageListener listener) {
+        listeners.addListener(listener);
+    }
+
+    public void removeListener(PageListener listener) {
+        listeners.removeListener(listener);
+    }
+
+    public boolean hasListener(PageListener listener) {
+        return listeners.hasListener(listener);
+    }
+
+    public void fire(PageEvent event) {
+        listeners.fire(event);
+    }
+    //#endregion
+
+    public CachePage(int cachePageIndex){
+        this.cachePageIndex = cachePageIndex;
         readWriteLock = new ReentrantReadWriteLock();
     }
+
+    public final int cachePageIndex;
 
     protected volatile Integer target;
     public Optional<Integer> getTarget(){
@@ -18,43 +41,106 @@ public class CachePage {
         //});
     }
 
-    public Optional<Integer> assignTarget(int target){
-        //return writeLock(()->{
-            var old = getTarget();
-            this.target = target;
-            return old;
-        //});
+    public interface CachePageEvent extends PageEvent {
+        CachePage page();
     }
 
+    //#region AssignTarget
+    public static class AssignTarget implements CachePageEvent {
+        public final CachePage page;
+        public CachePage page(){ return page; }
+
+        public AssignTarget(CachePage page) {
+            this.page = page;
+        }
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    public Optional<Integer> assignTarget(int target){
+        var old = getTarget();
+        this.target = target;
+        fire(new AssignTarget(this));
+        return old;
+    }
+    //#endregion
+    //#region UnTarget
+    public static class UnTarget implements CachePageEvent {
+        public final CachePage page;
+        public CachePage page(){ return page; }
+
+        public UnTarget(CachePage page) {
+            this.page = page;
+        }
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
     public Optional<Integer> unTarget(){
-        //return writeLock(()-> {
-            var old = getTarget();
-            this.target = null;
-            this.dirty = false;
-            return old;
-        //});
+        var old = getTarget();
+        this.target = null;
+        this.dirty = false;
+        fire(new UnTarget(this));
+        return old;
+    }
+    //#endregion
+    //#region MarkMapped
+    public static class MarkMapped implements CachePageEvent {
+        public final CachePage page;
+        public CachePage page(){ return page; }
+
+        public MarkMapped(CachePage page) {
+            this.page = page;
+        }
     }
 
     public void markMapped() {
-        //writeLock(()-> {
-            dirty = false;
-        //});
+        dirty = false;
+        fire(new MarkMapped(this));
+    }
+    //#endregion
+    //#region MarkReads
+    public static class MarkReads implements CachePageEvent {
+        public final CachePage page;
+        public CachePage page(){ return page; }
+
+        public MarkReads(CachePage page) {
+            this.page = page;
+        }
     }
 
     public void markReads() {
-        //writeLock(()->{});
+        fire(new MarkReads(this));
+    }
+    //#endregion
+    //#region MarkWrote
+    public static class MarkWrote implements CachePageEvent {
+        public final CachePage page;
+        public CachePage page(){ return page; }
+
+        public MarkWrote(CachePage page) {
+            this.page = page;
+        }
     }
 
     public void markWrote() {
-        //writeLock(()->{
-            dirty = true;
-        //});
+        dirty = true;
+        fire(new MarkWrote(this));
     }
+    //#endregion
+    //#region MarkFlushed
+    public static class MarkFlushed implements CachePageEvent {
+        public final CachePage page;
+        public CachePage page(){ return page; }
+
+        public MarkFlushed(CachePage page) {
+            this.page = page;
+        }
+    }
+
     public void markFlushed() {
-        //writeLock(()->{
-            dirty = false;
-        //});
+        dirty = false;
+        fire(new MarkFlushed(this));
     }
+    //#endregion MarkFlushed
 
     boolean hasTarget(){
         return
@@ -70,6 +156,7 @@ public class CachePage {
         //});
     }
 
+    //#region data size
     private volatile Integer dataSize;
     public Optional<Integer> getDataSize(){
         return //readLock(()->
@@ -78,16 +165,21 @@ public class CachePage {
         ;
     }
     public void resetDataSize(){
-        //writeLock(()->{
-            dataSize = null;
-        //});
+        dataSize = null;
+    }
+    public static class SetDataSize implements CachePageEvent {
+        public final CachePage page;
+        public CachePage page(){ return page; }
+
+        public SetDataSize(CachePage page) {
+            this.page = page;
+        }
     }
     public void setDataSize(int dataSize){
-        //writeLock(()->{
-            this.dataSize = dataSize;
-        //});
+        this.dataSize = dataSize;
+        fire(new SetDataSize(this));
     }
-
+    //#endregion
     //#region readLock/writeLock
     private final ReadWriteLock readWriteLock;
     public ReadWriteLock getReadWriteLock(){ return readWriteLock; }
@@ -132,4 +224,9 @@ public class CachePage {
         }
     }
     //#endregion
+
+    @Override
+    public String toString() {
+        return "CachePage { idx="+cachePageIndex+", target="+target+", dirty="+dirty+", dataSize="+dataSize+" }";
+    }
 }
