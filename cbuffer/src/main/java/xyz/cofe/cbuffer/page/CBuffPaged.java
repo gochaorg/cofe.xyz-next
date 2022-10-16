@@ -74,14 +74,14 @@ public class CBuffPaged implements Flushable, Paged, ResizablePages {
         if( page<0 )throw new IllegalArgumentException( "page<0" );
 
         long total = maxSize>=0 ? Math.min(cbuff.getSize(),maxSize) : cbuff.getSize();
-        if( total<=0 )throw new PageDataError( "pages not exists" );
+        if( total<=0 )throw new PageError( "pages not exists" );
 
         int pages = memoryInfo().pageCount();
         if( page>=pages ){
-            if( !resizeable )throw new PageDataError("can't resize to "+(page+1)+" pages; not resizeable");
+            if( !resizeable )throw new PageError("can't resize to "+(page+1)+" pages; not resizeable");
 
             long targetSize = ((long)pages * pageSize) + data.length;
-            if( targetSize>maxSize && maxSize>=0 )throw new PageDataError("can't resize to "+(page+1)+" pages; limit by maxSize(="+maxSize+")");
+            if( targetSize>maxSize && maxSize>=0 )throw new PageError("can't resize to "+(page+1)+" pages; limit by maxSize(="+maxSize+")");
             long currSize = cbuff.getSize();
 
             if( currSize<targetSize )cbuff.setSize(targetSize);

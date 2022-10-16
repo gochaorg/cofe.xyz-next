@@ -176,8 +176,8 @@ public class MemPaged implements Paged, ResizablePages {
 
         int off = page*pageSize;
         int avail = buffer.length - off;
-        if( avail<=0 )throw new PageDataError("out of range");
-        if( avail<data.length )throw new PageDataError("out of range");
+        if( avail<=0 )throw new PageError("out of range");
+        if( avail<data.length )throw new PageError("out of range");
 
         System.arraycopy(data,0, buffer, off, data.length);
         int end = off+data.length;
@@ -211,7 +211,7 @@ public class MemPaged implements Paged, ResizablePages {
         long currentPages = memoryInfo().pageCount();
 
         long nextPages = currentPages-pages;
-        if( nextPages<0 )throw new PageDataError("can't reduce to negative size");
+        if( nextPages<0 )throw new PageError("can't reduce to negative size");
 
         long nextSize = nextPages * pageSize;
         buffer = Arrays.copyOf(buffer, (int)nextSize);
@@ -234,14 +234,14 @@ public class MemPaged implements Paged, ResizablePages {
             long diffPgeCnt = nxtPageCnt - curPageCnt;
             if( diffPgeCnt>0 ){
                 if( diffPgeCnt>Integer.MAX_VALUE ){
-                    throw new PageDataError("can't extend over "+diffPgeCnt+", Integer.MAX_VALUE");
+                    throw new PageError("can't extend over "+diffPgeCnt+", Integer.MAX_VALUE");
                 }
                 var ext = extendPages((int)diffPgeCnt);
                 return new ResizedPages(ext.a(), ext.b());
             }else{
                 long abs_diff = -diffPgeCnt;
                 if( abs_diff>Integer.MAX_VALUE ){
-                    throw new PageDataError("can't reduce over "+abs_diff+", Integer.MAX_VALUE");
+                    throw new PageError("can't reduce over "+abs_diff+", Integer.MAX_VALUE");
                 }
                 var red = reducePages((int)abs_diff);
                 return new ResizedPages(red.a(), red.b());
