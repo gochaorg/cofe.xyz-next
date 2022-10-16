@@ -84,13 +84,19 @@ public class MemContentBuffer
     protected volatile int dataSize = 0;
     protected volatile int extendSize = 1024*1024;
 
+    public int getExtendSize(){ return extendSize; }
+    public void setExtendSize(int size){
+        if( size<1 )throw new IllegalArgumentException("size<1");
+        extendSize = size;
+    }
+
     @Override
     public long getSize() {
         return dataSize;
     }
 
     @Override
-    public void setSize(long size) {
+    public synchronized void setSize(long size) {
         if( size<0 )throw new IllegalArgumentException("size<0");
         if( size>Integer.MAX_VALUE )throw new IllegalArgumentException("size>Integer.MAX_VALUE");
         if( data==null ){
@@ -106,9 +112,13 @@ public class MemContentBuffer
             }else if( dataSize < size ){
                 long old = dataSize;
                 if( data.length < size ){
-                    int ext = (int)size % extendSize;
-                    int targetSize = ((int)size / extendSize) * (extendSize + (ext>0 ? 1 : 0));
-                    data = Arrays.copyOf(data, targetSize);
+                    long extRest = size % extendSize;
+                    long extCnt = (size/extendSize) + (extRest>0 ? 1 : 0);
+                    long targetSize = extCnt * extendSize;
+                    if( targetSize>Integer.MAX_VALUE ){
+                        throw new IllegalStateException("size>Integer.MAX_VALUE");
+                    }
+                    data = Arrays.copyOf(data,(int)targetSize);
                 }
                 dataSize = (int)size;
                 fireEvent(new SizeChangedEvent(this, old, dataSize));
