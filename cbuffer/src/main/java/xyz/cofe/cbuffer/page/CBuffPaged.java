@@ -2,12 +2,11 @@ package xyz.cofe.cbuffer.page;
 
 import xyz.cofe.cbuffer.ContentBuffer;
 import xyz.cofe.cbuffer.Flushable;
-import xyz.cofe.fn.Tuple2;
 
 /**
  * Страничный буфер поверх обычного
  */
-public class CBuffPagedData implements Flushable, PagedData, ResizablePages {
+public class CBuffPaged implements Flushable, Paged, ResizablePages {
     protected final ContentBuffer cbuff;
     protected final int pageSize;
     protected volatile long maxSize = -1;
@@ -20,7 +19,7 @@ public class CBuffPagedData implements Flushable, PagedData, ResizablePages {
      * @param resizeable возможно изменение размера страничного буфера
      * @param maxSize максимальный размер или -1 без ограничения
      */
-    public CBuffPagedData(ContentBuffer cbuff, int pageSize, boolean resizeable, long maxSize){
+    public CBuffPaged(ContentBuffer cbuff, int pageSize, boolean resizeable, long maxSize){
         if( cbuff==null )throw new IllegalArgumentException( "cbuff==null" );
         if( pageSize<1 )throw new IllegalArgumentException( "pageSize<1" );
         if( maxSize>1 ){

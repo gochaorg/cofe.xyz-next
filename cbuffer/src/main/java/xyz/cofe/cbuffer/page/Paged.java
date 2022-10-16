@@ -3,7 +3,7 @@ package xyz.cofe.cbuffer.page;
 /**
  * Страничная организация памяти
  */
-public interface PagedData {
+public interface Paged {
 
     /**
      * Получение информации о памяти
