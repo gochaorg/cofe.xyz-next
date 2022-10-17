@@ -4,6 +4,7 @@ import xyz.cofe.fn.Fn1;
 import xyz.cofe.fn.Tuple2;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,6 +39,9 @@ public class CacheMap {
     public CacheMap(){
         readWriteLock = new ReentrantReadWriteLock();
     }
+
+    private final Map<Integer,Integer> persistent2cache = new ConcurrentSkipListMap<>();
+    private final ReadWriteLock persistent2cacheRWLock = new ReentrantReadWriteLock();
 
     private final List<CachePage> cachePages = new ArrayList<>();
 
@@ -113,6 +117,12 @@ public class CacheMap {
 
     private final PageListener popupEvent = listeners::fire;
 
+    private final PageListener mapPersistent2cache = event -> {
+        if( event instanceof CachePage.UnTarget ){
+
+        }
+    };
+
     /**
      * Изменение кол-ва страниц выделенных под кеш
      * @param newSize кол-во страниц
@@ -130,6 +140,7 @@ public class CacheMap {
                 for( int i=0;i<extend;i++ ){
                     var cachePage = new CachePage(fromIdx+i);
                     cachePage.addListener(popupEvent);
+                    cachePage.addListener(mapPersistent2cache);
                     cachePages.add(cachePage);
                 }
             }else{
@@ -138,27 +149,14 @@ public class CacheMap {
                 for( int i=cachePages.size()-1; i>=0; i-- ){
                     reduceList.add(Tuple2.of(i,cachePages.get(i)));
                 }
-                try {
-                    // lock pages
-                    for (var cp : reduceList) {
-                        cp.b().getReadWriteLock().writeLock().lock();
-                    }
 
-                    for (var cp:reduceList) {
-                        if( cp.b().isDirty() && cp.b().getTarget().isPresent() ){
-                            flushing.accept(new FlushRequest(cp.a(), cp.b()));
-                        }
+                for (var cp:reduceList) {
+                    if( cp.b().isDirty() && cp.b().getTarget().isPresent() ){
+                        flushing.accept(new FlushRequest(cp.a(), cp.b()));
                     }
-
-                    for(var cp:reduceList) {
-                        cachePages.remove(cp.a().intValue());
-                        cp.b().removeListener(popupEvent);
-                    }
-                } finally {
-                    // un lock pages
-                    for (var cp : reduceList) {
-                        cp.b().getReadWriteLock().writeLock().unlock();
-                    }
+                    cachePages.remove(cp.a().intValue());
+                    cp.b().removeListener(popupEvent);
+                    cp.b().removeListener(mapPersistent2cache);
                 }
             }
         });
@@ -180,15 +178,7 @@ public class CacheMap {
             return readLock(()->{
                 for( var cp : cachePages ) {
                     if( what.test(cp) ) {
-                        log("cp "+cp.cachePageIndex+" writeLock");
-                        var res = cp.writeLock(() -> {
-                            if (what.test(cp)) {
-                                return Optional.of(update.apply(cp));
-                            } else {
-                                return Optional.<R>empty();
-                            }
-                        });
-                        if (res.isPresent()) return res;
+                        return Optional.of(update.apply(cp));
                     }
                 }
                 return Optional.empty();
@@ -199,50 +189,23 @@ public class CacheMap {
             return readLock(()->{
                 for( var cp : cachePages ) {
                     if( what.test(cp) ) {
-                        log("cp "+cp.cachePageIndex+" readLock");
-                        var res = cp.readLock(() -> {
-                            if (what.test(cp)) {
-                                return Optional.of(reading.apply(cp));
-                            } else {
-                                return Optional.<R>empty();
-                            }
-                        });
-                        if (res.isPresent()) return res;
+                        return Optional.of(reading.apply(cp));
                     }
                 }
                 return Optional.empty();
             });
         }
 
-        public Found go( Fn1<CachePage,LockMethod> locking ) {
-            if(locking==null)throw new IllegalArgumentException("locking==null");
-            var pages = new HashMap<CachePage,Runnable>();
-            var found = new Found(pages);
-
+        public List<CachePage> go() {
+            var pages = new ArrayList<CachePage>();
             readLock(()->{
                 for( var cp : cachePages ) {
                     if( what.test(cp) ){
-                        log("lock cp="+cp.cachePageIndex);
-                        locking.apply(cp).lock(cp.getReadWriteLock()).ifPresent( lck -> {
-                            if( what.test(cp) ){
-                                var unlockCalled = new AtomicBoolean(false);
-                                Runnable release = ()->{
-                                    synchronized (unlockCalled) {
-                                        if (!unlockCalled.get()) {
-                                            unlockCalled.set(true);
-                                            log("unlock cp="+cp.cachePageIndex);
-                                            lck.unlock();
-                                        }
-                                    }
-                                };
-                                pages.put(cp,release);
-                            }
-                        });
+                        pages.add(cp);
                     }
                 }
             });
-
-            return found;
+            return pages;
         }
     }
 
@@ -408,30 +371,26 @@ public class CacheMap {
         readLock(()->{
             // 1 первая не размеченная страница
             var unmapped = findUnmapped();
-            if( !unmapped.pages.isEmpty() ){
-                var en = unmapped.pages.entrySet().iterator().next();
-                fire(new AllocatedUnmapped(en.getKey()));
-                consumer.accept(en.getKey());
-                unmapped.release();
+            if( !unmapped.isEmpty() ){
+                var en = unmapped.iterator().next();
+                fire(new AllocatedUnmapped(en));
+                consumer.accept(en);
                 return;
             }
 
             // 2 любая грязная страница
             var dirtyPages = findDirty();
-            if( !dirtyPages.pages.isEmpty() ){
-                var lst = dirtyPages.list();
-                if( lst.size()==1 ){
-                    var cp = lst.get(0);
+            if( !dirtyPages.isEmpty() ){
+                if( dirtyPages.size()==1 ){
+                    var cp = dirtyPages.get(0);
                     fire(new AllocatedDirty(cp));
                     flushing.accept(new FlushRequest(cp.getTarget().get(), cp));
                     consumer.accept(cp);
-                    dirtyPages.release();
                 }else{
-                    var cp = lst.get(ThreadLocalRandom.current().nextInt(lst.size()));
+                    var cp = dirtyPages.get(ThreadLocalRandom.current().nextInt(dirtyPages.size()));
                     fire(new AllocatedDirty(cp));
                     flushing.accept(new FlushRequest(cp.getTarget().get(), cp));
                     consumer.accept(cp);
-                    dirtyPages.release();
                 }
                 return;
             }
@@ -439,23 +398,21 @@ public class CacheMap {
             // 3 любая страница
             if( cachePages.size()>0 ){
                 var cp = cachePages.get(ThreadLocalRandom.current().nextInt(cachePages.size()));
-                cp.writeLock(()->{
-                    if( cp.getTarget().isPresent() && cp.isDirty() ){
-                        flushing.accept(new FlushRequest(cp.getTarget().get(), cp));
-                    }
-                    fire(new AllocatedCleaned(cp));
-                    consumer.accept(cp);
-                });
+                if( cp.getTarget().isPresent() && cp.isDirty() ){
+                    flushing.accept(new FlushRequest(cp.getTarget().get(), cp));
+                }
+                fire(new AllocatedCleaned(cp));
+                consumer.accept(cp);
             }
         });
     }
 
-    private Found findUnmapped(){
-        return find(cp -> cp.getTarget().isEmpty()).go(cp->LockMethod.writeLock());
+    private List<CachePage> findUnmapped(){
+        return find(cp -> cp.getTarget().isEmpty()).go();
     }
 
-    private Found findDirty(){
-        return find(cp -> cp.getTarget().isPresent() && cp.isDirty()).go(cp->LockMethod.writeLock());
+    private List<CachePage> findDirty(){
+        return find(cp -> cp.getTarget().isPresent() && cp.isDirty()).go();
     }
     //#endregion
 
@@ -463,15 +420,11 @@ public class CacheMap {
         if(flushing==null)throw new IllegalArgumentException("flushing==null");
         readLock(()->{
             var dirtyPages = findDirty();
-            try {
-                dirtyPages.list().forEach( cp -> {
-                    if( cp.isDirty() && cp.getTarget().isPresent() ){
-                        flushing.accept(new FlushRequest(cp.getTarget().get(), cp));
-                    }
-                });
-            } finally {
-                dirtyPages.release();
-            }
+            dirtyPages.forEach( cp -> {
+                if( cp.isDirty() && cp.getTarget().isPresent() ){
+                    flushing.accept(new FlushRequest(cp.getTarget().get(), cp));
+                }
+            });
         });
     }
 

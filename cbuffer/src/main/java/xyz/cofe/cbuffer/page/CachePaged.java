@@ -2,13 +2,10 @@ package xyz.cofe.cbuffer.page;
 
 import xyz.cofe.fn.Fn1;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
@@ -161,7 +158,7 @@ public class CachePaged implements Paged {
 
     @Override
     public byte[] readPage(int page) {
-        //return readPersistentLock(page,()->{
+        return readPersistentLock(page,()->{
             // 1 найти в кеше -> вернуть из кеша
             var fromCache = cacheMap.findPersistentPageForRead(page,cp->{
                 fire(new CacheHit(page,true));
@@ -176,22 +173,26 @@ public class CachePaged implements Paged {
             var result = new AtomicReference<byte[]>(null);
             cacheMap.allocate(
                 cp -> {
-                    cp.unTarget();
+                    cp.writeLock(()->{
+                        cp.unTarget();
 
-                    var data = persistent.readPage(page);
-                    fire(new PageLoaded(page,data));
+                        var data = persistent.readPage(page);
+                        fire(new PageLoaded(page,data));
 
-                    cache.writePage(cp.cachePageIndex, data);
-                    fire(new CacheWrote(page,cp.cachePageIndex, data));
+                        cache.writePage(cp.cachePageIndex, data);
+                        fire(new CacheWrote(page,cp.cachePageIndex, data));
 
-                    cp.setDataSize(data.length);
-                    cp.assignTarget(page);
-                    cp.markMapped();
-                    result.set(data);
+                        cp.setDataSize(data.length);
+                        cp.assignTarget(page);
+                        cp.markMapped();
+                        result.set(data);
+                    });
                 },
                 fr -> {
-                    flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
-                    fr.cachePage.markFlushed();
+                    fr.cachePage.writeLock(()->{
+                        flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
+                        fr.cachePage.markFlushed();
+                    });
                 }
             );
 
@@ -199,28 +200,32 @@ public class CachePaged implements Paged {
             if( bytes==null )throw new PageError("data not loaded, not allocated");
 
             return bytes;
-        //});
+        });
     }
 
     @Override
     public void writePage(int page, byte[] data2write) {
         System.out.println("writePage page="+page+" writePersistentLock");
-        //writePersistentLock(page,()->{
+        writePersistentLock(page,()->{
             // 1 найти в кеше -> записать в кеш
             if(cacheMap.findPersistentPageForWrite(page,cachePage -> {
-                fire(new CacheHit(page,false));
-                var dataToWrite = data2write;
-                if( cachePage.getDataSize().isPresent() ){
-                    var max = cachePage.getDataSize().get();
-                    if( data2write.length>max ){
-                        dataToWrite = Arrays.copyOf(data2write,max);
+                synchronized (persistent) {
+                    synchronized (cache) {
+                        fire(new CacheHit(page, false));
+                        var dataToWrite = data2write;
+                        if (cachePage.getDataSize().isPresent()) {
+                            var max = cachePage.getDataSize().get();
+                            if (data2write.length > max) {
+                                dataToWrite = Arrays.copyOf(data2write, max);
+                            }
+                        }
+                        cache.writePage(cachePage.cachePageIndex, dataToWrite);
+                        fire(new CacheWrote(page, cachePage.cachePageIndex, dataToWrite));
+
+                        cachePage.markWrote();
+                        return true;
                     }
                 }
-                cache.writePage(cachePage.cachePageIndex, dataToWrite);
-                fire(new CacheWrote(page, cachePage.cachePageIndex, dataToWrite));
-
-                cachePage.markWrote();
-                return true;
             }).orElse(false))return;
 
             fire(new CacheMiss(page,false));
@@ -229,55 +234,71 @@ public class CachePaged implements Paged {
             var allocated = new AtomicBoolean(false);
             cacheMap.allocate(
                 cp -> {
-                    cp.unTarget();
+                    cp.writeLock(()->{
+                        synchronized (persistent) {
+                            synchronized (cache) {
+                                cp.unTarget();
 
-                    var data2persist = persistent.readPage(page);
-                    fire(new PageLoaded(page,data2persist));
+                                var data2persist = persistent.readPage(page);
+                                fire(new PageLoaded(page, data2persist));
 
-                    var data2write2 = data2write;
-                    if( data2write2.length<data2persist.length ){
-                        System.arraycopy(data2write,0,data2persist,0,data2write.length);
-                        data2write2 = data2persist;
-                    }else if( data2write2.length>data2persist.length ){
-                        throw new PageError("destination out of rage, persistent size = "+data2persist.length+" write size = "+data2write.length);
-                    }
+                                var data2write2 = data2write;
+                                if (data2write2.length < data2persist.length) {
+                                    System.arraycopy(data2write, 0, data2persist, 0, data2write.length);
+                                    data2write2 = data2persist;
+                                } else if (data2write2.length > data2persist.length) {
+                                    throw new PageError("destination out of rage, persistent size = " + data2persist.length + " write size = " + data2write.length);
+                                }
 
-                    cache.writePage(cp.cachePageIndex, data2write2);
-                    fire(new CacheWrote(page, cp.cachePageIndex, data2write2));
+                                cache.writePage(cp.cachePageIndex, data2write2);
+                                fire(new CacheWrote(page, cp.cachePageIndex, data2write2));
 
-                    cp.setDataSize(data2write2.length);
-                    cp.assignTarget(page);
-                    cp.markMapped();
+                                cp.setDataSize(data2write2.length);
+                                cp.assignTarget(page);
+                                cp.markMapped();
 
-                    cp.markWrote();
-                    allocated.set(true);
+                                cp.markWrote();
+                                allocated.set(true);
+                            }
+                        }
+                    });
                 },
                 fr -> {
-                    flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
-                    fr.cachePage.markFlushed();
+                    fr.cachePage.writeLock(()->{
+                        flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
+                        fr.cachePage.markFlushed();
+                    });
                 }
             );
+
             if( !allocated.get() ){
                 throw new PageError("page not allocated in cache");
             }
-        //});
+        });
     }
 
     @Override
     public void updatePage(int page, Fn1<byte[], byte[]> update) {
         if (update == null) throw new IllegalArgumentException("update==null");
-        //writePersistentLock(page,()-> {
+        writePersistentLock(page,()-> {
             if (cacheMap.findPersistentPageForWrite(page, cp -> {
-                fire(new CacheHit(page, false));
+                synchronized (cp) {
+                    return cp.writeLock(() -> {
+                        //synchronized (cp) {
+                            fire(new CacheHit(page, false));
 
-                var cacheData = cache.readPage(cp.cachePageIndex);
-                cp.markReads();
+                            var cacheData = cache.readPage(cp.cachePageIndex);
+                            cp.markReads();
 
-                var newData = update.apply(cacheData);
-                cache.writePage(cp.cachePageIndex, newData);
-                cp.markWrote();
+                            var newData = update.apply(cacheData);
+                            cache.writePage(cp.cachePageIndex, newData);
+                            fire(new CacheWrote(page, cp.cachePageIndex, newData));
+                            cp.markWrote();
 
-                return true;
+                            return true;
+                        //}
+                    });
+                }
             }).orElse(false)) {
                 return;
             }
@@ -287,32 +308,40 @@ public class CachePaged implements Paged {
             var allocated = new AtomicBoolean(false);
             cacheMap.allocate(
                 cp -> {
-                    cp.unTarget();
+                    synchronized (cp) {
+                        cp.writeLock(() -> {
+                            //synchronized (cp) {
+                                cp.unTarget();
 
-                    var persistData = persistent.readPage(page);
-                    fire(new PageLoaded(page, persistData));
+                                var persistData = persistent.readPage(page);
+                                fire(new PageLoaded(page, persistData));
 
-                    var updatedData = update.apply(persistData);
+                                var updatedData = update.apply(persistData);
 
-                    cache.writePage(cp.cachePageIndex, updatedData);
-                    fire(new CacheWrote(page, cp.cachePageIndex, updatedData));
+                                cache.writePage(cp.cachePageIndex, updatedData);
+                                fire(new CacheWrote(page, cp.cachePageIndex, updatedData));
 
-                    cp.setDataSize(updatedData.length);
-                    cp.assignTarget(page);
-                    cp.markMapped();
+                                cp.setDataSize(updatedData.length);
+                                cp.assignTarget(page);
+                                cp.markMapped();
 
-                    cp.markWrote();
-                    allocated.set(true);
+                                cp.markWrote();
+                                allocated.set(true);
+                            //};
+                        });
+                    }
                 },
                 fr -> {
-                    flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
-                    fr.cachePage.markFlushed();
+                    fr.cachePage.writeLock(()->{
+                        flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
+                        fr.cachePage.markFlushed();
+                    });
                 }
             );
             if (!allocated.get()) {
                 throw new PageError("page not allocated in cache");
             }
-        //});
+        });
     }
 
     public void flush(){
@@ -322,93 +351,74 @@ public class CachePaged implements Paged {
         });
     }
 
-    private final Map<Integer, ReadWriteLock> persistentPageLocks = new HashMap<>();
+    //#region persistentPageLocks
+    public synchronized  <R> R readPersistentLock(int page, Supplier<R> code) {
+        return readPersistentLock1(page,code);
+    }
+    public synchronized void writePersistentLock(int page, Runnable code) {
+        writePersistentLock1(page,code);
+    }
 
-    public PersistentPagesLocks allocPagesLocks(int... pages){
-        System.out.println("allocPagesLocks "+Arrays.toString(pages));
-        var map = new HashMap<Integer,ReadWriteLock>();
-        synchronized (persistentPageLocks){
-            for( var page:pages ){
-                map.put(page,persistentPageLocks.computeIfAbsent(page, p -> new ReentrantReadWriteLock()));
+    public <R> R readPersistentLock2(int page, Supplier<R> code) {
+        synchronized (this){
+            return code.get();
+        }
+    }
+    public void writePersistentLock2(int page, Runnable code) {
+        synchronized (this){
+            code.run();
+        }
+    }
+
+
+    private final Object[] plocks = new Object[] {
+        new Object(), new Object(), new Object(), new Object(),
+        new Object(), new Object(), new Object(), new Object(),
+        new Object(), new Object(), new Object(), new Object(),
+        new Object(), new Object(), new Object(), new Object(),
+    };
+
+    public <R> R readPersistentLock1(int page, Supplier<R> code) {
+        final var obj = plocks[page % plocks.length];
+        synchronized (obj){
+            //System.out.println("lock "+page+" "+obj+" "+Thread.currentThread().getId());
+            return code.get();//
+        }
+    }
+    public void writePersistentLock1(int page, Runnable code) {
+        final var obj = plocks[page % plocks.length];
+        synchronized (obj){
+            //System.out.println("lock "+page+" "+obj+" "+Thread.currentThread().getId());
+            code.run();
+        }
+    }
+
+    private final Object syn1 = new Object();
+    private final Object syn2 = new Object();
+
+    public <R> R readPersistentLock0(int page, Supplier<R> code) {
+        var syn = page%2 == 0 ? syn1 : syn2;
+        if( page%2==0 ){
+            synchronized (syn) {
+                return code.get();
+            }
+        }else{
+            synchronized (syn) {
+                return code.get();
             }
         }
-        return new PersistentPagesLocks(map);
     }
-    private void releasePagesLock(PersistentPagesLocks pagesLocks) {
-        synchronized (persistentPageLocks){
-            pagesLocks.lockMap.forEach((page,lock) -> {
-                if( lock.writeLock().tryLock() ){
-                    persistentPageLocks.remove(page);
-                    lock.writeLock().unlock();
-                }
-            });
+    public void writePersistentLock0(int page, Runnable code) {
+        var syn = page%2 == 0 ? syn1 : syn2;
+        if( page%2==0 ){
+            synchronized (syn) {
+                code.run();
+            }
+        }else{
+            synchronized (syn) {
+                code.run();
+            }
         }
     }
-
-    public class PersistentPagesLocks {
-        public final Map<Integer,ReadWriteLock> lockMap;
-        public PersistentPagesLocks(Map<Integer, ReadWriteLock> lockMap) {
-            this.lockMap = lockMap;
-        }
-        public void release(){
-            releasePagesLock(this);
-        }
-    }
-
-    public <R> R readPersistentLock(int page, Supplier<R> code) {
-        var locks = allocPagesLocks(page);
-        try {
-            locks.lockMap.values().forEach(lock -> lock.readLock().lock());
-            return code.get();
-        } finally {
-            locks.lockMap.values().forEach(lock -> lock.readLock().unlock());
-            locks.release();
-        }
-    }
-    public <R> R writePersistentLock(int page, Supplier<R> code) {
-        var locks = allocPagesLocks(page);
-        try {
-            locks.lockMap.values().forEach(lock -> lock.writeLock().lock());
-            return code.get();
-        } finally {
-            locks.lockMap.values().forEach(lock -> lock.writeLock().unlock());
-            locks.release();
-        }
-    }
-    public void writePersistentLock(int page, Runnable code) {
-        var locks = allocPagesLocks(page);
-        try {
-            locks.lockMap.values().forEach(lock -> {
-                System.out.println("writePersistentLock "+page+" writeLock");
-                lock.writeLock().lock();
-            });
-            code.run();
-        } finally {
-            locks.lockMap.values().forEach(lock -> {
-                System.out.println("writePersistentLock "+page+" unlock");
-                lock.writeLock().unlock();
-            });
-            locks.release();
-        }
-    }
-    public <R> R readPersistentLock(int[] pages, Supplier<R> code) {
-        var locks = allocPagesLocks(pages);
-        try {
-            locks.lockMap.values().forEach(lock -> lock.readLock().lock());
-            return code.get();
-        } finally {
-            locks.lockMap.values().forEach(lock -> lock.readLock().unlock());
-            locks.release();
-        }
-    }
-    public <R> R writePersistentLock(int[] pages, Supplier<R> code) {
-        var locks = allocPagesLocks(pages);
-        try {
-            locks.lockMap.values().forEach(lock -> lock.writeLock().lock());
-            return code.get();
-        } finally {
-            locks.lockMap.values().forEach(lock -> lock.writeLock().unlock());
-            locks.release();
-        }
-    }
+    //#endregion
 }

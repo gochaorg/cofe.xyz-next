@@ -1,11 +1,12 @@
 package xyz.cofe.cbuffer.page;
 
 import org.junit.Test;
+import xyz.cofe.fn.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertTrue;
 
@@ -45,31 +46,57 @@ public class ConcurrentCachePagedTest {
         public long minSleep = 5;
         public long maxSleep = 10;
         public volatile int cyclesExec = 0;
+        public final Consumer4<Long,Integer,Integer,Integer> log;
 
-        public Worker(CachePaged cache){
+        public Worker(CachePaged cache, Consumer4<Long,Integer,Integer,Integer> log){
             this.cache = cache;
+            this.log = log;
         }
+        public Worker cycles(int c){
+            cyclesTotal = c;
+            return this;
+        }
+        public Worker minSleep(long t){
+            minSleep = t;
+            return this;
+        }
+        public Worker maxSleep(long t){
+            maxSleep = t;
+            return this;
+        }
+
+        public volatile boolean dead = false;
 
         @Override
         public void run() {
-            System.out.println("run worker#"+getId());
-            for( var i=0;i<cyclesTotal; i++ ){
-                var page = ThreadLocalRandom.current().nextInt(cache.memoryInfo().pageCount());
-                System.out.println("worker#"+getId()+" updatePage "+page);
-                cache.updatePage(
-                    page,
-                    bytes -> {
-                        var num = readInt(bytes,0);
-                        writeInt(bytes,0,num+1);
-                        try {
-                            Thread.sleep(ThreadLocalRandom.current().nextLong(Math.abs(maxSleep-minSleep)+ Math.min(maxSleep,minSleep)));
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
+            try {
+                for (var i = 0; i < cyclesTotal; i++) {
+                    var page = ThreadLocalRandom.current().nextInt(cache.memoryInfo().pageCount());
+                    cache.updatePage(
+                        page,
+                        bytes -> {
+                            //synchronized (this) {
+                                var num_a = readInt(bytes, 0);
+                                var num_b = num_a + 1;
+                                //writeInt(bytes, 0, num_b);
+                                var newBytes = Arrays.copyOf(bytes,bytes.length);
+                                writeInt(newBytes, 0, num_b);
+                                try {
+                                    Thread.sleep(ThreadLocalRandom.current().nextLong(Math.abs(maxSleep - minSleep) + Math.min(maxSleep, minSleep)));
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                cyclesExec += 1;
+                                log.accept(getId(), page, num_a, num_b);
+                                // return bytes;
+                                return newBytes;
+                            //}
                         }
-                        cyclesExec += 1;
-                        return bytes;
-                    }
-                );
+                    );
+                }
+            } catch (Throwable err){
+                dead = true;
+                throw err;
             }
         }
     }
@@ -79,7 +106,7 @@ public class ConcurrentCachePagedTest {
         int pageSize = 1024;
 
         var fast = new MemPaged(pageSize, pageSize*4);
-        var slow = new MemPaged(pageSize, pageSize*64);
+        var slow = new MemPaged(pageSize, pageSize*8);
 
         var initData = new byte[pageSize];
         Arrays.fill(initData,(byte)0);
@@ -88,10 +115,21 @@ public class ConcurrentCachePagedTest {
         }
 
         var cache = new CachePaged(fast,slow);
+        var log = new CopyOnWriteArrayList<Tuple4<Long,Integer,Integer,Integer>>();
 
         var workers = new ArrayList<Worker>();
+        var cyclesPerWorker = 500;
         for( var i=0;i<20;i++ ){
-            workers.add(new Worker(cache));
+            workers.add(
+                new Worker(
+                    cache,
+                    (wId,page,from,to)->{
+                        synchronized (log) {
+                            log.add(Tuple4.of(wId, page, from, to));
+                        }
+                    }
+                ).cycles(cyclesPerWorker).minSleep(1).maxSleep(2)
+            );
         }
 
         workers.forEach(w -> w.start());
@@ -114,8 +152,40 @@ public class ConcurrentCachePagedTest {
 
         System.out.println("sum = "+sum);
         System.out.println("num = "+numbers);
-        for( var w : workers ){
-            System.out.println("worker cyclesExec "+w.cyclesExec);
-        }
+        System.out.println("dead count = "+workers.stream().filter(w -> w.dead).count());
+        System.out.println("succ count = "+workers.stream().filter(w -> !w.dead).count());
+        System.out.println("worker cyclesExec min "+workers.stream().map(w->w.cyclesExec).min(Integer::compare));
+        System.out.println("worker cyclesExec max "+workers.stream().map(w->w.cyclesExec).max(Integer::compare));
+
+        var pageHistory = new TreeMap<Integer, List<Tuple3<Long,Integer,Integer>>>();
+        log.forEach(t4 -> {
+            var worker = t4.a();
+            var page = t4.b();
+            var from = t4.c();
+            var to = t4.d();
+            pageHistory.computeIfAbsent(page, x -> new ArrayList<>()).add(Tuple3.of(worker,from,to));
+        });
+
+        pageHistory.forEach((page,hist) -> {
+            Tuple3<Long,Integer,Integer> prev = null;
+            for( var t3 : hist ){
+                var worker = t3.a();
+                var from = t3.b();
+                var to = t3.c();
+
+                //System.out.println("page="+page+" w="+worker+" from="+from+" to="+to);
+                if( prev==null ){
+                    prev = t3;
+                }else{
+                    if(Objects.equals(prev.b(), from)){
+                        var p_worker = prev.a();
+                        var p_from = prev.b();
+                        var p_to = prev.c();
+                        System.out.println("!!!! worker:"+worker+" "+p_worker+" from:"+p_from+" "+from+" to:"+p_to+" "+to);
+                    }
+                    prev = t3;
+                }
+            };
+        });
     }
 }

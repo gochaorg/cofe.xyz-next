@@ -9,7 +9,7 @@ import java.util.Arrays;
  */
 public class MemPaged implements Paged, ResizablePages {
     protected int pageSize;
-    protected byte[] buffer;
+    protected volatile byte[] buffer;
     protected int dataSize;
     protected int maxPages = -1;
 
@@ -156,7 +156,7 @@ public class MemPaged implements Paged, ResizablePages {
     private static final byte[] empty_bytes = new byte[0];
 
     @Override
-    public byte[] readPage(int page) {
+    public synchronized byte[] readPage(int page) {
         if( page<0 )throw new IllegalArgumentException( "page<0" );
         int off = page * pageSize;
         if( off>=dataSize )return empty_bytes;
@@ -168,7 +168,7 @@ public class MemPaged implements Paged, ResizablePages {
     }
 
     @Override
-    public void writePage(int page, byte[] data) {
+    public synchronized void writePage(int page, byte[] data) {
         if( page<0 )throw new IllegalArgumentException( "page<0" );
         if( data==null )throw new IllegalArgumentException( "data==null" );
         if( data.length>pageSize )throw new IllegalArgumentException( "data.length>pageSize" );
@@ -179,11 +179,16 @@ public class MemPaged implements Paged, ResizablePages {
         if( avail<=0 )throw new PageError("out of range");
         if( avail<data.length )throw new PageError("out of range");
 
-        System.arraycopy(data,0, buffer, off, data.length);
+        //System.arraycopy(data,0, buffer, off, data.length);
+        for( int i=0; i<data.length; i++ ){
+            buffer[off+i] = data[i];
+        }
         int end = off+data.length;
         if( end>dataSize ){
             dataSize = end;
         }
+
+        buffer = buffer;
     }
 
     private Tuple2<UsedPagesInfo,UsedPagesInfo> extendPages(int pages) {
