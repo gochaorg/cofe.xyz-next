@@ -166,6 +166,10 @@ public class CacheMap {
     //#endregion
     //#region find()
     public class Find {
+        private void log(String message){
+            System.out.println("[TH:"+Thread.currentThread().getId()+"] "+message);
+        }
+
         public final Predicate<CachePage> what;
 
         public Find(Predicate<CachePage> what) {
@@ -175,14 +179,17 @@ public class CacheMap {
         public <R> Optional<R> forWriteOnce(Fn1<CachePage,R> update){
             return readLock(()->{
                 for( var cp : cachePages ) {
-                    var res = cp.writeLock(()->{
-                        if( what.test(cp) ){
-                            return Optional.of(update.apply(cp));
-                        }else{
-                            return Optional.<R>empty();
-                        }
-                    });
-                    if( res.isPresent() )return res;
+                    if( what.test(cp) ) {
+                        log("cp "+cp.cachePageIndex+" writeLock");
+                        var res = cp.writeLock(() -> {
+                            if (what.test(cp)) {
+                                return Optional.of(update.apply(cp));
+                            } else {
+                                return Optional.<R>empty();
+                            }
+                        });
+                        if (res.isPresent()) return res;
+                    }
                 }
                 return Optional.empty();
             });
@@ -191,14 +198,17 @@ public class CacheMap {
         public <R> Optional<R> forReadOnce(Fn1<CachePage,R> reading){
             return readLock(()->{
                 for( var cp : cachePages ) {
-                    var res = cp.readLock(()->{
-                        if( what.test(cp) ){
-                            return Optional.of(reading.apply(cp));
-                        }else{
-                            return Optional.<R>empty();
-                        }
-                    });
-                    if( res.isPresent() )return res;
+                    if( what.test(cp) ) {
+                        log("cp "+cp.cachePageIndex+" readLock");
+                        var res = cp.readLock(() -> {
+                            if (what.test(cp)) {
+                                return Optional.of(reading.apply(cp));
+                            } else {
+                                return Optional.<R>empty();
+                            }
+                        });
+                        if (res.isPresent()) return res;
+                    }
                 }
                 return Optional.empty();
             });
@@ -212,14 +222,16 @@ public class CacheMap {
             readLock(()->{
                 for( var cp : cachePages ) {
                     if( what.test(cp) ){
+                        log("lock cp="+cp.cachePageIndex);
                         locking.apply(cp).lock(cp.getReadWriteLock()).ifPresent( lck -> {
                             if( what.test(cp) ){
                                 var unlockCalled = new AtomicBoolean(false);
                                 Runnable release = ()->{
                                     synchronized (unlockCalled) {
                                         if (!unlockCalled.get()) {
-                                            lck.unlock();
                                             unlockCalled.set(true);
+                                            log("unlock cp="+cp.cachePageIndex);
+                                            lck.unlock();
                                         }
                                     }
                                 };

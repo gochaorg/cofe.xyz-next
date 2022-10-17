@@ -161,7 +161,7 @@ public class CachePaged implements Paged {
 
     @Override
     public byte[] readPage(int page) {
-        return readPersistentLock(page,()->{
+        //return readPersistentLock(page,()->{
             // 1 найти в кеше -> вернуть из кеша
             var fromCache = cacheMap.findPersistentPageForRead(page,cp->{
                 fire(new CacheHit(page,true));
@@ -199,12 +199,13 @@ public class CachePaged implements Paged {
             if( bytes==null )throw new PageError("data not loaded, not allocated");
 
             return bytes;
-        });
+        //});
     }
 
     @Override
     public void writePage(int page, byte[] data2write) {
-        writePersistentLock(page,()->{
+        System.out.println("writePage page="+page+" writePersistentLock");
+        //writePersistentLock(page,()->{
             // 1 найти в кеше -> записать в кеш
             if(cacheMap.findPersistentPageForWrite(page,cachePage -> {
                 fire(new CacheHit(page,false));
@@ -259,13 +260,13 @@ public class CachePaged implements Paged {
             if( !allocated.get() ){
                 throw new PageError("page not allocated in cache");
             }
-        });
+        //});
     }
 
     @Override
     public void updatePage(int page, Fn1<byte[], byte[]> update) {
         if (update == null) throw new IllegalArgumentException("update==null");
-        writePersistentLock(page,()-> {
+        //writePersistentLock(page,()-> {
             if (cacheMap.findPersistentPageForWrite(page, cp -> {
                 fire(new CacheHit(page, false));
 
@@ -311,7 +312,7 @@ public class CachePaged implements Paged {
             if (!allocated.get()) {
                 throw new PageError("page not allocated in cache");
             }
-        });
+        //});
     }
 
     public void flush(){
@@ -324,6 +325,7 @@ public class CachePaged implements Paged {
     private final Map<Integer, ReadWriteLock> persistentPageLocks = new HashMap<>();
 
     public PersistentPagesLocks allocPagesLocks(int... pages){
+        System.out.println("allocPagesLocks "+Arrays.toString(pages));
         var map = new HashMap<Integer,ReadWriteLock>();
         synchronized (persistentPageLocks){
             for( var page:pages ){
@@ -376,10 +378,16 @@ public class CachePaged implements Paged {
     public void writePersistentLock(int page, Runnable code) {
         var locks = allocPagesLocks(page);
         try {
-            locks.lockMap.values().forEach(lock -> lock.writeLock().lock());
+            locks.lockMap.values().forEach(lock -> {
+                System.out.println("writePersistentLock "+page+" writeLock");
+                lock.writeLock().lock();
+            });
             code.run();
         } finally {
-            locks.lockMap.values().forEach(lock -> lock.writeLock().unlock());
+            locks.lockMap.values().forEach(lock -> {
+                System.out.println("writePersistentLock "+page+" unlock");
+                lock.writeLock().unlock();
+            });
             locks.release();
         }
     }
