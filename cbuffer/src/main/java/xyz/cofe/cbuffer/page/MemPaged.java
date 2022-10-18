@@ -163,7 +163,13 @@ public class MemPaged implements Paged, ResizablePages {
         int tailSize = dataSize - off;
         int readSize = Math.min(tailSize, pageSize);
         byte[] buf = new byte[readSize];
-        System.arraycopy(buffer,off, buf,0, readSize);
+        /////////////////////////////////
+        //   here bug in arraycopy
+        //     System.arraycopy(buffer,off, buf,0, readSize);
+        //   buffer[i] - not sync (visible) in other thread
+        for( int i=0; i<readSize; i++ ){
+            buf[i] = buffer[off+i];
+        }
         return buf;
     }
 
@@ -179,7 +185,10 @@ public class MemPaged implements Paged, ResizablePages {
         if( avail<=0 )throw new PageError("out of range");
         if( avail<data.length )throw new PageError("out of range");
 
-        //System.arraycopy(data,0, buffer, off, data.length);
+        /////////////////////////////////
+        //   here bug in arraycopy
+        //     System.arraycopy(data,0, buffer, off, data.length);
+        //   buffer[i] - not sync (visible) in other thread
         for( int i=0; i<data.length; i++ ){
             buffer[off+i] = data[i];
         }

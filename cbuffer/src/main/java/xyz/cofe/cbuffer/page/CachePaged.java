@@ -209,8 +209,8 @@ public class CachePaged implements Paged {
         writePersistentLock(page,()->{
             // 1 найти в кеше -> записать в кеш
             if(cacheMap.findPersistentPageForWrite(page,cachePage -> {
-                synchronized (persistent) {
-                    synchronized (cache) {
+                //synchronized (persistent) {
+                    //synchronized (cache) {
                         fire(new CacheHit(page, false));
                         var dataToWrite = data2write;
                         if (cachePage.getDataSize().isPresent()) {
@@ -224,8 +224,8 @@ public class CachePaged implements Paged {
 
                         cachePage.markWrote();
                         return true;
-                    }
-                }
+                    //}
+                //}
             }).orElse(false))return;
 
             fire(new CacheMiss(page,false));
@@ -235,8 +235,8 @@ public class CachePaged implements Paged {
             cacheMap.allocate(
                 cp -> {
                     cp.writeLock(()->{
-                        synchronized (persistent) {
-                            synchronized (cache) {
+                        //synchronized (persistent) {
+                            //synchronized (cache) {
                                 cp.unTarget();
 
                                 var data2persist = persistent.readPage(page);
@@ -259,8 +259,8 @@ public class CachePaged implements Paged {
 
                                 cp.markWrote();
                                 allocated.set(true);
-                            }
-                        }
+                            //}
+                        //}
                     });
                 },
                 fr -> {
@@ -359,17 +359,6 @@ public class CachePaged implements Paged {
         writePersistentLock1(page,code);
     }
 
-    public <R> R readPersistentLock2(int page, Supplier<R> code) {
-        synchronized (this){
-            return code.get();
-        }
-    }
-    public void writePersistentLock2(int page, Runnable code) {
-        synchronized (this){
-            code.run();
-        }
-    }
-
 
     private final Object[] plocks = new Object[] {
         new Object(), new Object(), new Object(), new Object(),
@@ -378,46 +367,16 @@ public class CachePaged implements Paged {
         new Object(), new Object(), new Object(), new Object(),
     };
 
-    public <R> R readPersistentLock1(int page, Supplier<R> code) {
+    private <R> R readPersistentLock1(int page, Supplier<R> code) {
         final var obj = plocks[page % plocks.length];
         synchronized (obj){
-            //System.out.println("lock "+page+" "+obj+" "+Thread.currentThread().getId());
             return code.get();//
         }
     }
-    public void writePersistentLock1(int page, Runnable code) {
+    private void writePersistentLock1(int page, Runnable code) {
         final var obj = plocks[page % plocks.length];
         synchronized (obj){
-            //System.out.println("lock "+page+" "+obj+" "+Thread.currentThread().getId());
             code.run();
-        }
-    }
-
-    private final Object syn1 = new Object();
-    private final Object syn2 = new Object();
-
-    public <R> R readPersistentLock0(int page, Supplier<R> code) {
-        var syn = page%2 == 0 ? syn1 : syn2;
-        if( page%2==0 ){
-            synchronized (syn) {
-                return code.get();
-            }
-        }else{
-            synchronized (syn) {
-                return code.get();
-            }
-        }
-    }
-    public void writePersistentLock0(int page, Runnable code) {
-        var syn = page%2 == 0 ? syn1 : syn2;
-        if( page%2==0 ){
-            synchronized (syn) {
-                code.run();
-            }
-        }else{
-            synchronized (syn) {
-                code.run();
-            }
         }
     }
     //#endregion

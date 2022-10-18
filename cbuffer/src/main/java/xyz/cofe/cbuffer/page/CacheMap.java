@@ -40,9 +40,6 @@ public class CacheMap {
         readWriteLock = new ReentrantReadWriteLock();
     }
 
-    private final Map<Integer,Integer> persistent2cache = new ConcurrentSkipListMap<>();
-    private final ReadWriteLock persistent2cacheRWLock = new ReentrantReadWriteLock();
-
     private final List<CachePage> cachePages = new ArrayList<>();
 
     //#region FlushRequest

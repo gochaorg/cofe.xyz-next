@@ -118,8 +118,9 @@ public class ConcurrentCachePagedTest {
         var log = new CopyOnWriteArrayList<Tuple4<Long,Integer,Integer,Integer>>();
 
         var workers = new ArrayList<Worker>();
-        var cyclesPerWorker = 500;
-        for( var i=0;i<20;i++ ){
+        var cyclesPerWorker = 100;
+        var workersCount = 10;
+        for( var i=0;i<workersCount;i++ ){
             workers.add(
                 new Worker(
                     cache,
@@ -166,6 +167,7 @@ public class ConcurrentCachePagedTest {
             pageHistory.computeIfAbsent(page, x -> new ArrayList<>()).add(Tuple3.of(worker,from,to));
         });
 
+        var duplicatesCount = new AtomicInteger(0);
         pageHistory.forEach((page,hist) -> {
             Tuple3<Long,Integer,Integer> prev = null;
             for( var t3 : hist ){
@@ -173,7 +175,7 @@ public class ConcurrentCachePagedTest {
                 var from = t3.b();
                 var to = t3.c();
 
-                //System.out.println("page="+page+" w="+worker+" from="+from+" to="+to);
+                System.out.println("page="+page+" w="+worker+" from="+from+" to="+to);
                 if( prev==null ){
                     prev = t3;
                 }else{
@@ -182,10 +184,14 @@ public class ConcurrentCachePagedTest {
                         var p_from = prev.b();
                         var p_to = prev.c();
                         System.out.println("!!!! worker:"+worker+" "+p_worker+" from:"+p_from+" "+from+" to:"+p_to+" "+to);
+                        duplicatesCount.incrementAndGet();
                     }
                     prev = t3;
                 }
             };
         });
+
+        assertTrue(duplicatesCount.get()==0);
+        assertTrue(sum==workersCount*cyclesPerWorker);
     }
 }
