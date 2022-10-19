@@ -28,6 +28,12 @@
             <artifactId>iofun</artifactId>
             <version>[1.0,)</version>
         </dependency>
+        <dependency>
+            <groupId>xyz.cofe</groupId>
+            <artifactId>text</artifactId>
+            <version>[1.0,)</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -37,7 +43,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>8</release>
+                    <release>11</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -45,7 +51,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.1.1</version>
                 <configuration>
-                    <source>8</source>
+                    <source>11</source>
                 </configuration>
             </plugin>
         </plugins>

@@ -6,21 +6,45 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class MemChunkPaged implements Paged, ResizablePages {
     public static class Chunk {
-        private volatile byte[] data;
+        public volatile byte[] data;
+        public volatile int firstInt;
         public Chunk(int pageSize){
             data = new byte[pageSize];
         }
 
+        public static int readInt(byte[] data, int offset){
+            var b0 = data[offset+3] & 0xFF;
+            var b1 = data[offset+2] & 0xFF;
+            var b2 = data[offset+1] & 0xFF;
+            var b3 = data[offset+0] & 0xFF;
+            return (b3 << 8*3) | (b2 << 8*2) | (b1 << 8) | b0;
+        }
+
+        public static void writeInt(byte[] data, int offset, int value ){
+            var b0 = (value >> 8*3) & 0xFF;
+            var b1 = (value >> 8*2) & 0xFF;
+            var b2 = (value >> 8*1) & 0xFF;
+            var b3 = (value >> 8*0) & 0xFF;
+            data[offset+0] = (byte)b0;
+            data[offset+1] = (byte)b1;
+            data[offset+2] = (byte)b2;
+            data[offset+3] = (byte)b3;
+        }
+
         public synchronized byte[] read(){
+            data = data;
             var res = new byte[data.length];
             for(var i=0;i<res.length;i++ )res[i] = data[i];
             return res;
         }
         public synchronized void write(byte[] newData){
+            data = data;
             if( data.length!=newData.length )throw new IllegalStateException("!!!");
             for( var i=0;i< data.length; i++ ){
                 data[i] = newData[i];
             }
+            firstInt = readInt(data,0);
+            data = data;
         }
         public synchronized int size(){ return data.length; }
     }
@@ -31,7 +55,7 @@ public class MemChunkPaged implements Paged, ResizablePages {
     }
 
     private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
-    private volatile Chunk[] chunks = new Chunk[0];
+    public volatile Chunk[] chunks = new Chunk[0];
 
     @Override
     public UsedPagesInfo memoryInfo() {

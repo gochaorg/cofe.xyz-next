@@ -55,6 +55,17 @@ public class CachePaged implements Paged {
     private final Paged cache;
     private final Paged persistent;
 
+    private void flushCachePage(int cachePage, int persistentPageIndex){
+        persistent.writePage(persistentPageIndex,cache.readPage(cachePage));
+        fire(new FlushCachePage(cachePage,persistentPageIndex));
+    }
+
+    @Override
+    public UsedPagesInfo memoryInfo() {
+        return persistent.memoryInfo();
+    }
+
+    //#region events
     public static class FlushCachePage implements PageEvent {
         public final int cachePage;
         public final int persistentPageIndex;
@@ -71,16 +82,6 @@ public class CachePaged implements Paged {
                 ", persistentPageIndex=" + persistentPageIndex +
                 '}';
         }
-    }
-
-    private void flushCachePage(int cachePage, int persistentPageIndex){
-        persistent.writePage(persistentPageIndex,cache.readPage(cachePage));
-        fire(new FlushCachePage(cachePage,persistentPageIndex));
-    }
-
-    @Override
-    public UsedPagesInfo memoryInfo() {
-        return persistent.memoryInfo();
     }
 
     public static class CacheMiss implements PageEvent {
@@ -155,235 +156,197 @@ public class CachePaged implements Paged {
                 '}';
         }
     }
+    //#endregion
 
     @Override
     public synchronized byte[] readPage(int page) {
-        return readPersistentLock(page,()->{
-            // 1 найти в кеше -> вернуть из кеша
-            var fromCache = cacheMap.findPersistentPageForRead(page,cp->{
-                fire(new CacheHit(page,true));
-                cp.markReads();
-                return persistent.readPage(cp.getTarget().get());
-            });
-            if( fromCache.isPresent() )return fromCache.get();
+        synchronized (this) {
+            synchronized (cacheMap) {
+                synchronized (cache) {
+                    synchronized (persistent) {
+                        // 1 найти в кеше -> вернуть из кеша
+                        var fromCache = cacheMap.findPersistentPageForRead(page, cp -> {
+                            fire(new CacheHit(page, true));
+                            cp.markReads();
+                            return cache.readPage(cp.cachePageIndex);
+                        });
+                        if (fromCache.isPresent()) return fromCache.get();
 
-            fire(new CacheMiss(page,true));
+                        fire(new CacheMiss(page, true));
 
-            // 2 загрузить в кеш -> вернуть из кеша
-            var result = new AtomicReference<byte[]>(null);
-            cacheMap.allocate(
-                cp -> {
-                    cp.writeLock(()->{
-                        cp.unTarget();
+                        // 2 загрузить в кеш -> вернуть из кеша
+                        var result = new AtomicReference<byte[]>(null);
+                        cacheMap.allocate(
+                            cp -> {
+                                cp.unTarget();
 
-                        var data = persistent.readPage(page);
-                        fire(new PageLoaded(page,data));
+                                var data = persistent.readPage(page);
+                                fire(new PageLoaded(page, data));
 
-                        cache.writePage(cp.cachePageIndex, data);
-                        fire(new CacheWrote(page,cp.cachePageIndex, data));
+                                cache.writePage(cp.cachePageIndex, data);
+                                fire(new CacheWrote(page, cp.cachePageIndex, data));
 
-                        cp.setDataSize(data.length);
-                        cp.assignTarget(page);
-                        cp.markMapped();
-                        result.set(data);
-                    });
-                },
-                fr -> {
-                    fr.cachePage.writeLock(()->{
-                        flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
-                        fr.cachePage.markFlushed();
-                    });
+                                cp.setDataSize(data.length);
+                                cp.assignTarget(page);
+                                cp.markMapped();
+                                result.set(data);
+                            },
+                            fr -> {
+                                flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
+                                fr.cachePage.markFlushed();
+                            }
+                        );
+
+                        var bytes = result.get();
+                        if (bytes == null) throw new PageError("data not loaded, not allocated");
+
+                        return bytes;
+                    }
                 }
-            );
-
-            var bytes = result.get();
-            if( bytes==null )throw new PageError("data not loaded, not allocated");
-
-            return bytes;
-        });
+            }
+        }
     }
 
     @Override
     public synchronized void writePage(int page, byte[] data2write) {
-        System.out.println("writePage page="+page+" writePersistentLock");
-        writePersistentLock(page,()->{
-            // 1 найти в кеше -> записать в кеш
-            if(cacheMap.findPersistentPageForWrite(page,cachePage -> {
-                //synchronized (persistent) {
-                    //synchronized (cache) {
-                        fire(new CacheHit(page, false));
-                        var dataToWrite = data2write;
-                        if (cachePage.getDataSize().isPresent()) {
-                            var max = cachePage.getDataSize().get();
-                            if (data2write.length > max) {
-                                dataToWrite = Arrays.copyOf(data2write, max);
-                            }
-                        }
-                        cache.writePage(cachePage.cachePageIndex, dataToWrite);
-                        fire(new CacheWrote(page, cachePage.cachePageIndex, dataToWrite));
-
-                        cachePage.markWrote();
-                        return true;
-                    //}
-                //}
-            }).orElse(false))return;
-
-            fire(new CacheMiss(page,false));
-
-            // 2 загрузить в кеш -> записать в кеш
-            var allocated = new AtomicBoolean(false);
-            cacheMap.allocate(
-                cp -> {
-                    cp.writeLock(()->{
-                        //synchronized (persistent) {
-                            //synchronized (cache) {
-                                cp.unTarget();
-
-                                var data2persist = persistent.readPage(page);
-                                fire(new PageLoaded(page, data2persist));
-
-                                var data2write2 = data2write;
-                                if (data2write2.length < data2persist.length) {
-                                    System.arraycopy(data2write, 0, data2persist, 0, data2write.length);
-                                    data2write2 = data2persist;
-                                } else if (data2write2.length > data2persist.length) {
-                                    throw new PageError("destination out of rage, persistent size = " + data2persist.length + " write size = " + data2write.length);
+        synchronized (this) {
+            synchronized (cacheMap) {
+                synchronized (cache) {
+                    synchronized (persistent) {
+                        // 1 найти в кеше -> записать в кеш
+                        if (cacheMap.findPersistentPageForWrite(page, cachePage -> {
+                            synchronized (cachePage) {
+                                fire(new CacheHit(page, false));
+                                var dataToWrite = data2write;
+                                if (cachePage.getDataSize().isPresent()) {
+                                    var max = cachePage.getDataSize().get();
+                                    if (data2write.length > max) {
+                                        dataToWrite = Arrays.copyOf(data2write, max);
+                                    }
                                 }
+                                cache.writePage(cachePage.cachePageIndex, dataToWrite);
+                                fire(new CacheWrote(page, cachePage.cachePageIndex, dataToWrite));
 
-                                cache.writePage(cp.cachePageIndex, data2write2);
-                                fire(new CacheWrote(page, cp.cachePageIndex, data2write2));
+                                cachePage.markWrote();
+                                return true;
+                            }
+                        }).orElse(false)) return;
 
-                                cp.setDataSize(data2write2.length);
-                                cp.assignTarget(page);
-                                cp.markMapped();
+                        fire(new CacheMiss(page, false));
 
-                                cp.markWrote();
-                                allocated.set(true);
-                            //}
-                        //}
-                    });
-                },
-                fr -> {
-                    fr.cachePage.writeLock(()->{
-                        flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
-                        fr.cachePage.markFlushed();
-                    });
+                        // 2 загрузить в кеш -> записать в кеш
+                        var allocated = new AtomicBoolean(false);
+                        cacheMap.allocate(
+                            cp -> {
+                                synchronized (cp) {
+                                    cp.unTarget();
+
+                                    var data2persist = persistent.readPage(page);
+                                    fire(new PageLoaded(page, data2persist));
+
+                                    var data2write2 = data2write;
+                                    if (data2write2.length < data2persist.length) {
+                                        System.arraycopy(data2write, 0, data2persist, 0, data2write.length);
+                                        data2write2 = data2persist;
+                                    } else if (data2write2.length > data2persist.length) {
+                                        throw new PageError("destination out of rage, persistent size = " + data2persist.length + " write size = " + data2write.length);
+                                    }
+
+                                    cache.writePage(cp.cachePageIndex, data2write2);
+                                    fire(new CacheWrote(page, cp.cachePageIndex, data2write2));
+
+                                    cp.setDataSize(data2write2.length);
+                                    cp.assignTarget(page);
+                                    cp.markMapped();
+
+                                    cp.markWrote();
+                                    allocated.set(true);
+                                }
+                            },
+                            fr -> {
+                                flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
+                                fr.cachePage.markFlushed();
+                            }
+                        );
+
+                        if (!allocated.get()) {
+                            throw new PageError("page not allocated in cache");
+                        }
+                    }
                 }
-            );
-
-            if( !allocated.get() ){
-                throw new PageError("page not allocated in cache");
             }
-        });
+        }
     }
 
     @Override
     public synchronized void updatePage(int page, Fn1<byte[], byte[]> update) {
         if (update == null) throw new IllegalArgumentException("update==null");
-        writePersistentLock(page,()-> {
-            if (cacheMap.findPersistentPageForWrite(page, cp -> {
-                synchronized (cp) {
-                    return cp.writeLock(() -> {
-                        //synchronized (cp) {
-                            fire(new CacheHit(page, false));
+        synchronized (this) {
+            synchronized (cacheMap) {
+                synchronized (cache) {
+                    synchronized (persistent) {
+                        if (cacheMap.findPersistentPageForWrite(page, cp -> {
+                            synchronized (cp) {
+                                fire(new CacheHit(page, false));
 
-                            var cacheData = cache.readPage(cp.cachePageIndex);
-                            cp.markReads();
+                                var cacheData = cache.readPage(cp.cachePageIndex);
+                                cp.markReads();
 
-                            var newData = update.apply(cacheData);
-                            cache.writePage(cp.cachePageIndex, newData);
-                            fire(new CacheWrote(page, cp.cachePageIndex, newData));
-                            cp.markWrote();
-
-                            return true;
-                        //}
-                    });
-                }
-            }).orElse(false)) {
-                return;
-            }
-
-            fire(new CacheMiss(page, false));
-
-            var allocated = new AtomicBoolean(false);
-            cacheMap.allocate(
-                cp -> {
-                    synchronized (cp) {
-                        cp.writeLock(() -> {
-                            //synchronized (cp) {
-                                cp.unTarget();
-
-                                var persistData = persistent.readPage(page);
-                                fire(new PageLoaded(page, persistData));
-
-                                var updatedData = update.apply(persistData);
-
-                                cache.writePage(cp.cachePageIndex, updatedData);
-                                fire(new CacheWrote(page, cp.cachePageIndex, updatedData));
-
-                                cp.setDataSize(updatedData.length);
-                                cp.assignTarget(page);
-                                cp.markMapped();
-
+                                var newData = update.apply(cacheData);
+                                cache.writePage(cp.cachePageIndex, newData);
+                                fire(new CacheWrote(page, cp.cachePageIndex, newData));
                                 cp.markWrote();
-                                allocated.set(true);
-                            //};
-                        });
+
+                                return true;
+                            }
+                        }).orElse(false)) {
+                            return;
+                        }
+
+                        fire(new CacheMiss(page, false));
+
+                        var allocated = new AtomicBoolean(false);
+                        cacheMap.allocate(
+                            cp -> {
+                                synchronized (cp) {
+                                    cp.unTarget();
+
+                                    var persistData = persistent.readPage(page);
+                                    fire(new PageLoaded(page, persistData));
+
+                                    var updatedData = update.apply(persistData);
+
+                                    cache.writePage(cp.cachePageIndex, updatedData);
+                                    fire(new CacheWrote(page, cp.cachePageIndex, updatedData));
+
+                                    cp.setDataSize(updatedData.length);
+                                    cp.assignTarget(page);
+                                    cp.markMapped();
+
+                                    cp.markWrote();
+                                    allocated.set(true);
+                                }
+                            },
+                            fr -> {
+                                flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
+                                fr.cachePage.markFlushed();
+                            }
+                        );
+                        if (!allocated.get()) {
+                            throw new PageError("page not allocated in cache");
+                        }
                     }
-                },
-                fr -> {
-                    fr.cachePage.writeLock(()->{
-                        flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
-                        fr.cachePage.markFlushed();
-                    });
                 }
-            );
-            if (!allocated.get()) {
-                throw new PageError("page not allocated in cache");
             }
-        });
-    }
-
-    public void flush(){
-        cacheMap.flush(ev -> {
-            flushCachePage(ev.cachedPageIndex, ev.persistentPageIndex);
-            ev.cachePage.markFlushed();
-        });
-    }
-
-    //#region persistentPageLocks
-    public synchronized <R> R readPersistentLock(int page, Supplier<R> code) {
-        synchronized (this) {
-            //return readPersistentLock1(page, code);
-            return code.get();
-        }
-    }
-    public synchronized void writePersistentLock(int page, Runnable code) {
-        synchronized (this) {
-            //writePersistentLock1(page, code);
-            code.run();
         }
     }
 
-
-    private final Object[] plocks = new Object[] {
-        new Object(), new Object(), new Object(), new Object(),
-        new Object(), new Object(), new Object(), new Object(),
-        new Object(), new Object(), new Object(), new Object(),
-        new Object(), new Object(), new Object(), new Object(),
-    };
-
-    private synchronized  <R> R readPersistentLock1(int page, Supplier<R> code) {
-        final var obj = plocks[page % plocks.length];
-        synchronized (obj){
-            return code.get();//
+    public synchronized void flush(){
+        synchronized (cacheMap) {
+            cacheMap.flush(ev -> {
+                flushCachePage(ev.cachedPageIndex, ev.persistentPageIndex);
+                ev.cachePage.markFlushed();
+            });
         }
     }
-    private synchronized void writePersistentLock1(int page, Runnable code) {
-        final var obj = plocks[page % plocks.length];
-        synchronized (obj){
-            code.run();
-        }
-    }
-    //#endregion
 }

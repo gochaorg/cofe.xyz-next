@@ -8,10 +8,10 @@ import java.util.Arrays;
  * Простая постраничная организация памяти
  */
 public class MemFlatPaged implements Paged, ResizablePages {
-    protected int pageSize;
+    protected volatile int pageSize;
     protected volatile byte[] buffer;
-    protected int dataSize;
-    protected int maxPages = -1;
+    protected volatile int dataSize;
+    protected volatile int maxPages = -1;
 
     /**
      * Конструктор
@@ -55,7 +55,7 @@ public class MemFlatPaged implements Paged, ResizablePages {
         this.dataSize = capacity;
     }
 
-    public byte[] buffer(){ return buffer; }
+    public synchronized byte[] buffer(){ return buffer; }
 
     //region memInfo, memoryInfo(),
     private static String toString(UsedPagesInfo m){
@@ -69,37 +69,47 @@ public class MemFlatPaged implements Paged, ResizablePages {
     protected class MemInfoUsed implements UsedPagesInfo {
         @Override
         public int pageCount() {
-            int pc = dataSize / pageSize;
-            int pc_d = dataSize % pageSize;
-            return pc_d>0 ? pc+1 : pc;
+            synchronized (MemFlatPaged.this) {
+                int pc = dataSize / pageSize;
+                int pc_d = dataSize % pageSize;
+                return pc_d > 0 ? pc + 1 : pc;
+            }
         }
 
         @Override
         public int lastPageSize() {
-            var size = dataSize % pageSize;
-            return size==0 ? pageSize : size;
+            synchronized (MemFlatPaged.this) {
+                var size = dataSize % pageSize;
+                return size == 0 ? pageSize : size;
+            }
         }
 
         @Override
         public int pageSize() {
-            return pageSize;
+            synchronized (MemFlatPaged.this) {
+                return pageSize;
+            }
         }
 
         @SuppressWarnings("MethodDoesntCallSuperMethod")
         @Override
         public UsedPagesInfo clone() {
-            return new MemInfoUsedClone(this);
+            synchronized (MemFlatPaged.this) {
+                return new MemInfoUsedClone(this);
+            }
         }
 
         @Override
         public String toString() {
-            return MemFlatPaged.toString(this);
+            synchronized (MemFlatPaged.this) {
+                return MemFlatPaged.toString(this);
+            }
         }
     }
     protected static class MemInfoUsedClone implements UsedPagesInfo {
-        protected int pageCount;
-        protected int pageSize;
-        protected int lastPageSize;
+        protected volatile int pageCount;
+        protected volatile int pageSize;
+        protected volatile int lastPageSize;
 
         public MemInfoUsedClone(int pageCount, int pageSize, int lastPageSize) {
             this.pageCount = pageCount;
@@ -147,10 +157,10 @@ public class MemFlatPaged implements Paged, ResizablePages {
             return MemFlatPaged.toString(this);
         }
     }
-    protected MemInfoUsed memInfo = new MemInfoUsed();
+    protected volatile MemInfoUsed memInfo = new MemInfoUsed();
 
     @Override
-    public UsedPagesInfo memoryInfo() { return memInfo; }
+    public synchronized UsedPagesInfo memoryInfo() { return memInfo; }
     //endregion
 
     private static final byte[] empty_bytes = new byte[0];
@@ -158,27 +168,30 @@ public class MemFlatPaged implements Paged, ResizablePages {
     @Override
     public synchronized byte[] readPage(int page) {
         synchronized (this) {
-            if (page < 0) throw new IllegalArgumentException("page<0");
-            int off = page * pageSize;
-            if (off >= dataSize) return empty_bytes;
-            int tailSize = dataSize - off;
-            int readSize = Math.min(tailSize, pageSize);
-            byte[] buf = new byte[readSize];
-            /////////////////////////////////
-            //   here bug in arraycopy
-            //     System.arraycopy(buffer,off, buf,0, readSize);
-            //   buffer[i] - not sync (visible) in other thread
-            var buffer1 = buffer;
-            for (int i = 0; i < readSize; i++) {
-                buf[i] = buffer[off + i];
+            synchronized (buffer) {
+                buffer = buffer;
+                if (page < 0) throw new IllegalArgumentException("page<0");
+                int off = page * pageSize;
+                if (off >= dataSize) return empty_bytes;
+                int tailSize = dataSize - off;
+                int readSize = Math.min(tailSize, pageSize);
+                byte[] buf = new byte[readSize];
+                /////////////////////////////////
+                //   here bug in arraycopy
+                //     System.arraycopy(buffer,off, buf,0, readSize);
+                //   buffer[i] - not sync (visible) in other thread
+                for (int i = 0; i < readSize; i++) {
+                    buf[i] = buffer[off + i];
+                }
+                return buf;
             }
-            return buf;
         }
     }
 
     @Override
     public synchronized void writePage(int page, byte[] data) {
         synchronized (this) {
+            buffer = buffer;
             if (page < 0) throw new IllegalArgumentException("page<0");
             if (data == null) throw new IllegalArgumentException("data==null");
             if (data.length > pageSize) throw new IllegalArgumentException("data.length>pageSize");
@@ -193,19 +206,24 @@ public class MemFlatPaged implements Paged, ResizablePages {
             //   here bug in arraycopy
             //     System.arraycopy(data,0, buffer, off, data.length);
             //   buffer[i] - not sync (visible) in other thread
+
+            var newBuff = Arrays.copyOf(buffer,buffer.length);
+
             for (int i = 0; i < data.length; i++) {
-                buffer[off + i] = data[i];
+                newBuff[off + i] = data[i];
             }
+
             int end = off + data.length;
             if (end > dataSize) {
                 dataSize = end;
             }
 
+            buffer = newBuff;
             buffer = buffer;
         }
     }
 
-    private Tuple2<UsedPagesInfo,UsedPagesInfo> extendPages(int pages) {
+    private synchronized Tuple2<UsedPagesInfo,UsedPagesInfo> extendPages(int pages) {
         if( pages<0 )throw new IllegalArgumentException( "pages<0" );
         if( pages==0 )return Tuple2.of(memInfo, memInfo);
 
@@ -222,7 +240,7 @@ public class MemFlatPaged implements Paged, ResizablePages {
         dataSize = (int) nextSize;
         return Tuple2.of(beforeChange,memInfo);
     }
-    private Tuple2<UsedPagesInfo,UsedPagesInfo> reducePages(int pages) {
+    private synchronized Tuple2<UsedPagesInfo,UsedPagesInfo> reducePages(int pages) {
         if( pages<0 )throw new IllegalArgumentException( "pages<0" );
         //if( pages==0 )return Tuple2.of(memInfo, memInfo);
         UsedPagesInfo beforeChange = memInfo.clone();
@@ -240,7 +258,7 @@ public class MemFlatPaged implements Paged, ResizablePages {
     }
 
     @Override
-    public ResizedPages resizePages(int pages) {
+    public synchronized ResizedPages resizePages(int pages) {
         if( pages<0 )throw new IllegalArgumentException( "pages<0" );
         if( pages==0 ){
             var before = memoryInfo().clone();

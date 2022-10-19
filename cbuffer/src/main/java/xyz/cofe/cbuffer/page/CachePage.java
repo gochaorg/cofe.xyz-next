@@ -32,12 +32,10 @@ public class CachePage {
 
     public final int cachePageIndex;
 
-    protected volatile Integer target;
-    public Optional<Integer> getTarget(){
-        return readLock(()->{
+    public volatile Integer target;
+    public synchronized Optional<Integer> getTarget(){
         var t = target;
         return t!=null ? Optional.of(t) : Optional.empty();
-        });
     }
 
     public interface CachePageEvent extends PageEvent {
@@ -52,16 +50,21 @@ public class CachePage {
         public AssignTarget(CachePage page) {
             this.page = page;
         }
+
+        @Override
+        public String toString() {
+            return "AssignTarget{" +
+                "page=" + page +
+                '}';
+        }
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public Optional<Integer> assignTarget(int target){
-        return writeLock(()->{
+    public synchronized Optional<Integer> assignTarget(int target){
         var old = getTarget();
         this.target = target;
         fire(new AssignTarget(this));
         return old;
-        });
     }
     //#endregion
     //#region UnTarget
@@ -75,17 +78,23 @@ public class CachePage {
             this.page = page;
             this.persistentPageIndex = persistentPageIndex;
         }
+
+        @Override
+        public String toString() {
+            return "UnTarget{" +
+                "page=" + page +
+                ", persistentPageIndex=" + persistentPageIndex +
+                '}';
+        }
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public Optional<Integer> unTarget(){
-        return writeLock(()->{
+    public synchronized Optional<Integer> unTarget(){
         var old = getTarget();
         this.target = null;
         this.dirty = false;
         fire(new UnTarget(this, old));
         return old;
-        });
     }
     //#endregion
     //#region MarkMapped
@@ -96,13 +105,18 @@ public class CachePage {
         public MarkMapped(CachePage page) {
             this.page = page;
         }
+
+        @Override
+        public String toString() {
+            return "MarkMapped{" +
+                "page=" + page +
+                '}';
+        }
     }
 
     public void markMapped() {
-        writeLock(()->{
         dirty = false;
         fire(new MarkMapped(this));
-        });
     }
     //#endregion
     //#region MarkReads
@@ -112,6 +126,13 @@ public class CachePage {
 
         public MarkReads(CachePage page) {
             this.page = page;
+        }
+
+        @Override
+        public String toString() {
+            return "MarkReads{" +
+                "page=" + page +
+                '}';
         }
     }
 
@@ -127,13 +148,18 @@ public class CachePage {
         public MarkWrote(CachePage page) {
             this.page = page;
         }
+
+        @Override
+        public String toString() {
+            return "MarkWrote{" +
+                "page=" + page +
+                '}';
+        }
     }
 
     public void markWrote() {
-        writeLock(()-> {
-            dirty = true;
-            fire(new MarkWrote(this));
-        });
+        dirty = true;
+        fire(new MarkWrote(this));
     }
     //#endregion
     //#region MarkFlushed
@@ -144,13 +170,18 @@ public class CachePage {
         public MarkFlushed(CachePage page) {
             this.page = page;
         }
+
+        @Override
+        public String toString() {
+            return "MarkFlushed{" +
+                "page=" + page +
+                '}';
+        }
     }
 
     public void markFlushed() {
-        writeLock(()-> {
-            dirty = false;
-            fire(new MarkFlushed(this));
-        });
+        dirty = false;
+        fire(new MarkFlushed(this));
     }
     //#endregion MarkFlushed
 
@@ -163,9 +194,7 @@ public class CachePage {
 
     private volatile boolean dirty;
     public boolean isDirty(){
-        return readLock(()->{
-            return dirty;
-        });
+        return dirty;
     }
 
     //#region data size
@@ -177,9 +206,7 @@ public class CachePage {
         ;
     }
     public void resetDataSize(){
-        readLock(()-> {
-            dataSize = null;
-        });
+        dataSize = null;
     }
     public static class SetDataSize implements CachePageEvent {
         public final CachePage page;
@@ -188,56 +215,17 @@ public class CachePage {
         public SetDataSize(CachePage page) {
             this.page = page;
         }
+
+        @Override
+        public String toString() {
+            return "SetDataSize{" +
+                "page=" + page +
+                '}';
+        }
     }
     public void setDataSize(int dataSize){
-        writeLock(()-> {
-            this.dataSize = dataSize;
-            fire(new SetDataSize(this));
-        });
-    }
-    //#endregion
-    //#region readWriteLock
-    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    public ReadWriteLock getReadWriteLock(){ return readWriteLock; }
-
-    public <R> R readLock(Supplier<R> code){
-        if(code==null)throw new IllegalArgumentException("code==null");
-        try {
-            readWriteLock.readLock().lock();
-            return code.get();
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-    }
-
-    public void readLock(Runnable code){
-        if(code==null)throw new IllegalArgumentException("code==null");
-        try {
-            readWriteLock.readLock().lock();
-            code.run();
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-    }
-
-    public <R> R writeLock(Supplier<R> code){
-        if(code==null)throw new IllegalArgumentException("code==null");
-        try {
-            readWriteLock.writeLock().lock();
-            return code.get();
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
-    }
-
-    public void writeLock(Runnable code){
-        if(code==null)throw new IllegalArgumentException("code==null");
-        try {
-            readWriteLock.writeLock().lock();
-            code.run();
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
+        this.dataSize = dataSize;
+        fire(new SetDataSize(this));
     }
     //#endregion
 

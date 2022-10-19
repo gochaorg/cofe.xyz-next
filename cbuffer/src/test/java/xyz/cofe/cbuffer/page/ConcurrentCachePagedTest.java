@@ -2,6 +2,7 @@ package xyz.cofe.cbuffer.page;
 
 import org.junit.Test;
 import xyz.cofe.fn.*;
+import xyz.cofe.text.BytesDump;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -76,10 +77,9 @@ public class ConcurrentCachePagedTest {
                         cache.updatePage(
                             page,
                             bytes -> {
-                                //synchronized (this) {
                                 var num_a = readInt(bytes, 0);
                                 var num_b = num_a + 1;
-                                //writeInt(bytes, 0, num_b);
+
                                 var newBytes = Arrays.copyOf(bytes, bytes.length);
                                 writeInt(newBytes, 0, num_b);
                                 try {
@@ -89,9 +89,7 @@ public class ConcurrentCachePagedTest {
                                 }
                                 cyclesExec += 1;
                                 log.accept(getId(), page, num_a, num_b);
-                                // return bytes;
                                 return newBytes;
-                                //}
                             }
                         );
                     }
@@ -105,16 +103,18 @@ public class ConcurrentCachePagedTest {
 
     @Test
     public void test(){
-        int pageSize = 1024;
+        int pageSize = 32;
+        int fastPageCount = 4;
+        int slowPageCount = 8;
 
-        var fast = new MemFlatPaged(pageSize, pageSize*4);
-        var slow = new MemFlatPaged(pageSize, pageSize*8);
+//        var fast = new MemFlatPaged(pageSize, pageSize*fastPageCount);
+//        var slow = new MemFlatPaged(pageSize, pageSize*slowPageCount);
 
-//        var fast = new MemChunkPaged(pageSize);
-//        fast.resizePages(4);
-//
-//        var slow = new MemChunkPaged(pageSize);
-//        slow.resizePages(8);
+        var fast = new MemChunkPaged(pageSize);
+        fast.resizePages(4);
+
+        var slow = new MemChunkPaged(pageSize);
+        slow.resizePages(8);
 
         var initData = new byte[pageSize];
         Arrays.fill(initData,(byte)0);
@@ -150,6 +150,24 @@ public class ConcurrentCachePagedTest {
             }
         });
 
+        //////////////////////
+        BytesDump dump = new BytesDump.Builder().build();
+        for( int i=0;i<fastPageCount;i++ ){
+            System.out.println("fast page "+i+" "+fast.chunks[i].firstInt+" -> "+cache.getCacheMap().cachePages.get(i));
+            System.out.println(dump.dump(fast.readPage(i)));
+        }
+        for( int i=0;i<slowPageCount;i++ ){
+            System.out.println("slow page "+i+" "+slow.chunks[i].firstInt);
+            System.out.println(dump.dump(slow.readPage(i)));
+        }
+
+        ///////////////////////////
+        PageListener pl = e -> {
+            System.out.println(e);
+        };
+        cache.addListener(pl);
+        ///////////////////////////
+
         var numbers = new ArrayList<Integer>();
         var sum = 0;
         for( var p=0;p<cache.memoryInfo().pageCount();p++ ){
@@ -182,6 +200,9 @@ public class ConcurrentCachePagedTest {
         }
         System.out.println("sum2 = "+sum2);
         System.out.println("num2 = "+numbers2);
+
+        cache.flush();
+        cache.removeListener(pl);
         ////////////////////
 
         var pageHistory = new TreeMap<Integer, List<Tuple3<Long,Integer,Integer>>>();
