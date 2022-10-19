@@ -157,47 +157,52 @@ public class MemFlatPaged implements Paged, ResizablePages {
 
     @Override
     public synchronized byte[] readPage(int page) {
-        if( page<0 )throw new IllegalArgumentException( "page<0" );
-        int off = page * pageSize;
-        if( off>=dataSize )return empty_bytes;
-        int tailSize = dataSize - off;
-        int readSize = Math.min(tailSize, pageSize);
-        byte[] buf = new byte[readSize];
-        /////////////////////////////////
-        //   here bug in arraycopy
-        //     System.arraycopy(buffer,off, buf,0, readSize);
-        //   buffer[i] - not sync (visible) in other thread
-        for( int i=0; i<readSize; i++ ){
-            buf[i] = buffer[off+i];
+        synchronized (this) {
+            if (page < 0) throw new IllegalArgumentException("page<0");
+            int off = page * pageSize;
+            if (off >= dataSize) return empty_bytes;
+            int tailSize = dataSize - off;
+            int readSize = Math.min(tailSize, pageSize);
+            byte[] buf = new byte[readSize];
+            /////////////////////////////////
+            //   here bug in arraycopy
+            //     System.arraycopy(buffer,off, buf,0, readSize);
+            //   buffer[i] - not sync (visible) in other thread
+            var buffer1 = buffer;
+            for (int i = 0; i < readSize; i++) {
+                buf[i] = buffer[off + i];
+            }
+            return buf;
         }
-        return buf;
     }
 
     @Override
     public synchronized void writePage(int page, byte[] data) {
-        if( page<0 )throw new IllegalArgumentException( "page<0" );
-        if( data==null )throw new IllegalArgumentException( "data==null" );
-        if( data.length>pageSize )throw new IllegalArgumentException( "data.length>pageSize" );
-        if( data.length<1 )return;
+        synchronized (this) {
+            if (page < 0) throw new IllegalArgumentException("page<0");
+            if (data == null) throw new IllegalArgumentException("data==null");
+            if (data.length > pageSize) throw new IllegalArgumentException("data.length>pageSize");
+            if (data.length < 1) return;
 
-        int off = page*pageSize;
-        int avail = buffer.length - off;
-        if( avail<=0 )throw new PageError("out of range");
-        if( avail<data.length )throw new PageError("out of range");
+            int off = page * pageSize;
+            int avail = buffer.length - off;
+            if (avail <= 0) throw new PageError("out of range");
+            if (avail < data.length) throw new PageError("out of range");
 
-        /////////////////////////////////
-        //   here bug in arraycopy
-        //     System.arraycopy(data,0, buffer, off, data.length);
-        //   buffer[i] - not sync (visible) in other thread
-        for( int i=0; i<data.length; i++ ){
-            buffer[off+i] = data[i];
+            /////////////////////////////////
+            //   here bug in arraycopy
+            //     System.arraycopy(data,0, buffer, off, data.length);
+            //   buffer[i] - not sync (visible) in other thread
+            for (int i = 0; i < data.length; i++) {
+                buffer[off + i] = data[i];
+            }
+            int end = off + data.length;
+            if (end > dataSize) {
+                dataSize = end;
+            }
+
+            buffer = buffer;
         }
-        int end = off+data.length;
-        if( end>dataSize ){
-            dataSize = end;
-        }
-
-        buffer = buffer;
     }
 
     private Tuple2<UsedPagesInfo,UsedPagesInfo> extendPages(int pages) {

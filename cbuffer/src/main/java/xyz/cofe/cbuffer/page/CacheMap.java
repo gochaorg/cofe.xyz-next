@@ -362,7 +362,7 @@ public class CacheMap {
      * @param consumer получтель страницы
      */
     @SuppressWarnings("OptionalGetWithoutIsPresent")
-    public void allocate(Consumer<CachePage> consumer, Consumer<FlushRequest> flushing){
+    public synchronized void allocate(Consumer<CachePage> consumer, Consumer<FlushRequest> flushing){
         if(consumer==null)throw new IllegalArgumentException("consumer==null");
         if(flushing==null)throw new IllegalArgumentException("flushing==null");
         readLock(()->{

@@ -352,11 +352,17 @@ public class CachePaged implements Paged {
     }
 
     //#region persistentPageLocks
-    public synchronized  <R> R readPersistentLock(int page, Supplier<R> code) {
-        return readPersistentLock1(page,code);
+    public synchronized <R> R readPersistentLock(int page, Supplier<R> code) {
+        synchronized (this) {
+            //return readPersistentLock1(page, code);
+            return code.get();
+        }
     }
     public synchronized void writePersistentLock(int page, Runnable code) {
-        writePersistentLock1(page,code);
+        synchronized (this) {
+            //writePersistentLock1(page, code);
+            code.run();
+        }
     }
 
 

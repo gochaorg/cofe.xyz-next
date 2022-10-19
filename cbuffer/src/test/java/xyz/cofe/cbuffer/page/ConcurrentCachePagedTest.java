@@ -107,14 +107,14 @@ public class ConcurrentCachePagedTest {
     public void test(){
         int pageSize = 1024;
 
-//        var fast = new MemFlatPaged(pageSize, pageSize*4);
-//        var slow = new MemFlatPaged(pageSize, pageSize*8);
+        var fast = new MemFlatPaged(pageSize, pageSize*4);
+        var slow = new MemFlatPaged(pageSize, pageSize*8);
 
-        var fast = new MemChunkPaged(pageSize);
-        fast.resizePages(4);
-
-        var slow = new MemChunkPaged(pageSize);
-        slow.resizePages(8);
+//        var fast = new MemChunkPaged(pageSize);
+//        fast.resizePages(4);
+//
+//        var slow = new MemChunkPaged(pageSize);
+//        slow.resizePages(8);
 
         var initData = new byte[pageSize];
         Arrays.fill(initData,(byte)0);
@@ -172,16 +172,16 @@ public class ConcurrentCachePagedTest {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        numbers = new ArrayList<Integer>();
-        sum = 0;
+        var numbers2 = new ArrayList<Integer>();
+        var sum2 = 0;
         for( var p=0;p<cache.memoryInfo().pageCount();p++ ){
             var bytes = cache.readPage(p);
             var num = readInt(bytes,0);
-            numbers.add(num);
-            sum += num;
+            numbers2.add(num);
+            sum2 += num;
         }
-        System.out.println("sum = "+sum);
-        System.out.println("num = "+numbers);
+        System.out.println("sum2 = "+sum2);
+        System.out.println("num2 = "+numbers2);
         ////////////////////
 
         var pageHistory = new TreeMap<Integer, List<Tuple3<Long,Integer,Integer>>>();
