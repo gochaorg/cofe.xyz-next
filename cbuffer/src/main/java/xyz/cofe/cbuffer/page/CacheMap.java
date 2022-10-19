@@ -70,9 +70,8 @@ public class CacheMap {
     private final PageListener popupEvent = listeners::fire;
 
     private final PageListener mapPersistent2cache = event -> {
-        if( event instanceof CachePage.UnTarget ){
-
-        }
+//        if( event instanceof CachePage.UnTarget ){
+//        }
     };
 
     /**
@@ -165,31 +164,8 @@ public class CacheMap {
     }
     //#endregion
     //#region findPersistentPageForRead
-    public static class FindPersistentPageForRead<R> implements PageEvent {
-        public final int persistentPage;
-        public final CachePage page;
-        public final R result;
-
-        public FindPersistentPageForRead(int persistentPage, CachePage page, R result) {
-            this.persistentPage = persistentPage;
-            this.page = page;
-            this.result = result;
-        }
-    }
-
     public synchronized <R> Optional<R> findPersistentPageForRead(int persistentPage, Fn1<CachePage,R> process) {
         if( process==null )throw new IllegalArgumentException("process==null");
-//        return
-//        find(
-//            cp->cp.getTarget().map(
-//            t->t.equals(persistentPage)
-//            ).orElse(false)
-//        )
-//            .forReadOnce( cp -> {
-//                var r = process.apply(cp);
-//                fire(new FindPersistentPageForRead<R>(persistentPage, cp, r));
-//                return r;
-//            });
         for( var cp: cachePages ){
             if( Objects.equals(cp.target, (Integer)persistentPage) ){
                 return Optional.of(process.apply(cp));
@@ -199,26 +175,8 @@ public class CacheMap {
     }
     //#endregion
     //#region findPersistentPageForWrite
-    public static class findPersistentPageForWrite<R> implements PageEvent {
-        public final int persistentPage;
-        public final CachePage page;
-        public final R result;
-
-        public findPersistentPageForWrite(int persistentPage, CachePage page, R result) {
-            this.persistentPage = persistentPage;
-            this.page = page;
-            this.result = result;
-        }
-    }
-
     public synchronized  <R> Optional<R> findPersistentPageForWrite(int persistentPage, Fn1<CachePage,R> process) {
         if( process==null )throw new IllegalArgumentException("process==null");
-//        return find(cp->cp.getTarget().map(t->t.equals(persistentPage)).orElse(false))
-//            .forWriteOnce(cp -> {
-//                var r = process.apply(cp);
-//                fire(new findPersistentPageForWrite<R>(persistentPage, cp, r));
-//                return r;
-//            });
         for( var cp:cachePages ){
             if(Objects.equals(cp.target, (Integer)persistentPage)){
                 return Optional.of(process.apply(cp));
@@ -352,4 +310,45 @@ public class CacheMap {
             }
         return list;
     }
+
+    //#region read/write lock
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    public <R> R readLock(Supplier<R> code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.readLock().lock();
+            return code.get();
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
+    }
+    public void readLock(Runnable code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.readLock().lock();
+            code.run();
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
+    }
+    public <R> R writeLock(Supplier<R> code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.writeLock().lock();
+            return code.get();
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+    public void writeLock(Runnable code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.writeLock().lock();
+            code.run();
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+    //#endregion
+
 }

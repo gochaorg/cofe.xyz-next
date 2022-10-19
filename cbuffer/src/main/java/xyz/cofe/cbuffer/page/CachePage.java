@@ -68,6 +68,7 @@ public class CachePage {
     }
     //#endregion
     //#region UnTarget
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static class UnTarget implements CachePageEvent {
         public final CachePage page;
         public CachePage page(){ return page; }
@@ -233,4 +234,45 @@ public class CachePage {
     public String toString() {
         return "CachePage { idx="+cachePageIndex+", target="+target+", dirty="+dirty+", dataSize="+dataSize+" }";
     }
+
+    //#region read/write lock
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    public <R> R readLock(Supplier<R> code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.readLock().lock();
+            return code.get();
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
+    }
+    public void readLock(Runnable code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.readLock().lock();
+            code.run();
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
+    }
+    public <R> R writeLock(Supplier<R> code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.writeLock().lock();
+            return code.get();
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+    public void writeLock(Runnable code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.writeLock().lock();
+            code.run();
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+    //#endregion
+
 }
