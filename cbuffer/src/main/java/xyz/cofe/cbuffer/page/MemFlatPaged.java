@@ -3,6 +3,9 @@ package xyz.cofe.cbuffer.page;
 import xyz.cofe.fn.Tuple2;
 
 import java.util.Arrays;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 
 /**
  * Простая постраничная организация памяти
@@ -66,44 +69,45 @@ public class MemFlatPaged implements Paged, ResizablePages {
                 " lastPageSize=" + m.lastPageSize()+
                 " }";
     }
-    protected class MemInfoUsed implements UsedPagesInfo {
+    public class MemInfoUsed implements UsedPagesInfo {
         @Override
-        public int pageCount() {
-            synchronized (MemFlatPaged.this) {
+        public int pageCount()
+        {
+            return readLock(()->{
                 int pc = dataSize / pageSize;
                 int pc_d = dataSize % pageSize;
                 return pc_d > 0 ? pc + 1 : pc;
-            }
+            });
         }
 
         @Override
         public int lastPageSize() {
-            synchronized (MemFlatPaged.this) {
+            return readLock(()->{
                 var size = dataSize % pageSize;
                 return size == 0 ? pageSize : size;
-            }
+            });
         }
 
         @Override
         public int pageSize() {
-            synchronized (MemFlatPaged.this) {
+            return readLock(()->{
                 return pageSize;
-            }
+            });
         }
 
         @SuppressWarnings("MethodDoesntCallSuperMethod")
         @Override
         public UsedPagesInfo clone() {
-            synchronized (MemFlatPaged.this) {
+            return readLock(()->{
                 return new MemInfoUsedClone(this);
-            }
+            });
         }
 
         @Override
         public String toString() {
-            synchronized (MemFlatPaged.this) {
+            return readLock(()->{
                 return MemFlatPaged.toString(this);
-            }
+            });
         }
     }
     protected static class MemInfoUsedClone implements UsedPagesInfo {
@@ -160,64 +164,70 @@ public class MemFlatPaged implements Paged, ResizablePages {
     protected volatile MemInfoUsed memInfo = new MemInfoUsed();
 
     @Override
-    public synchronized UsedPagesInfo memoryInfo() { return memInfo; }
+    public UsedPagesInfo memoryInfo() {
+        return memInfo;
+    }
     //endregion
 
     private static final byte[] empty_bytes = new byte[0];
 
     @Override
     public byte[] readPage(int page) {
-        buffer = buffer;
-        if (page < 0) throw new IllegalArgumentException("page<0");
-        int off = page * pageSize;
-        if (off >= dataSize) return empty_bytes;
-        int tailSize = dataSize - off;
-        int readSize = Math.min(tailSize, pageSize);
-        byte[] buf = new byte[readSize];
-        /////////////////////////////////
-        //   here bug in arraycopy
-        //     System.arraycopy(buffer,off, buf,0, readSize);
-        //   buffer[i] - not sync (visible) in other thread
-        for (int i = 0; i < readSize; i++) {
-            buf[i] = buffer[off + i];
-        }
-        return buf;
+        return readLock(()->{
+            buffer = buffer;
+            if (page < 0) throw new IllegalArgumentException("page<0");
+            int off = page * pageSize;
+            if (off >= dataSize) return empty_bytes;
+            int tailSize = dataSize - off;
+            int readSize = Math.min(tailSize, pageSize);
+            byte[] buf = new byte[readSize];
+            /////////////////////////////////
+            //   here bug in arraycopy
+            //     System.arraycopy(buffer,off, buf,0, readSize);
+            //   buffer[i] - not sync (visible) in other thread
+            for (int i = 0; i < readSize; i++) {
+                buf[i] = buffer[off + i];
+            }
+            return buf;
+        });
     }
 
     @Override
     public void writePage(int page, byte[] data) {
-        buffer = buffer;
-        if (page < 0) throw new IllegalArgumentException("page<0");
-        if (data == null) throw new IllegalArgumentException("data==null");
-        if (data.length > pageSize) throw new IllegalArgumentException("data.length>pageSize");
-        if (data.length < 1) return;
+        readLock(()->{
+            buffer = buffer;
+            if (page < 0) throw new IllegalArgumentException("page<0");
+            if (data == null) throw new IllegalArgumentException("data==null");
+            if (data.length > pageSize) throw new IllegalArgumentException("data.length>pageSize");
+            if (data.length < 1) return;
 
-        int off = page * pageSize;
-        int avail = buffer.length - off;
-        if (avail <= 0) throw new PageError("out of range");
-        if (avail < data.length) throw new PageError("out of range");
+            int off = page * pageSize;
+            int avail = buffer.length - off;
+            if (avail <= 0) throw new PageError("out of range");
+            if (avail < data.length) throw new PageError("out of range");
 
-        /////////////////////////////////
-        //   here bug in arraycopy
-        //     System.arraycopy(data,0, buffer, off, data.length);
-        //   buffer[i] - not sync (visible) in other thread
+            /////////////////////////////////
+            //   here bug in arraycopy
+            //     System.arraycopy(data,0, buffer, off, data.length);
+            //   buffer[i] - not sync (visible) in other thread
 
-        var newBuff = Arrays.copyOf(buffer,buffer.length);
+            var newBuff = Arrays.copyOf(buffer,buffer.length);
 
-        for (int i = 0; i < data.length; i++) {
-            newBuff[off + i] = data[i];
-        }
+            for (int i = 0; i < data.length; i++) {
+                newBuff[off + i] = data[i];
+            }
 
-        int end = off + data.length;
-        if (end > dataSize) {
-            dataSize = end;
-        }
+            int end = off + data.length;
+            if (end > dataSize) {
+                dataSize = end;
+            }
 
-        buffer = newBuff;
-        buffer = buffer;
+            buffer = newBuff;
+            buffer = buffer;
+        });
     }
 
-    private synchronized Tuple2<UsedPagesInfo,UsedPagesInfo> extendPages(int pages) {
+    private Tuple2<UsedPagesInfo,UsedPagesInfo> extendPages(int pages) {
         if( pages<0 )throw new IllegalArgumentException( "pages<0" );
         if( pages==0 )return Tuple2.of(memInfo, memInfo);
 
@@ -234,7 +244,7 @@ public class MemFlatPaged implements Paged, ResizablePages {
         dataSize = (int) nextSize;
         return Tuple2.of(beforeChange,memInfo);
     }
-    private synchronized Tuple2<UsedPagesInfo,UsedPagesInfo> reducePages(int pages) {
+    private Tuple2<UsedPagesInfo,UsedPagesInfo> reducePages(int pages) {
         if( pages<0 )throw new IllegalArgumentException( "pages<0" );
         //if( pages==0 )return Tuple2.of(memInfo, memInfo);
         UsedPagesInfo beforeChange = memInfo.clone();
@@ -252,31 +262,73 @@ public class MemFlatPaged implements Paged, ResizablePages {
     }
 
     @Override
-    public synchronized ResizedPages resizePages(int pages) {
+    public ResizedPages resizePages(int pages) {
         if( pages<0 )throw new IllegalArgumentException( "pages<0" );
-        if( pages==0 ){
-            var before = memoryInfo().clone();
-            buffer = empty_bytes;
-            dataSize = 0;
-            return new ResizedPages(before,memoryInfo().clone());
-        }else {
-            long curPageCnt = memoryInfo().pageCount();
-            long nxtPageCnt = pages;
-            long diffPgeCnt = nxtPageCnt - curPageCnt;
-            if( diffPgeCnt>0 ){
-                if( diffPgeCnt>Integer.MAX_VALUE ){
-                    throw new PageError("can't extend over "+diffPgeCnt+", Integer.MAX_VALUE");
+        return writeLock(()-> {
+            if (pages == 0) {
+                var before = memoryInfo().clone();
+                buffer = empty_bytes;
+                dataSize = 0;
+                return new ResizedPages(before, memoryInfo().clone());
+            } else {
+                long curPageCnt = memoryInfo().pageCount();
+                long nxtPageCnt = pages;
+                long diffPgeCnt = nxtPageCnt - curPageCnt;
+                if (diffPgeCnt > 0) {
+                    if (diffPgeCnt > Integer.MAX_VALUE) {
+                        throw new PageError("can't extend over " + diffPgeCnt + ", Integer.MAX_VALUE");
+                    }
+                    var ext = extendPages((int) diffPgeCnt);
+                    return new ResizedPages(ext.a(), ext.b());
+                } else {
+                    long abs_diff = -diffPgeCnt;
+                    if (abs_diff > Integer.MAX_VALUE) {
+                        throw new PageError("can't reduce over " + abs_diff + ", Integer.MAX_VALUE");
+                    }
+                    var red = reducePages((int) abs_diff);
+                    return new ResizedPages(red.a(), red.b());
                 }
-                var ext = extendPages((int)diffPgeCnt);
-                return new ResizedPages(ext.a(), ext.b());
-            }else{
-                long abs_diff = -diffPgeCnt;
-                if( abs_diff>Integer.MAX_VALUE ){
-                    throw new PageError("can't reduce over "+abs_diff+", Integer.MAX_VALUE");
-                }
-                var red = reducePages((int)abs_diff);
-                return new ResizedPages(red.a(), red.b());
             }
+        });
+    }
+
+    //#region read/write lock
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    public <R> R readLock(Supplier<R> code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.readLock().lock();
+            return code.get();
+        } finally {
+            readWriteLock.readLock().unlock();
         }
     }
+    public void readLock(Runnable code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.readLock().lock();
+            code.run();
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
+    }
+    public <R> R writeLock(Supplier<R> code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.writeLock().lock();
+            return code.get();
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+    public void writeLock(Runnable code){
+        if( code==null )throw new IllegalArgumentException("code==null");
+        try {
+            readWriteLock.writeLock().lock();
+            code.run();
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+    //#endregion
 }
