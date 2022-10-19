@@ -134,7 +134,7 @@ public class CacheMap {
         }
     }
 
-    public synchronized Find find(Predicate<CachePage> what){
+    public Find find(Predicate<CachePage> what){
         if( what==null )throw new IllegalArgumentException("what==null");
         return new Find(what);
     }

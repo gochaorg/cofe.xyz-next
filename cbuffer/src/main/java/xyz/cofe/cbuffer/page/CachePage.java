@@ -33,7 +33,7 @@ public class CachePage {
     public final int cachePageIndex;
 
     public volatile Integer target;
-    public synchronized Optional<Integer> getTarget(){
+    public Optional<Integer> getTarget(){
         var t = target;
         return t!=null ? Optional.of(t) : Optional.empty();
     }
@@ -60,7 +60,7 @@ public class CachePage {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public synchronized Optional<Integer> assignTarget(int target){
+    public Optional<Integer> assignTarget(int target){
         var old = getTarget();
         this.target = target;
         fire(new AssignTarget(this));
@@ -90,7 +90,7 @@ public class CachePage {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public synchronized Optional<Integer> unTarget(){
+    public Optional<Integer> unTarget(){
         var old = getTarget();
         this.target = null;
         this.dirty = false;

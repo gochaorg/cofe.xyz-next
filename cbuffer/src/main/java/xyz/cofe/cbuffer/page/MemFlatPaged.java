@@ -55,7 +55,7 @@ public class MemFlatPaged implements Paged, ResizablePages {
         this.dataSize = capacity;
     }
 
-    public synchronized byte[] buffer(){ return buffer; }
+    public byte[] buffer(){ return buffer; }
 
     //region memInfo, memoryInfo(),
     private static String toString(UsedPagesInfo m){
@@ -166,61 +166,55 @@ public class MemFlatPaged implements Paged, ResizablePages {
     private static final byte[] empty_bytes = new byte[0];
 
     @Override
-    public synchronized byte[] readPage(int page) {
-        synchronized (this) {
-            synchronized (buffer) {
-                buffer = buffer;
-                if (page < 0) throw new IllegalArgumentException("page<0");
-                int off = page * pageSize;
-                if (off >= dataSize) return empty_bytes;
-                int tailSize = dataSize - off;
-                int readSize = Math.min(tailSize, pageSize);
-                byte[] buf = new byte[readSize];
-                /////////////////////////////////
-                //   here bug in arraycopy
-                //     System.arraycopy(buffer,off, buf,0, readSize);
-                //   buffer[i] - not sync (visible) in other thread
-                for (int i = 0; i < readSize; i++) {
-                    buf[i] = buffer[off + i];
-                }
-                return buf;
-            }
+    public byte[] readPage(int page) {
+        buffer = buffer;
+        if (page < 0) throw new IllegalArgumentException("page<0");
+        int off = page * pageSize;
+        if (off >= dataSize) return empty_bytes;
+        int tailSize = dataSize - off;
+        int readSize = Math.min(tailSize, pageSize);
+        byte[] buf = new byte[readSize];
+        /////////////////////////////////
+        //   here bug in arraycopy
+        //     System.arraycopy(buffer,off, buf,0, readSize);
+        //   buffer[i] - not sync (visible) in other thread
+        for (int i = 0; i < readSize; i++) {
+            buf[i] = buffer[off + i];
         }
+        return buf;
     }
 
     @Override
-    public synchronized void writePage(int page, byte[] data) {
-        synchronized (this) {
-            buffer = buffer;
-            if (page < 0) throw new IllegalArgumentException("page<0");
-            if (data == null) throw new IllegalArgumentException("data==null");
-            if (data.length > pageSize) throw new IllegalArgumentException("data.length>pageSize");
-            if (data.length < 1) return;
+    public void writePage(int page, byte[] data) {
+        buffer = buffer;
+        if (page < 0) throw new IllegalArgumentException("page<0");
+        if (data == null) throw new IllegalArgumentException("data==null");
+        if (data.length > pageSize) throw new IllegalArgumentException("data.length>pageSize");
+        if (data.length < 1) return;
 
-            int off = page * pageSize;
-            int avail = buffer.length - off;
-            if (avail <= 0) throw new PageError("out of range");
-            if (avail < data.length) throw new PageError("out of range");
+        int off = page * pageSize;
+        int avail = buffer.length - off;
+        if (avail <= 0) throw new PageError("out of range");
+        if (avail < data.length) throw new PageError("out of range");
 
-            /////////////////////////////////
-            //   here bug in arraycopy
-            //     System.arraycopy(data,0, buffer, off, data.length);
-            //   buffer[i] - not sync (visible) in other thread
+        /////////////////////////////////
+        //   here bug in arraycopy
+        //     System.arraycopy(data,0, buffer, off, data.length);
+        //   buffer[i] - not sync (visible) in other thread
 
-            var newBuff = Arrays.copyOf(buffer,buffer.length);
+        var newBuff = Arrays.copyOf(buffer,buffer.length);
 
-            for (int i = 0; i < data.length; i++) {
-                newBuff[off + i] = data[i];
-            }
-
-            int end = off + data.length;
-            if (end > dataSize) {
-                dataSize = end;
-            }
-
-            buffer = newBuff;
-            buffer = buffer;
+        for (int i = 0; i < data.length; i++) {
+            newBuff[off + i] = data[i];
         }
+
+        int end = off + data.length;
+        if (end > dataSize) {
+            dataSize = end;
+        }
+
+        buffer = newBuff;
+        buffer = buffer;
     }
 
     private synchronized Tuple2<UsedPagesInfo,UsedPagesInfo> extendPages(int pages) {
