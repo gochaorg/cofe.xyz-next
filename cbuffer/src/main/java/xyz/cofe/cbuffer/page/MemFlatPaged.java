@@ -7,7 +7,7 @@ import java.util.Arrays;
 /**
  * Простая постраничная организация памяти
  */
-public class MemPaged implements Paged, ResizablePages {
+public class MemFlatPaged implements Paged, ResizablePages {
     protected int pageSize;
     protected volatile byte[] buffer;
     protected int dataSize;
@@ -20,7 +20,7 @@ public class MemPaged implements Paged, ResizablePages {
      * @param buffer буфер памяти или null
      * @param dataSize размер используемой памяти, не должен превышать capacity
      */
-    public MemPaged(int pageSize, int capacity, byte[] buffer, int dataSize){
+    public MemFlatPaged(int pageSize, int capacity, byte[] buffer, int dataSize){
         if( pageSize<1 )throw new IllegalArgumentException( "pageSize<1" );
         if( capacity<1 )throw new IllegalArgumentException( "capacity<1" );
 
@@ -46,7 +46,7 @@ public class MemPaged implements Paged, ResizablePages {
      * @param pageSize размер страницы, мин 1
      * @param capacity объем памяти в байтах, мин 1
      */
-    public MemPaged(int pageSize, int capacity){
+    public MemFlatPaged(int pageSize, int capacity){
         if( pageSize<1 )throw new IllegalArgumentException( "pageSize<1" );
         if( capacity<1 )throw new IllegalArgumentException( "capacity<1" );
 
@@ -93,7 +93,7 @@ public class MemPaged implements Paged, ResizablePages {
 
         @Override
         public String toString() {
-            return MemPaged.toString(this);
+            return MemFlatPaged.toString(this);
         }
     }
     protected static class MemInfoUsedClone implements UsedPagesInfo {
@@ -144,7 +144,7 @@ public class MemPaged implements Paged, ResizablePages {
 
         @Override
         public String toString() {
-            return MemPaged.toString(this);
+            return MemFlatPaged.toString(this);
         }
     }
     protected MemInfoUsed memInfo = new MemInfoUsed();

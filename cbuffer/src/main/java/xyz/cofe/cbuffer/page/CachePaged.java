@@ -157,7 +157,7 @@ public class CachePaged implements Paged {
     }
 
     @Override
-    public byte[] readPage(int page) {
+    public synchronized byte[] readPage(int page) {
         return readPersistentLock(page,()->{
             // 1 найти в кеше -> вернуть из кеша
             var fromCache = cacheMap.findPersistentPageForRead(page,cp->{
@@ -204,7 +204,7 @@ public class CachePaged implements Paged {
     }
 
     @Override
-    public void writePage(int page, byte[] data2write) {
+    public synchronized void writePage(int page, byte[] data2write) {
         System.out.println("writePage page="+page+" writePersistentLock");
         writePersistentLock(page,()->{
             // 1 найти в кеше -> записать в кеш
@@ -278,7 +278,7 @@ public class CachePaged implements Paged {
     }
 
     @Override
-    public void updatePage(int page, Fn1<byte[], byte[]> update) {
+    public synchronized void updatePage(int page, Fn1<byte[], byte[]> update) {
         if (update == null) throw new IllegalArgumentException("update==null");
         writePersistentLock(page,()-> {
             if (cacheMap.findPersistentPageForWrite(page, cp -> {
@@ -367,13 +367,13 @@ public class CachePaged implements Paged {
         new Object(), new Object(), new Object(), new Object(),
     };
 
-    private <R> R readPersistentLock1(int page, Supplier<R> code) {
+    private synchronized  <R> R readPersistentLock1(int page, Supplier<R> code) {
         final var obj = plocks[page % plocks.length];
         synchronized (obj){
             return code.get();//
         }
     }
-    private void writePersistentLock1(int page, Runnable code) {
+    private synchronized void writePersistentLock1(int page, Runnable code) {
         final var obj = plocks[page % plocks.length];
         synchronized (obj){
             code.run();

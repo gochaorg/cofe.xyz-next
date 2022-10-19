@@ -72,14 +72,15 @@ public class ConcurrentCachePagedTest {
             try {
                 for (var i = 0; i < cyclesTotal; i++) {
                     var page = ThreadLocalRandom.current().nextInt(cache.memoryInfo().pageCount());
-                    cache.updatePage(
-                        page,
-                        bytes -> {
-                            //synchronized (this) {
+                    synchronized (cache) {
+                        cache.updatePage(
+                            page,
+                            bytes -> {
+                                //synchronized (this) {
                                 var num_a = readInt(bytes, 0);
                                 var num_b = num_a + 1;
                                 //writeInt(bytes, 0, num_b);
-                                var newBytes = Arrays.copyOf(bytes,bytes.length);
+                                var newBytes = Arrays.copyOf(bytes, bytes.length);
                                 writeInt(newBytes, 0, num_b);
                                 try {
                                     Thread.sleep(ThreadLocalRandom.current().nextLong(Math.abs(maxSleep - minSleep) + Math.min(maxSleep, minSleep)));
@@ -90,9 +91,10 @@ public class ConcurrentCachePagedTest {
                                 log.accept(getId(), page, num_a, num_b);
                                 // return bytes;
                                 return newBytes;
-                            //}
-                        }
-                    );
+                                //}
+                            }
+                        );
+                    }
                 }
             } catch (Throwable err){
                 dead = true;
@@ -105,8 +107,14 @@ public class ConcurrentCachePagedTest {
     public void test(){
         int pageSize = 1024;
 
-        var fast = new MemPaged(pageSize, pageSize*4);
-        var slow = new MemPaged(pageSize, pageSize*8);
+//        var fast = new MemFlatPaged(pageSize, pageSize*4);
+//        var slow = new MemFlatPaged(pageSize, pageSize*8);
+
+        var fast = new MemChunkPaged(pageSize);
+        fast.resizePages(4);
+
+        var slow = new MemChunkPaged(pageSize);
+        slow.resizePages(8);
 
         var initData = new byte[pageSize];
         Arrays.fill(initData,(byte)0);
@@ -157,6 +165,24 @@ public class ConcurrentCachePagedTest {
         System.out.println("succ count = "+workers.stream().filter(w -> !w.dead).count());
         System.out.println("worker cyclesExec min "+workers.stream().map(w->w.cyclesExec).min(Integer::compare));
         System.out.println("worker cyclesExec max "+workers.stream().map(w->w.cyclesExec).max(Integer::compare));
+
+        ////////////////////
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        numbers = new ArrayList<Integer>();
+        sum = 0;
+        for( var p=0;p<cache.memoryInfo().pageCount();p++ ){
+            var bytes = cache.readPage(p);
+            var num = readInt(bytes,0);
+            numbers.add(num);
+            sum += num;
+        }
+        System.out.println("sum = "+sum);
+        System.out.println("num = "+numbers);
+        ////////////////////
 
         var pageHistory = new TreeMap<Integer, List<Tuple3<Long,Integer,Integer>>>();
         log.forEach(t4 -> {

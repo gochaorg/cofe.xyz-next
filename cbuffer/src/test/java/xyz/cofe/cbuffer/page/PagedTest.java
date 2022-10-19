@@ -22,7 +22,7 @@ public class PagedTest {
     public void memAlignedTest(){
         var pageSize = 1024;
 
-        var memPaged = new MemPaged(pageSize, pageSize*16);
+        var memPaged = new MemFlatPaged(pageSize, pageSize*16);
         var mi = memPaged.memoryInfo();
         assertTrue(mi.pageCount()==16);
         assertTrue(mi.lastPageSize()==pageSize);
@@ -32,7 +32,7 @@ public class PagedTest {
     public void memNonAlignedTest(){
         var pageSize = 1024;
 
-        var memPaged = new MemPaged(pageSize, pageSize*8+pageSize/2);
+        var memPaged = new MemFlatPaged(pageSize, pageSize*8+pageSize/2);
         var mi = memPaged.memoryInfo();
         assertTrue(mi.pageCount()==9);
         assertTrue(mi.lastPageSize()==pageSize/2);
@@ -118,7 +118,7 @@ public class PagedTest {
     @Test
     public void testMemErr(){
         var pageSize = 1024;
-        var memPaged = new MemPaged(pageSize, pageSize*8+pageSize/2);
+        var memPaged = new MemFlatPaged(pageSize, pageSize*8+pageSize/2);
         testCheckErr(memPaged);
     }
 
@@ -170,7 +170,7 @@ public class PagedTest {
     @Test
     public void testWriteMem() {
         var pageSize = 1024;
-        var memPaged = new MemPaged(pageSize, pageSize*8+pageSize/2);
+        var memPaged = new MemFlatPaged(pageSize, pageSize*8+pageSize/2);
 
         testWrite(memPaged, (from,to)-> Arrays.copyOfRange(memPaged.buffer(), from, to) );
 

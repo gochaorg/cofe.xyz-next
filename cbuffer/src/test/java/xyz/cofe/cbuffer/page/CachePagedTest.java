@@ -1,7 +1,6 @@
 package xyz.cofe.cbuffer.page;
 
 import org.junit.Test;
-import xyz.cofe.cbuffer.MemContentBuffer;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -18,8 +17,8 @@ public class CachePagedTest {
     public void test() {
         int pageSize = 1024;
 
-        var fast = new MemPaged(pageSize, pageSize*4);
-        var slow = new MemPaged(pageSize, pageSize*64);
+        var fast = new MemFlatPaged(pageSize, pageSize*4);
+        var slow = new MemFlatPaged(pageSize, pageSize*64);
         var cache = new CachePaged(fast,slow);
         cache.addListener(ev -> {
             if( ev instanceof CachePage.CachePageEvent ){
