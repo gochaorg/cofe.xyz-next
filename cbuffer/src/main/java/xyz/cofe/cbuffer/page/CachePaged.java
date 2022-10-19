@@ -164,9 +164,11 @@ public class CachePaged implements Paged {
             return readPersistentLock(page,()->{
                 // 1 найти в кеше -> вернуть из кеша
                 var fromCache = cacheMap.findPersistentPageForRead(page, cp -> {
-                    fire(new CacheHit(page, true));
-                    cp.markReads();
-                    return cache.readPage(cp.cachePageIndex);
+                    return cp.readLock(()->{
+                        fire(new CacheHit(page, true));
+                        cp.markReads();
+                        return cache.readPage(cp.cachePageIndex);
+                    });
                 });
                 if (fromCache.isPresent()) return fromCache.get();
 
@@ -176,22 +178,26 @@ public class CachePaged implements Paged {
                 var result = new AtomicReference<byte[]>(null);
                 cacheMap.allocate(
                     cp -> {
-                        cp.unTarget();
+                        cp.writeLock(()->{
+                            cp.unTarget();
 
-                        var data = persistent.readPage(page);
-                        fire(new PageLoaded(page, data));
+                            var data = persistent.readPage(page);
+                            fire(new PageLoaded(page, data));
 
-                        cache.writePage(cp.cachePageIndex, data);
-                        fire(new CacheWrote(page, cp.cachePageIndex, data));
+                            cache.writePage(cp.cachePageIndex, data);
+                            fire(new CacheWrote(page, cp.cachePageIndex, data));
 
-                        cp.setDataSize(data.length);
-                        cp.assignTarget(page);
-                        cp.markMapped();
-                        result.set(data);
+                            cp.setDataSize(data.length);
+                            cp.assignTarget(page);
+                            cp.markMapped();
+                            result.set(data);
+                        });
                     },
                     fr -> {
-                        flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
-                        fr.cachePage.markFlushed();
+                        fr.cachePage.readLock(()->{
+                            flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
+                            fr.cachePage.markFlushed();
+                        });
                     }
                 );
 
@@ -209,7 +215,7 @@ public class CachePaged implements Paged {
             writePersistentLock(page,()->{
                 // 1 найти в кеше -> записать в кеш
                 if (cacheMap.findPersistentPageForWrite(page, cachePage -> {
-                    synchronized (cachePage) {
+                    return cachePage.writeLock(()->{
                         fire(new CacheHit(page, false));
                         var dataToWrite = data2write;
                         if (cachePage.getDataSize().isPresent()) {
@@ -223,7 +229,7 @@ public class CachePaged implements Paged {
 
                         cachePage.markWrote();
                         return true;
-                    }
+                    });
                 }).orElse(false)) return;
 
                 fire(new CacheMiss(page, false));
@@ -232,7 +238,7 @@ public class CachePaged implements Paged {
                 var allocated = new AtomicBoolean(false);
                 cacheMap.allocate(
                     cp -> {
-                        synchronized (cp) {
+                        cp.writeLock(()->{
                             cp.unTarget();
 
                             var data2persist = persistent.readPage(page);
@@ -255,11 +261,13 @@ public class CachePaged implements Paged {
 
                             cp.markWrote();
                             allocated.set(true);
-                        }
+                        });
                     },
                     fr -> {
-                        flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
-                        fr.cachePage.markFlushed();
+                        fr.cachePage.readLock(()->{
+                            flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
+                            fr.cachePage.markFlushed();
+                        });
                     }
                 );
 
@@ -276,7 +284,7 @@ public class CachePaged implements Paged {
         readLock(()->{
             writePersistentLock(page,()->{
                 if (cacheMap.findPersistentPageForWrite(page, cp -> {
-                    synchronized (cp) {
+                    return cp.writeLock(()->{
                         fire(new CacheHit(page, false));
 
                         var cacheData = cache.readPage(cp.cachePageIndex);
@@ -288,7 +296,7 @@ public class CachePaged implements Paged {
                         cp.markWrote();
 
                         return true;
-                    }
+                    });
                 }).orElse(false)) {
                     return;
                 }
@@ -298,7 +306,7 @@ public class CachePaged implements Paged {
                 var allocated = new AtomicBoolean(false);
                 cacheMap.allocate(
                     cp -> {
-                        synchronized (cp) {
+                        cp.writeLock(()->{
                             cp.unTarget();
 
                             var persistData = persistent.readPage(page);
@@ -315,11 +323,13 @@ public class CachePaged implements Paged {
 
                             cp.markWrote();
                             allocated.set(true);
-                        }
+                        });
                     },
                     fr -> {
-                        flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
-                        fr.cachePage.markFlushed();
+                        fr.cachePage.readLock(()->{
+                            flushCachePage(fr.cachedPageIndex, fr.persistentPageIndex);
+                            fr.cachePage.markFlushed();
+                        });
                     }
                 );
                 if (!allocated.get()) {

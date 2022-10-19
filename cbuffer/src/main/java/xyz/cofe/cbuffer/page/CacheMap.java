@@ -64,7 +64,7 @@ public class CacheMap {
      * @return кол-во страниц
      */
     public int size(){
-        return cachePages.size();
+        return readLock(cachePages::size);
     }
 
     private final PageListener popupEvent = listeners::fire;
@@ -80,73 +80,49 @@ public class CacheMap {
      * @param flushing запрос на сохранение страницы
      */
     public void resize(int newSize, Consumer<FlushRequest> flushing){
-        if(newSize<0) throw new IllegalArgumentException("newSize<0");
-        if(flushing==null) throw new IllegalArgumentException("flushing==null");
+        writeLock(()->{
+            if(newSize<0) throw new IllegalArgumentException("newSize<0");
+            if(flushing==null) throw new IllegalArgumentException("flushing==null");
 
-        if( cachePages.size()==newSize )return;
-        if( cachePages.size()<newSize ){
-            var extend = newSize - cachePages.size();
-            var fromIdx = cachePages.size();
-            for( int i=0;i<extend;i++ ){
-                var cachePage = new CachePage(fromIdx+i);
-                cachePage.addListener(popupEvent);
-                cachePage.addListener(mapPersistent2cache);
-                cachePages.add(cachePage);
-            }
-        }else{
-            var reduceSize = cachePages.size() - newSize;
-            var reduceList = new ArrayList<Tuple2<Integer,CachePage>>(reduceSize);
-            for( int i=cachePages.size()-1; i>=0; i-- ){
-                reduceList.add(Tuple2.of(i,cachePages.get(i)));
-            }
-
-            for (var cp:reduceList) {
-                if( cp.b().isDirty() && cp.b().getTarget().isPresent() ){
-                    flushing.accept(new FlushRequest(cp.a(), cp.b()));
+            if( cachePages.size()==newSize )return;
+            if( cachePages.size()<newSize ){
+                var extend = newSize - cachePages.size();
+                var fromIdx = cachePages.size();
+                for( int i=0;i<extend;i++ ){
+                    var cachePage = new CachePage(fromIdx+i);
+                    cachePage.addListener(popupEvent);
+                    cachePage.addListener(mapPersistent2cache);
+                    cachePages.add(cachePage);
                 }
-                cachePages.remove(cp.a().intValue());
-                cp.b().removeListener(popupEvent);
-                cp.b().removeListener(mapPersistent2cache);
+            }else{
+                var reduceSize = cachePages.size() - newSize;
+                var reduceList = new ArrayList<Tuple2<Integer,CachePage>>(reduceSize);
+                for( int i=cachePages.size()-1; i>=0; i-- ){
+                    reduceList.add(Tuple2.of(i,cachePages.get(i)));
+                }
+
+                for (var cp:reduceList) {
+                    if( cp.b().isDirty() && cp.b().getTarget().isPresent() ){
+                        flushing.accept(new FlushRequest(cp.a(), cp.b()));
+                    }
+                    cachePages.remove(cp.a().intValue());
+                    cp.b().removeListener(popupEvent);
+                    cp.b().removeListener(mapPersistent2cache);
+                }
             }
-        }
+        });
     }
     //#endregion
     //#region find()
     public class Find {
-        private void log(String message){
-            System.out.println("[TH:"+Thread.currentThread().getId()+"] "+message);
-        }
-
         public final Predicate<CachePage> what;
 
         public Find(Predicate<CachePage> what) {
             this.what = what;
         }
 
-        public <R> Optional<R> forWriteOnce(Fn1<CachePage,R> update){
-            synchronized (CacheMap.this) {
-                for (var cp : cachePages) {
-                    if (what.test(cp)) {
-                        return Optional.of(update.apply(cp));
-                    }
-                }
-                return Optional.empty();
-            }
-        }
-
-        public <R> Optional<R> forReadOnce(Fn1<CachePage,R> reading){
-            synchronized (CacheMap.this) {
-                for (var cp : cachePages) {
-                    if (what.test(cp)) {
-                        return Optional.of(reading.apply(cp));
-                    }
-                }
-                return Optional.empty();
-            }
-        }
-
         public List<CachePage> go() {
-            synchronized (CacheMap.this) {
+            return readLock(()->{
                 var pages = new ArrayList<CachePage>();
                 for (var cp : cachePages) {
                     if (what.test(cp)) {
@@ -154,7 +130,7 @@ public class CacheMap {
                     }
                 }
                 return pages;
-            }
+            });
         }
     }
 
@@ -164,25 +140,29 @@ public class CacheMap {
     }
     //#endregion
     //#region findPersistentPageForRead
-    public synchronized <R> Optional<R> findPersistentPageForRead(int persistentPage, Fn1<CachePage,R> process) {
-        if( process==null )throw new IllegalArgumentException("process==null");
-        for( var cp: cachePages ){
-            if( Objects.equals(cp.target, (Integer)persistentPage) ){
-                return Optional.of(process.apply(cp));
+    public <R> Optional<R> findPersistentPageForRead(int persistentPage, Fn1<CachePage,R> process) {
+        return readLock(()->{
+            if( process==null )throw new IllegalArgumentException("process==null");
+            for( var cp: cachePages ){
+                if( Objects.equals(cp.target, (Integer)persistentPage) ){
+                    return Optional.of(process.apply(cp));
+                }
             }
-        }
-        return Optional.empty();
+            return Optional.empty();
+        });
     }
     //#endregion
     //#region findPersistentPageForWrite
-    public synchronized  <R> Optional<R> findPersistentPageForWrite(int persistentPage, Fn1<CachePage,R> process) {
-        if( process==null )throw new IllegalArgumentException("process==null");
-        for( var cp:cachePages ){
-            if(Objects.equals(cp.target, (Integer)persistentPage)){
-                return Optional.of(process.apply(cp));
+    public <R> Optional<R> findPersistentPageForWrite(int persistentPage, Fn1<CachePage,R> process) {
+        return readLock(()->{
+            if( process==null )throw new IllegalArgumentException("process==null");
+            for( var cp:cachePages ){
+                if(Objects.equals(cp.target, (Integer)persistentPage)){
+                    return Optional.of(process.apply(cp));
+                }
             }
-        }
-        return Optional.empty();
+            return Optional.empty();
+        });
     }
     //#endregion
 
@@ -240,10 +220,10 @@ public class CacheMap {
      * @param consumer получтель страницы
      */
     @SuppressWarnings("OptionalGetWithoutIsPresent")
-    public synchronized void allocate(Consumer<CachePage> consumer, Consumer<FlushRequest> flushing){
+    public void allocate(Consumer<CachePage> consumer, Consumer<FlushRequest> flushing){
         if(consumer==null)throw new IllegalArgumentException("consumer==null");
         if(flushing==null)throw new IllegalArgumentException("flushing==null");
-        synchronized (this) {
+        readLock(()->{
             // 1 первая не размеченная страница
             var unmapped = findUnmapped();
             if (!unmapped.isEmpty()) {
@@ -279,36 +259,41 @@ public class CacheMap {
                 fire(new AllocatedCleaned(cp));
                 consumer.accept(cp);
             }
-        }
+        });
     }
 
-    private synchronized List<CachePage> findUnmapped(){
+    private List<CachePage> findUnmapped(){
         return find(cp -> cp.getTarget().isEmpty()).go();
     }
 
-    private synchronized List<CachePage> findDirty(){
+    private List<CachePage> findDirty(){
         return find(cp -> cp.getTarget().isPresent() && cp.isDirty()).go();
     }
     //#endregion
 
-    public synchronized void flush( Consumer<FlushRequest> flushing ){
+    public void flush( Consumer<FlushRequest> flushing ){
         if(flushing==null)throw new IllegalArgumentException("flushing==null");
-        var dirtyPages = findDirty();
-        dirtyPages.forEach( cp -> {
-            if( cp.isDirty() && cp.getTarget().isPresent() ){
-                flushing.accept(new FlushRequest(cp.getTarget().get(), cp));
-            }
+
+        readLock(()->{
+            var dirtyPages = findDirty();
+            dirtyPages.forEach( cp -> {
+                if( cp.isDirty() && cp.getTarget().isPresent() ){
+                    flushing.accept(new FlushRequest(cp.getTarget().get(), cp));
+                }
+            });
         });
     }
 
-    public synchronized List<CachePage> dirtyPages(){
-        var list = new ArrayList<CachePage>();
-            for( var cp : cachePages ){
-                if( cp.isDirty() && cp.getTarget().isPresent() ){
-                    list.add(cp);
+    public List<CachePage> dirtyPages(){
+        return readLock(()->{
+            var list = new ArrayList<CachePage>();
+                for( var cp : cachePages ){
+                    if( cp.isDirty() && cp.getTarget().isPresent() ){
+                        list.add(cp);
+                    }
                 }
-            }
-        return list;
+            return list;
+        });
     }
 
     //#region read/write lock
