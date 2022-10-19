@@ -53,6 +53,7 @@ public class CachePaged implements Paged {
     }
 
     private final Paged cache;
+
     private final Paged persistent;
 
     private void flushCachePage(int cachePage, int persistentPageIndex){
