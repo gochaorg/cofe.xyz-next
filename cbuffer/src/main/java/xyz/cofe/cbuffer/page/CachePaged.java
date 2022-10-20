@@ -10,30 +10,67 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
-public class CachePaged implements Paged {
+/**
+ * Кеш страниц памяти
+ *
+ * <p> отображает страницы кеш памяти на страницы постоянной памяти,
+ * по мере необходимости загружает страницы из постоянной в кеш память
+ * и выгружает страницы из кеша в постоянную память.
+ *
+ * <p>
+ *     Отображением страниц кеша на постоянную занимается {@link CacheMap}
+ * @param <CACHEPAGES> Страницы кеша
+ * @param <PERSISTPAGES> Страницы постоянной памяти
+ */
+public class CachePaged<CACHEPAGES extends Paged & ResizablePages, PERSISTPAGES extends Paged & ResizablePages> implements Paged, ResizablePages {
     //#region listeners
     private final PageListener.PageListenerSupport listeners = new PageListener.PageListenerSupport();
 
+    /**
+     * Добавление подписчика на события
+     * @param listener подписчик
+     */
     public void addListener(PageListener listener) {
         listeners.addListener(listener);
     }
 
+    /**
+     * Удаление подписчика
+     * @param listener подписчик
+     */
     public void removeListener(PageListener listener) {
         listeners.removeListener(listener);
     }
 
+    /**
+     * Проверка наличия подписчика
+     * @param listener подписчик
+     * @return true - подписчик
+     */
     public boolean hasListener(PageListener listener) {
         return listeners.hasListener(listener);
     }
 
+    /**
+     * Уведомить подписчиков о событии
+     * @param event событие
+     */
     public void fire(PageEvent event) {
         listeners.fire(event);
     }
     //#endregion
 
-    public CachePaged(Paged cache, Paged persistent){
+    /**
+     * Конструктор
+     * @param cache кеш страниц временных данных
+     * @param persistent странцы постоянной памяти
+     */
+    public CachePaged(CACHEPAGES cache, PERSISTPAGES persistent){
         if( cache==null )throw new IllegalArgumentException("cache==null");
         if( persistent==null )throw new IllegalArgumentException("persistent==null");
+
+        if( cache.memoryInfo().pageCount()<1 )throw new IllegalArgumentException("cache.memoryInfo().pageCount()<1");
+        if( persistent.memoryInfo().pageCount()<cache.memoryInfo().pageCount() )throw new IllegalArgumentException("persistent.memoryInfo().pageCount()<cache.memoryInfo().pageCount()");
 
         if( cache.memoryInfo().pageSize()!=persistent.memoryInfo().pageSize() )
             throw new PageError("pageSize different between cache and persistent");
@@ -45,28 +82,96 @@ public class CachePaged implements Paged {
         cacheMap.addListener(listeners::fire);
     }
 
+    /**
+     * Изменение размера кеша
+     * @param pages кол-во страниц памяти
+     */
+    public void resizeCachePages(int pages){
+        if(pages<1)throw new IllegalArgumentException("pages<1");
+        writeLock(()->{
+            if(pages > persistent.memoryInfo().pageCount())throw new IllegalArgumentException("pages > persistent.memoryInfo().pageCount()");
+            cacheMap.writeLock(()->{
+                cacheMap.resize(pages, ev -> {
+                    flushCachePage(ev.cachedPageIndex, ev.persistentPageIndex);
+                });
+                cache.resizePages(pages);
+            });
+        });
+    }
+
+    /**
+     * Изменение размера постоянной памяти
+     * @param pages целевое кол-во страниц
+     * @return как изменилось память
+     */
+    public ResizedPages resizePages(int pages){
+        if(pages<1)throw new IllegalArgumentException("pages<1");
+        return writeLock(()->{
+            return cacheMap.writeLock(()->{
+                var before = memoryInfo().clone();
+                if( cacheMap.size()>pages ){
+                    cacheMap.resize(pages, ev -> {
+                        flushCachePage(ev.cachedPageIndex, ev.persistentPageIndex);
+                    });
+                    cache.resizePages(pages);
+                }
+                persistent.resizePages(pages);
+                var after = memoryInfo().clone();
+                return new ResizedPages(before,after);
+            });
+        });
+    }
+
     private final CacheMap cacheMap;
+
+    /**
+     * Распределение страниц памяти
+     * @return Распределение страниц памяти
+     */
     public CacheMap getCacheMap(){ return cacheMap; }
 
+    /**
+     * Размер кеша
+     * @return кол-во страниц
+     */
     public int getCacheSize(){
         return cacheMap.size();
     }
 
-    private final Paged cache;
+    private final CACHEPAGES cache;
 
-    private final Paged persistent;
+    /**
+     * Кеш страниц паямти
+     * @return Кеш страниц паямти
+     */
+    public CACHEPAGES getCache(){ return cache; }
+
+    private final PERSISTPAGES persistent;
+
+    /**
+     * Страницы постоянной памяти
+     * @return Страницы постоянной памяти
+     */
+    public PERSISTPAGES getPersistent(){ return persistent; }
 
     private void flushCachePage(int cachePage, int persistentPageIndex){
         persistent.writePage(persistentPageIndex,cache.readPage(cachePage));
         fire(new FlushCachePage(cachePage,persistentPageIndex));
     }
 
+    /**
+     * Информация о памяти (постоянной)
+     * @return информация памяти
+     */
     @Override
     public UsedPagesInfo memoryInfo() {
         return persistent.memoryInfo();
     }
 
     //#region events
+    /**
+     * Событие записи страницы из кеша в постоянную память
+     */
     public static class FlushCachePage implements PageEvent {
         public final int cachePage;
         public final int persistentPageIndex;
@@ -85,6 +190,9 @@ public class CachePaged implements Paged {
         }
     }
 
+    /**
+     * Промах поиска страницы в кеше
+     */
     public static class CacheMiss implements PageEvent {
         public final int persistentPageIndex;
         public final boolean read;
@@ -103,6 +211,9 @@ public class CachePaged implements Paged {
         }
     }
 
+    /**
+     * Успешный поиск страницы в памяти
+     */
     public static class CacheHit implements PageEvent {
         public final int persistentPageIndex;
         public final boolean read;
@@ -121,6 +232,9 @@ public class CachePaged implements Paged {
         }
     }
 
+    /**
+     * Странца из постоянной памяти загружена в кеш
+     */
     public static class PageLoaded implements PageEvent {
         public final int persistentPageIndex;
         public final byte[] data;
@@ -138,6 +252,9 @@ public class CachePaged implements Paged {
         }
     }
 
+    /**
+     * Измененна страница кеша
+     */
     public static class CacheWrote implements PageEvent {
         public final int persistentPageIndex;
         public final int cachePageIndex;
@@ -159,6 +276,11 @@ public class CachePaged implements Paged {
     }
     //#endregion
 
+    /**
+     * Чтение страницы
+     * @param page индекс страницы, от 0 и более
+     * @return данные страницы
+     */
     @Override
     public byte[] readPage(int page) {
         return readLock(()->{
@@ -210,6 +332,11 @@ public class CachePaged implements Paged {
         });
     }
 
+    /**
+     * Запись страницы
+     * @param page индекс страницы, от 0 и более
+     * @param data2write массив байтов, размер не должен превышать {@link UsedPagesInfo#pageSize()}
+     */
     @Override
     public void writePage(int page, byte[] data2write) {
         readLock(()->{
@@ -279,6 +406,11 @@ public class CachePaged implements Paged {
         });
     }
 
+    /**
+     * Атомарное изменение страницы
+     * @param page индекс страницы
+     * @param update функция обновления
+     */
     @Override
     public void updatePage(int page, Fn1<byte[], byte[]> update) {
         if (update == null) throw new IllegalArgumentException("update==null");
@@ -340,6 +472,9 @@ public class CachePaged implements Paged {
         });
     }
 
+    /**
+     * Запись всех измененных страниц кеша в постоянную память
+     */
     public void flush(){
         writeLock(()->{
             cacheMap.flush(ev -> {
@@ -366,6 +501,14 @@ public class CachePaged implements Paged {
         }
         return new ArrayList<>(lockSet);
     }
+
+    /**
+     * Блокировка страницы постоянной памяти для чтения
+     * @param page индекс страницы
+     * @param code функция выполняемая в период блокировки
+     * @return результат выполнения функции
+     * @param <R> выполнения функции
+     */
     public <R> R readPersistentLock(int page, Supplier<R> code) {
         if( code==null )throw new IllegalArgumentException("code==null");
         var locks = persistentLocks(page);
@@ -376,6 +519,14 @@ public class CachePaged implements Paged {
             locks.forEach(lck->lck.readLock().unlock());
         }
     }
+
+    /**
+     * Блокировка страницы постоянной памяти для чтения
+     * @param pages индекс страницы
+     * @param code функция выполняемая в период блокировки
+     * @return результат выполнения функции
+     * @param <R> выполнения функции
+     */
     public <R> R readPersistentLock(int[] pages, Supplier<R> code) {
         if( code==null )throw new IllegalArgumentException("code==null");
         var locks = persistentLocks(pages);
@@ -386,6 +537,12 @@ public class CachePaged implements Paged {
             locks.forEach(lck->lck.readLock().unlock());
         }
     }
+
+    /**
+     * Блокировка страницы постоянной памяти для записи
+     * @param page индекс страницы
+     * @param code функция выполняемая в период блокировки
+     */
     public void writePersistentLock(int page, Runnable code) {
         if( code==null )throw new IllegalArgumentException("code==null");
         var locks = persistentLocks(page);
@@ -396,6 +553,14 @@ public class CachePaged implements Paged {
             locks.forEach(lck->lck.writeLock().unlock());
         }
     }
+
+    /**
+     * Блокировка страницы постоянной памяти для записи
+     * @param page индекс страницы
+     * @param code функция выполняемая в период блокировки
+     * @return результат выполнения функции
+     * @param <R> результат выполнения функции
+     */
     public <R> R writePersistentLock(int page, Supplier<R> code) {
         if( code==null )throw new IllegalArgumentException("code==null");
         var locks = persistentLocks(page);
@@ -406,6 +571,13 @@ public class CachePaged implements Paged {
             locks.forEach(lck->lck.writeLock().unlock());
         }
     }
+
+    /**
+     * Блокировка страницы постоянной памяти для записи
+     * @param pages индекс страницы
+     * @param code функция выполняемая в период блокировки
+     * @return результат выполнения функции
+     */
     public void writePersistentLock(int[] pages, Runnable code) {
         if( code==null )throw new IllegalArgumentException("code==null");
         var locks = persistentLocks(pages);
@@ -416,6 +588,14 @@ public class CachePaged implements Paged {
             locks.forEach(lck->lck.writeLock().unlock());
         }
     }
+
+    /**
+     * Блокировка страницы постоянной памяти для записи
+     * @param pages индекс страницы
+     * @param code функция выполняемая в период блокировки
+     * @return результат выполнения функции
+     * @param <R> результат выполнения функции
+     */
     public <R> R writePersistentLock(int[] pages, Supplier<R> code) {
         if( code==null )throw new IllegalArgumentException("code==null");
         var locks = persistentLocks(pages);
@@ -429,6 +609,13 @@ public class CachePaged implements Paged {
     //#endregion
     //#region read/write lock
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+
+    /**
+     * Блокировка для чтения
+     * @param code функция выполняемая в период блокировки
+     * @return результат выполнения функции
+     * @param <R> результат выполнения функции
+     */
     public <R> R readLock(Supplier<R> code){
         if( code==null )throw new IllegalArgumentException("code==null");
         try {
@@ -438,6 +625,11 @@ public class CachePaged implements Paged {
             readWriteLock.readLock().unlock();
         }
     }
+
+    /**
+     * Блокировка для чтения
+     * @param code функция выполняемая в период блокировки
+     */
     public void readLock(Runnable code){
         if( code==null )throw new IllegalArgumentException("code==null");
         try {
@@ -447,6 +639,13 @@ public class CachePaged implements Paged {
             readWriteLock.readLock().unlock();
         }
     }
+
+    /**
+     * Блокировка для записи
+     * @param code функция выполняемая в период блокировки
+     * @return результат выполнения функции
+     * @param <R> результат выполнения функции
+     */
     public <R> R writeLock(Supplier<R> code){
         if( code==null )throw new IllegalArgumentException("code==null");
         try {
@@ -456,6 +655,11 @@ public class CachePaged implements Paged {
             readWriteLock.writeLock().unlock();
         }
     }
+
+    /**
+     * Блокировка для записи
+     * @param code функция выполняемая в период блокировки
+     */
     public void writeLock(Runnable code){
         if( code==null )throw new IllegalArgumentException("code==null");
         try {
