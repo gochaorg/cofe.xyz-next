@@ -1,17 +1,12 @@
 package xyz.cofe.cbuffer.page;
 
 import org.junit.Test;
+import xyz.cofe.cbuffer.Common;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-public class CachePagedTest {
-    public static byte[] generateRandom(int size){
-        var buff = new byte[size];
-        var rnd = ThreadLocalRandom.current();
-        rnd.nextBytes(buff);
-        return buff;
-    }
+public class CachePagedTest extends Common {
 
     @Test
     public void test() {

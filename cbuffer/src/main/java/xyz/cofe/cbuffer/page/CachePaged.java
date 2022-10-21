@@ -13,12 +13,82 @@ import java.util.function.Supplier;
 /**
  * Кеш страниц памяти
  *
- * <p> отображает страницы кеш памяти на страницы постоянной памяти,
+ * <h2>Страничная организация памяти</h2>
+ *
+ * <ul>
+ *     <li>
+ * Отображает страницы кеш памяти на страницы постоянной памяти,
  * по мере необходимости загружает страницы из постоянной в кеш память
  * и выгружает страницы из кеша в постоянную память.
+ *     </li>
+ *     <li>
+ * Отображением страниц кеша на постоянную занимается {@link CacheMap}
+ *     </li>
+ *     <li>
+ * Размер страницы - постоянное значение в байтах
+ *     </li>
+ *     <li>
+ * Каждая страница имеет свой номер, нумерация начинаеться с 0
+ *     </li>
+ * </ul>
  *
- * <p>
- *     Отображением страниц кеша на постоянную занимается {@link CacheMap}
+ *
+ *
+ *
+ * <h2>Отображение страниц</h2>
+ *
+ * <ul>
+ *     <li>
+ *        В постоянной памяти страницы расположены последовательно
+ *     </li>
+ *     <li>
+ *        В кеш памяти страницы содержат копии страниц постоянной памяти
+ *     </li>
+ *     <li>
+ *        В кеш памяти страницы могут распологаться в любом порядке
+ *     </li>
+ *     <li>
+ *         Страницы кеш памяти соержат дополнительные свойства
+ *         <ul>
+ *            <li>признак наличия отображения</li>
+ *            <li>номер страницы в постоянной памяти</li>
+ *            <li>факт изменения кеш страницы и изменения еще не записаны в постоянную память</li>
+ *         </ul>
+ *     </li>
+ * </ul>
+ *
+ * <h2>Блокировки</h2><br/>
+ *
+ * Есть несколько типов блокировок
+ *
+ * <ul>
+ *     <li>ReadWrite {@link ReentrantReadWriteLock}
+ *     </li>
+ *     <li>
+ *         Блокировки на несколько уровней
+ *         <ul>
+ *             <li>
+ *                 На уровне {@link CachePaged}:
+ *                 {@link #readLock(Supplier)} )} {@link #writeLock(Runnable)}
+ *             </li>
+ *             <li>
+ *                 На уровне отдельной страницы постоянной памяти
+ *                 {@link #readPersistentLock(int, Supplier)}
+ *                 {@link #writePersistentLock(int, Runnable)}
+ *             </li>
+ *             <li>
+ *                 На уровне распределения/отображения постоянных/кеш страниц - {@link CacheMap}
+ *                 {@link CacheMap#readLock(Supplier)}
+ *                 {@link CacheMap#writeLock(Runnable)}
+ *             </li>
+ *             <li>
+ *                 На уровне страницы кеша {@link CachePage}
+ *                 {@link CachePage#readLock(Supplier)}
+ *                 {@link CachePage#writeLock(Runnable)}
+ *             </li>
+ *         </ul>
+ *     </li>
+ * </ul>
  * @param <CACHEPAGES> Страницы кеша
  * @param <PERSISTPAGES> Страницы постоянной памяти
  */
@@ -501,6 +571,20 @@ public class CachePaged<CACHEPAGES extends Paged & ResizablePages, PERSISTPAGES 
         }
         return new ArrayList<>(lockSet);
     }
+    private List<ReadWriteLock> persistentLocks(int fromPage,int toPageExc){
+        var lockSet = new HashSet<ReadWriteLock>();
+        synchronized (persistentPageLocks){
+            for( var p=Math.min(fromPage,toPageExc); p<Math.max(fromPage,toPageExc);p++ ){
+                int persistentPageLocksMax = 64;
+                lockSet.add(
+                persistentPageLocks.computeIfAbsent(
+                    p % persistentPageLocksMax,
+                    x -> new ReentrantReadWriteLock()
+                ));
+            }
+        }
+        return new ArrayList<>(lockSet);
+    }
 
     /**
      * Блокировка страницы постоянной памяти для чтения
@@ -530,6 +614,25 @@ public class CachePaged<CACHEPAGES extends Paged & ResizablePages, PERSISTPAGES 
     public <R> R readPersistentLock(int[] pages, Supplier<R> code) {
         if( code==null )throw new IllegalArgumentException("code==null");
         var locks = persistentLocks(pages);
+        try {
+            locks.forEach(lck->lck.readLock().lock());
+            return code.get();
+        } finally {
+            locks.forEach(lck->lck.readLock().unlock());
+        }
+    }
+
+    /**
+     * Блокировка страниц постоянной памяти для чтения
+     * @param fromPage индекс страницы
+     * @param toPageExc индекс страницы
+     * @param code функция выполняемая в период блокировки
+     * @return результат выполнения функции
+     * @param <R> выполнения функции
+     */
+    public <R> R readPersistentLock(int fromPage,int toPageExc, Supplier<R> code) {
+        if( code==null )throw new IllegalArgumentException("code==null");
+        var locks = persistentLocks(fromPage, toPageExc);
         try {
             locks.forEach(lck->lck.readLock().lock());
             return code.get();
@@ -581,6 +684,24 @@ public class CachePaged<CACHEPAGES extends Paged & ResizablePages, PERSISTPAGES 
     public void writePersistentLock(int[] pages, Runnable code) {
         if( code==null )throw new IllegalArgumentException("code==null");
         var locks = persistentLocks(pages);
+        try {
+            locks.forEach(lck->lck.writeLock().lock());
+            code.run();
+        } finally {
+            locks.forEach(lck->lck.writeLock().unlock());
+        }
+    }
+
+    /**
+     * Блокировка страницы постоянной памяти для записи
+     * @param fromPage индекс страницы
+     * @param toPageExc индекс страницы
+     * @param code функция выполняемая в период блокировки
+     * @return результат выполнения функции
+     */
+    public void writePersistentLock(int fromPage,int toPageExc, Runnable code) {
+        if( code==null )throw new IllegalArgumentException("code==null");
+        var locks = persistentLocks(fromPage, toPageExc);
         try {
             locks.forEach(lck->lck.writeLock().lock());
             code.run();

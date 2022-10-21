@@ -41,27 +41,27 @@ public class ConcurrentCachePagedTest {
         assertTrue(r==12345);
     }
 
-    public static class Worker extends Thread {
-        public final CachePaged cache;
+    public static class Worker<A extends Paged & ResizablePages,B extends Paged & ResizablePages> extends Thread {
+        public final CachePaged<A,B> cache;
         public int cyclesTotal = 100;
         public long minSleep = 5;
         public long maxSleep = 10;
         public volatile int cyclesExec = 0;
         public final Consumer4<Long,Integer,Integer,Integer> log;
 
-        public Worker(CachePaged cache, Consumer4<Long,Integer,Integer,Integer> log){
+        public Worker(CachePaged<A,B> cache, Consumer4<Long,Integer,Integer,Integer> log){
             this.cache = cache;
             this.log = log;
         }
-        public Worker cycles(int c){
+        public Worker<A,B> cycles(int c){
             cyclesTotal = c;
             return this;
         }
-        public Worker minSleep(long t){
+        public Worker<A,B> minSleep(long t){
             minSleep = t;
             return this;
         }
-        public Worker maxSleep(long t){
+        public Worker<A,B> maxSleep(long t){
             maxSleep = t;
             return this;
         }
@@ -122,15 +122,15 @@ public class ConcurrentCachePagedTest {
             slow.writePage(i,initData);
         }
 
-        var cache = new CachePaged(fast,slow);
+        var cache = new CachePaged<>(fast,slow);
         var log = new CopyOnWriteArrayList<Tuple4<Long,Integer,Integer,Integer>>();
 
-        var workers = new ArrayList<Worker>();
+        var workers = new ArrayList<Worker<MemChunkPaged,MemChunkPaged>>();
         var cyclesPerWorker = 100;
         var workersCount = 10;
         for( var i=0;i<workersCount;i++ ){
             workers.add(
-                new Worker(
+                new Worker<>(
                     cache,
                     (wId,page,from,to)->{
                         synchronized (log) {
@@ -141,7 +141,7 @@ public class ConcurrentCachePagedTest {
             );
         }
 
-        workers.forEach(w -> w.start());
+        workers.forEach(Thread::start);
         workers.forEach(w -> {
             try {
                 w.join();
@@ -162,9 +162,7 @@ public class ConcurrentCachePagedTest {
         }
 
         ///////////////////////////
-        PageListener pl = e -> {
-            System.out.println(e);
-        };
+        PageListener pl = System.out::println;
         cache.addListener(pl);
         ///////////////////////////
 

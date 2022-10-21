@@ -1,6 +1,7 @@
 package xyz.cofe.cbuffer.page;
 
 import org.junit.Test;
+import xyz.cofe.cbuffer.Common;
 import xyz.cofe.cbuffer.MemContentBuffer;
 import xyz.cofe.fn.Fn2;
 
@@ -10,13 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class PagedTest {
-    public static byte[] generateRandom(int size){
-        var buff = new byte[size];
-        var rnd = ThreadLocalRandom.current();
-        rnd.nextBytes(buff);
-        return buff;
-    }
+public class PagedTest extends Common {
 
     @Test
     public void memAlignedTest(){
@@ -132,17 +127,6 @@ public class PagedTest {
         testCheckErr(cbuff);
     }
 
-    public static boolean equals(byte[] arr0, byte[] arr1){
-        if( arr0==null && arr1==null )return true;
-        if( arr0!=null && arr1==null )return false;
-        if( arr0==null && arr1!=null )return false;
-
-        if( arr1.length!=arr0.length )return false;
-        for(int i=0;i<arr1.length;i++ ){
-            if(arr0[i]!=arr1[i])return false;
-        }
-        return true;
-    }
 
     public void testWrite(Paged paged, Fn2<Integer,Integer,byte[]> readBytes){
         var firstDataSend = generateRandom(paged.memoryInfo().pageSize());

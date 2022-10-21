@@ -11,10 +11,10 @@ import java.util.function.Supplier;
  * Простая постраничная организация памяти
  */
 public class MemFlatPaged implements Paged, ResizablePages {
-    protected volatile int pageSize;
-    protected volatile byte[] buffer;
-    protected volatile int dataSize;
-    protected volatile int maxPages = -1;
+    private volatile int pageSize;
+    private volatile byte[] buffer;
+    private volatile int dataSize;
+    private volatile int maxPages = -1;
 
     /**
      * Конструктор
